@@ -16,6 +16,14 @@
         "closingticketdetails": {
           "entitySetName": "cr7de_closingticketdetailses",
           "logicalName": "cr7de_closingticketdetails"
+        },
+        "invoicedetails": {
+          "entitySetName": "cr7de_invoicedetailses",
+          "logicalName": "cr7de_invoicedetails"
+        },
+        "newownerticketdetails": {
+          "entitySetName": "cr7de_newownerticketdetailses",
+          "logicalName": "cr7de_newownerticketdetails"
         }
       },
       "environmentVariableName": ""

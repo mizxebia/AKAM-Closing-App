@@ -1,8 +1,8 @@
 import './App.css'
-import { ClosingTicketPage } from './components/closingTickets/ClosingTicketPage'
+import { ClosingTicketPage } from './features/closingTickets'
 
 function App() {
-  return <ClosingTicketPage /> 
+  return <ClosingTicketPage />
 }
 
 export default App
