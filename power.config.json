@@ -1,9 +1,11 @@
 {
   "version": "1.0",
-  "appId": null,
+  "appId": "0161d697-4a01-4994-823b-97a3eb7c494a",
   "appDisplayName": "Closing App",
   "region": "prod",
   "environmentId": "e1cba263-6407-ef71-82d5-197403fb0d06",
+  "UATenvironmentId": "e0789024-6789-e98a-8dac-0e49d6c13b0b",
+  "ProductionenvironmentId": "a23f5944-6534-e1f9-bb68-95cc3ce5dd00",
   "description": " ",
   "buildPath": "./dist",
   "buildEntryPoint": "index.html",

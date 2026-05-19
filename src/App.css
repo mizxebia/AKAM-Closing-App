@@ -1147,6 +1147,22 @@ body {
   color: #b91c1c;
 }
 
+.document-pdf-state {
+  background: #ffffff;
+}
+
+.document-pdf-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.document-pdf-actions a {
+  text-decoration: none;
+}
+
 .document-loading-overlay {
   position: absolute;
   inset: 0;

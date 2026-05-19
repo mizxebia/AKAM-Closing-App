@@ -1,5 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
+
 import type { ClosingTicketRecord } from '../../closingTickets/types/closingTicket'
+
 import {
   type DataverseFilePreview,
   getDataverseFileUrl,
@@ -8,12 +14,15 @@ import {
   hasDocument,
   type NewOwnerDocumentKey,
 } from '../utils/dataverseFileUtils'
+
 import { DocumentToggleButtons } from './DocumentToggleButtons'
 
 interface DocumentViewerPanelProps {
   closingTicket: ClosingTicketRecord
   selectedDocument: NewOwnerDocumentKey | null
-  onSelectDocument: (documentKey: NewOwnerDocumentKey) => void
+  onSelectDocument: (
+    documentKey: NewOwnerDocumentKey
+  ) => void
 }
 
 type ViewerState =
@@ -29,6 +38,7 @@ function renderDocumentViewer(
   fileName: string,
   errorMessage: string | null
 ) {
+
   if (viewerState === 'empty') {
     return (
       <div className="document-viewer-state">
@@ -40,7 +50,10 @@ function renderDocumentViewer(
   if (viewerState === 'error') {
     return (
       <div className="document-viewer-state document-viewer-error">
-        <strong>Unable to preview file.</strong>
+        <strong>
+          Unable to preview file.
+        </strong>
+
         <span>
           {errorMessage ??
             'The file could not be fetched from Dataverse.'}
@@ -49,44 +62,70 @@ function renderDocumentViewer(
     )
   }
 
-  if (viewerState === 'unsupported') {
+  if (
+    viewerState ===
+    'unsupported'
+  ) {
     return (
       <div className="document-viewer-state">
-        <strong>Preview not supported</strong>
+        <strong>
+          Preview not supported
+        </strong>
+
         <span>
-          This file is present, but only PDF and image previews are
-          available here.
+          This file is present,
+          but only PDF and image
+          previews are available
+          here.
         </span>
       </div>
     )
   }
 
-  if (viewerState === 'loading') {
+  if (
+    viewerState === 'loading'
+  ) {
     return (
       <div className="document-loading-overlay">
         <div className="document-loader" />
-        <span>Loading document...</span>
+
+        <span>
+          Loading document...
+        </span>
       </div>
     )
   }
 
-  if (filePreview?.previewType === 'image') {
+  if (
+    filePreview?.previewType ===
+    'image'
+  ) {
     return (
       <div className="document-image-frame">
-        <img src={filePreview.url} alt={fileName} />
+        <img
+          src={filePreview.url}
+          alt={fileName}
+        />
       </div>
     )
   }
 
-  return filePreview ? (
-    <iframe
-      title={fileName}
-      className="document-preview-frame"
-      src={filePreview.url}
-    />
-  ) : (
+ return filePreview ? (
+  <iframe
+    src={filePreview.url}
+    title={fileName}
+    className="document-preview-frame"
+    style={{
+      width: '100%',
+      height: '100%',
+      border: 'none',
+    }}
+  />
+) : (
     <div className="document-viewer-state document-viewer-error">
-      <strong>Unable to preview file.</strong>
+      <strong>
+        Unable to preview file.
+      </strong>
     </div>
   )
 }
@@ -96,126 +135,199 @@ export function DocumentViewerPanel({
   selectedDocument,
   onSelectDocument,
 }: DocumentViewerPanelProps) {
-  const [viewerState, setViewerState] =
-    useState<ViewerState>('empty')
-  const [filePreview, setFilePreview] =
-    useState<DataverseFilePreview | null>(null)
-  const [errorMessage, setErrorMessage] =
-    useState<string | null>(null)
 
-  const activeDocument = useMemo(
-    () =>
-      selectedDocument
-        ? getDocumentDefinition(selectedDocument)
-        : null,
-    [selectedDocument]
-  )
+  const [
+    viewerState,
+    setViewerState,
+  ] =
+    useState<ViewerState>(
+      'empty'
+    )
+
+  const [
+    filePreview,
+    setFilePreview,
+  ] =
+    useState<DataverseFilePreview | null>(
+      null
+    )
+
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] =
+    useState<string | null>(
+      null
+    )
+
+  const activeDocument =
+    useMemo(
+      () =>
+        selectedDocument
+          ? getDocumentDefinition(
+              selectedDocument
+            )
+          : null,
+      [selectedDocument]
+    )
 
   const fileName = useMemo(() => {
+
     if (!activeDocument) {
       return 'No file present'
     }
 
-    return getDocumentFileName(closingTicket, activeDocument)
-  }, [activeDocument, closingTicket])
+    return getDocumentFileName(
+      closingTicket,
+      activeDocument
+    )
+
+  }, [
+    activeDocument,
+    closingTicket,
+  ])
 
   useEffect(() => {
+
     if (
       !activeDocument ||
-      !hasDocument(closingTicket, activeDocument)
+      !hasDocument(
+        closingTicket,
+        activeDocument
+      )
     ) {
+
       setFilePreview(null)
+
       setErrorMessage(null)
-      setViewerState('empty')
+
+      setViewerState(
+        'empty'
+      )
 
       return
     }
 
-    const controller = new AbortController()
-    let createdObjectUrl: string | null = null
     let isActive = true
-    const timeoutId = window.setTimeout(() => {
-      controller.abort()
-    }, 12000)
+
+    let currentBlobUrl:
+      | string
+      | null = null
 
     setFilePreview(null)
+
     setErrorMessage(null)
-    setViewerState('loading')
+
+    setViewerState(
+      'loading'
+    )
 
     getDataverseFileUrl(
       closingTicket,
-      activeDocument,
-      controller.signal
+      activeDocument
     )
       .then((preview) => {
-        createdObjectUrl = preview.url
+
+        console.log(
+          'PDF Preview Loaded:',
+          preview
+        )
 
         if (!isActive) {
-          URL.revokeObjectURL(preview.url)
           return
         }
 
-        setFilePreview(preview)
+        currentBlobUrl =
+          preview.url
+
+        setFilePreview(
+          preview
+        )
+
         setViewerState(
-          preview.previewType === 'unsupported'
+          preview.previewType ===
+            'unsupported'
             ? 'unsupported'
             : 'ready'
         )
       })
       .catch((err) => {
+
+        console.error(
+          'PDF Preview Error:',
+          err
+        )
+
         if (!isActive) {
           return
         }
 
         setFilePreview(null)
+
         setErrorMessage(
-          controller.signal.aborted
-            ? 'Unable to preview file. The request timed out.'
-            : err instanceof Error
-              ? err.message
-              : 'Unable to preview file.'
+          err instanceof Error
+            ? err.message
+            : 'Unable to preview file.'
         )
-        setViewerState('error')
-      })
-      .finally(() => {
-        window.clearTimeout(timeoutId)
+
+        setViewerState(
+          'error'
+        )
       })
 
     return () => {
+
       isActive = false
-      controller.abort()
-      window.clearTimeout(timeoutId)
-      if (createdObjectUrl) {
-        URL.revokeObjectURL(createdObjectUrl)
+
+      if (
+        currentBlobUrl &&
+        currentBlobUrl.startsWith(
+          'blob:'
+        )
+      ) {
+        URL.revokeObjectURL(
+          currentBlobUrl
+        )
       }
     }
-  }, [activeDocument, closingTicket])
+
+  }, [
+    activeDocument,
+    closingTicket,
+  ])
 
   return (
     <aside className="document-panel">
       <div className="document-panel-inner">
+
         <div className="document-panel-header">
+
           <div>
             <p>Documents</p>
+
             <h3>{fileName}</h3>
           </div>
+
           <DocumentToggleButtons
             closingTicket={closingTicket}
             selectedDocument={selectedDocument}
             onSelectDocument={onSelectDocument}
           />
+
         </div>
 
         <div
           className="document-preview-shell"
           aria-live="polite"
         >
+
           {renderDocumentViewer(
             viewerState,
             filePreview,
             fileName,
             errorMessage
           )}
+
         </div>
       </div>
     </aside>
