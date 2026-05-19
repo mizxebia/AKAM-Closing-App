@@ -1,0 +1,24 @@
+{
+  "version": "1.0",
+  "appId": null,
+  "appDisplayName": "Closing App",
+  "region": "prod",
+  "environmentId": "e1cba263-6407-ef71-82d5-197403fb0d06",
+  "description": " ",
+  "buildPath": "./dist",
+  "buildEntryPoint": "index.html",
+  "localAppUrl": "http://localhost:3000",
+  "logoPath": "Default",
+  "connectionReferences": {},
+  "databaseReferences": {
+    "default.cds": {
+      "dataSources": {
+        "closingticketdetails": {
+          "entitySetName": "cr7de_closingticketdetailses",
+          "logicalName": "cr7de_closingticketdetails"
+        }
+      },
+      "environmentVariableName": ""
+    }
+  }
+}
