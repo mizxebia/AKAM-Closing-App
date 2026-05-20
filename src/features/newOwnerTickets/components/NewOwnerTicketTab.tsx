@@ -4,7 +4,9 @@ import {
   useMemo,
   useState,
 } from 'react'
+import { ClipboardList } from 'lucide-react'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
+import { LoadingSkeleton } from '../../../components/enterprise'
 import type { ClosingTicketRecord } from '../../closingTickets/types/closingTicket'
 import {
   getNewOwnerTicketByTicketId,
@@ -569,23 +571,29 @@ export function NewOwnerTicketTab({
   }, [closingTicket, formState, record])
 
   return (
-    <section className="new-owner-workflow">
-      <div className="new-owner-workflow-header">
-        <div>
-          <p>Workflow Form</p>
-          <h3>New Owner Ticket</h3>
-          <span>
-            Linked to Closing Ticket{' '}
-            {closingTicket.cr7de_ticketid ?? 'current session'}
-          </span>
+    <section className="grid gap-4">
+      <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/60">
+        <div className="flex items-start gap-3">
+          <div className="grid size-10 place-items-center rounded-lg bg-blue-50 text-blue-600 ring-1 ring-blue-100">
+            <ClipboardList className="size-5" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Workflow Form
+            </p>
+            <h3 className="mt-1 text-lg font-semibold text-slate-950">
+              New Owner Ticket
+            </h3>
+            <span className="mt-1 block text-sm text-slate-500">
+              Linked to Closing Ticket{' '}
+              {closingTicket.cr7de_ticketid ?? 'current session'}
+            </span>
+          </div>
         </div>
       </div>
 
       {loading && (
-        <div className="new-owner-loading-grid">
-          <div className="new-owner-skeleton" />
-          <div className="new-owner-skeleton document-skeleton" />
-        </div>
+        <LoadingSkeleton />
       )}
 
       {error && <StatusBanner type="error" message={error} />}
@@ -594,8 +602,8 @@ export function NewOwnerTicketTab({
       )}
 
       {!loading && (
-        <div className="new-owner-split-layout">
-          <div className="new-owner-form-panel">
+        <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_440px] 2xl:grid-cols-[minmax(0,1fr)_520px]">
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/60">
             <NewOwnerTicketForm
               formState={formState}
               errors={validationErrors}

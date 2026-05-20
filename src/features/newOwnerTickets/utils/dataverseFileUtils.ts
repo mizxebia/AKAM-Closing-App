@@ -1,3 +1,5 @@
+import { getClient } from '@microsoft/power-apps/data'
+import { dataSourcesInfo } from '../../../../.power/schemas/appschemas/dataSourcesInfo'
 import type { Cr7de_closingticketdetailsesUploadColumnName } from '../../../generated/models/Cr7de_closingticketdetailsesModel'
 
 import type { ClosingTicketRecord } from '../../closingTickets/types/closingTicket'
@@ -18,6 +20,7 @@ export interface NewOwnerDocumentDefinition {
 export interface DataverseFilePreview {
   url: string
   contentType: string
+  base64Content: string
   previewType:
     | 'pdf'
     | 'image'
@@ -26,6 +29,7 @@ export interface DataverseFilePreview {
 
 const CLOSING_TICKET_TABLE_NAME =
   'cr7de_closingticketdetailses'
+const dataverseClient = getClient(dataSourcesInfo)
 
 export const NEW_OWNER_DOCUMENTS:
   readonly NewOwnerDocumentDefinition[] =
@@ -202,6 +206,74 @@ function getContentType(
   return 'application/octet-stream'
 }
 
+function bytesToBase64(bytes: Uint8Array) {
+  let binary = ''
+  const chunkSize = 0x8000
+
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    const chunk = bytes.subarray(index, index + chunkSize)
+    binary += String.fromCharCode(...chunk)
+  }
+
+  return window.btoa(binary)
+}
+
+function normalizeFileContentToBase64(
+  data: unknown
+) {
+
+  if (data instanceof Uint8Array) {
+    return bytesToBase64(data)
+  }
+
+  if (data instanceof ArrayBuffer) {
+    return bytesToBase64(
+      new Uint8Array(data)
+    )
+  }
+
+  if (ArrayBuffer.isView(data)) {
+    return bytesToBase64(
+      new Uint8Array(
+        data.buffer,
+        data.byteOffset,
+        data.byteLength
+      )
+    )
+  }
+
+  if (typeof data === 'string') {
+    const trimmedData = data.trim()
+    const dataUrlMatch =
+      /^data:[^;]+;base64,(.*)$/i.exec(
+        trimmedData
+      )
+
+    return dataUrlMatch
+      ? dataUrlMatch[1]
+      : trimmedData
+  }
+
+  return null
+}
+
+function getDataUrl(
+  contentType: string,
+  base64Content: string
+) {
+  return `data:${contentType};base64,${base64Content}`
+}
+
+function isValidPdfBase64(
+  base64Content: string,
+  previewType: DataverseFilePreview['previewType']
+) {
+  return (
+    previewType !== 'pdf' ||
+    base64Content.startsWith('JVBER')
+  )
+}
+
 export async function getDataverseFileUrl(
   closingTicket: ClosingTicketRecord,
   document: NewOwnerDocumentDefinition
@@ -227,32 +299,77 @@ export async function getDataverseFileUrl(
   const contentType =
     getContentType(fileName)
 
-  const organizationUrl =
-    window.location.origin
-
-  const encodedColumnName =
-    encodeURIComponent(
-      document.columnName
-    )
-
   const recordId =
     closingTicket.cr7de_closingticketdetailsid
 
-  const fileUrl =
-    `${organizationUrl}/api/data/v9.2/${CLOSING_TICKET_TABLE_NAME}(${recordId})/${encodedColumnName}/$value`
+  const response =
+    await dataverseClient.downloadFileFromRecord(
+      CLOSING_TICKET_TABLE_NAME,
+      recordId,
+      document.columnName
+    )
 
   console.log(
-    'DIRECT FILE URL:',
-    fileUrl
+    'Document API response:',
+    response
+  )
+
+  if (!response.success || !response.data) {
+    throw new Error(
+      'Unable to preview file.'
+    )
+  }
+
+  const base64Content =
+    normalizeFileContentToBase64(
+      response.data
+    )
+
+  console.log(
+    'Base64 sample:',
+    typeof base64Content === 'string'
+      ? base64Content.substring(0, 50)
+      : 'invalid'
+  )
+
+  if (!base64Content) {
+    throw new Error(
+      'Unable to preview file.'
+    )
+  }
+
+  const previewType =
+    getPreviewType(
+      contentType,
+      fileName
+    )
+
+  if (
+    !isValidPdfBase64(
+      base64Content,
+      previewType
+    )
+  ) {
+    throw new Error(
+      'Dataverse returned a file reference instead of valid PDF content.'
+    )
+  }
+
+  const fileUrl =
+    getDataUrl(
+      contentType,
+      base64Content
+    )
+
+  console.log(
+    'Generated PDF URL:',
+    fileUrl.substring(0, 100)
   )
 
   return {
     url: fileUrl,
     contentType,
-    previewType:
-      getPreviewType(
-        contentType,
-        fileName
-      ),
+    base64Content,
+    previewType,
   }
 }

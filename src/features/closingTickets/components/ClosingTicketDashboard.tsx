@@ -1,9 +1,5 @@
-import { DashboardCard } from '../../../components/dashboard/DashboardCard'
-import {
-  ActivityIcon,
-  CalendarIcon,
-  FilesIcon,
-} from '../../../components/icons/DashboardIcons'
+import { Activity, CalendarDays, Files } from 'lucide-react'
+import { StatCard } from '../../../components/enterprise'
 import { formatClosingTicketStatus } from '../utils/closingTicketFormatters'
 import type { ClosingTicketRecord } from '../types/closingTicket'
 
@@ -42,29 +38,32 @@ export function ClosingTicketDashboard({
 
   return (
     <section
-      className="dashboard-grid"
+      className="grid gap-4 md:grid-cols-3"
       aria-label="Closing ticket summary"
     >
-      <DashboardCard
+      <StatCard
         label="Total Closings"
         value={totalRecords}
-        sub="All records"
-        icon={FilesIcon}
-        tint="blue"
+        description="All records"
+        icon={Files}
+        tone="blue"
+        trend="Portfolio wide"
       />
-      <DashboardCard
+      <StatCard
         label="This Month"
         value={currentMonthRecords}
-        sub="Closings"
-        icon={CalendarIcon}
-        tint="violet"
+        description="Closings created"
+        icon={CalendarDays}
+        tone="violet"
+        trend="Current period"
       />
-      <DashboardCard
+      <StatCard
         label="Active Cases"
         value={activeRecords}
-        sub="In progress"
-        icon={ActivityIcon}
-        tint="emerald"
+        description="In progress"
+        icon={Activity}
+        tone="emerald"
+        trend="Needs attention"
       />
     </section>
   )

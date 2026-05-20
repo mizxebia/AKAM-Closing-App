@@ -100,6 +100,24 @@ function renderDocumentViewer(
     filePreview?.previewType ===
     'image'
   ) {
+    if (
+      !filePreview.url.startsWith(
+        'data:image/'
+      )
+    ) {
+      return (
+        <div className="document-viewer-state document-viewer-error">
+          <strong>
+            Unable to preview file.
+          </strong>
+
+          <span>
+            The image preview URL is invalid.
+          </span>
+        </div>
+      )
+    }
+
     return (
       <div className="document-image-frame">
         <img
@@ -110,16 +128,42 @@ function renderDocumentViewer(
     )
   }
 
+  if (
+    filePreview?.previewType ===
+    'pdf'
+  ) {
+    if (
+      !filePreview.url.startsWith(
+        'data:application/pdf;base64,JVBER'
+      )
+    ) {
+      return (
+        <div className="document-viewer-state document-viewer-error">
+          <strong>
+            Unable to preview file.
+          </strong>
+
+          <span>
+            The PDF data returned from Dataverse is not valid.
+          </span>
+        </div>
+      )
+    }
+
+    return (
+      <iframe
+        src={filePreview.url}
+        title={fileName}
+        className="document-preview-frame"
+      />
+    )
+  }
+
  return filePreview ? (
   <iframe
     src={filePreview.url}
     title={fileName}
     className="document-preview-frame"
-    style={{
-      width: '100%',
-      height: '100%',
-      border: 'none',
-    }}
   />
 ) : (
     <div className="document-viewer-state document-viewer-error">
@@ -210,10 +254,6 @@ export function DocumentViewerPanel({
 
     let isActive = true
 
-    let currentBlobUrl:
-      | string
-      | null = null
-
     setFilePreview(null)
 
     setErrorMessage(null)
@@ -236,9 +276,6 @@ export function DocumentViewerPanel({
         if (!isActive) {
           return
         }
-
-        currentBlobUrl =
-          preview.url
 
         setFilePreview(
           preview
@@ -278,17 +315,6 @@ export function DocumentViewerPanel({
     return () => {
 
       isActive = false
-
-      if (
-        currentBlobUrl &&
-        currentBlobUrl.startsWith(
-          'blob:'
-        )
-      ) {
-        URL.revokeObjectURL(
-          currentBlobUrl
-        )
-      }
     }
 
   }, [

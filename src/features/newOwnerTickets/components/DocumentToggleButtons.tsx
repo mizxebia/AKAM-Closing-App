@@ -18,7 +18,7 @@ export function DocumentToggleButtons({
 }: DocumentToggleButtonsProps) {
   return (
     <div
-      className="document-toggle-group"
+      className="grid grid-cols-2 gap-2"
       aria-label="Document preview selector"
     >
       {NEW_OWNER_DOCUMENTS.map((document) => {
@@ -35,8 +35,8 @@ export function DocumentToggleButtons({
             type="button"
             className={
               isActive
-                ? 'document-toggle document-toggle-active'
-                : 'document-toggle'
+                ? 'min-h-9 rounded-lg bg-slate-950 px-3 py-2 text-xs font-semibold text-white shadow-sm'
+                : 'min-h-9 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-300'
             }
             onClick={() =>
               onSelectDocument(document.key)
