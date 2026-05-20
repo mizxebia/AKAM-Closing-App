@@ -1,12 +1,25 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
+import { Trash2 } from 'lucide-react'
+import { Button } from '../../../components/ui/button'
 import {
-  Cr7de_closingticketdetailsescr109_botstatus,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../../../components/ui/alert-dialog'
+import {
   Cr7de_closingticketdetailsescr109_transactiontypedeal,
   Cr7de_closingticketdetailsescr7de_ticketstatus,
 } from '../../../generated/models/Cr7de_closingticketdetailsesModel'
 import {
   createClosingTicket,
+  deleteClosingTicketFile,
   updateClosingTicket,
   uploadClosingTicketFile,
 } from '../api/closingTicketsService'
@@ -15,6 +28,7 @@ import type {
   ClosingTicketFormState,
   ClosingTicketRecord,
 } from '../types/closingTicket'
+import { useCurrentUser } from '../hooks/useCurrentUser'
 
 type FormErrors = Partial<
   Record<keyof ClosingTicketFormState, string>
@@ -25,6 +39,11 @@ type UploadColumnName =
   | 'cr109_rpttdocument'
 
 type PendingFiles = Partial<Record<UploadColumnName, File>>
+type UploadedFileNames = Partial<Record<UploadColumnName, string>>
+
+const POST_CLOSING_STATUS = 716070004
+const VALIDATED_STATUS = 716070001
+const emptyUploadedFileNames: UploadedFileNames = {}
 
 interface CreateClosingTicketFormProps {
   onCancel: () => void
@@ -313,8 +332,8 @@ export function EditClosingTicketForm({
         cr109_rpttdocument:
           record.cr109_rpttdocument_name,
       }}
-      submitLabel="Save Changes"
-      saveDraftLabel="Save Draft"
+      recordId={record.cr7de_closingticketdetailsid}
+      submitLabel="Save"
       submitAndCloseLabel="Submit"
       savingLabel="Saving..."
       onCancel={onCancel}
@@ -337,9 +356,9 @@ export function EditClosingTicketForm({
 function ClosingTicketEditorForm({
   mode,
   initialFormState,
-  initialFileNames = {},
+  initialFileNames = emptyUploadedFileNames,
+  recordId,
   submitLabel,
-  saveDraftLabel,
   submitAndCloseLabel,
   savingLabel,
   onCancel,
@@ -352,8 +371,8 @@ function ClosingTicketEditorForm({
   initialFileNames?: Partial<
     Record<UploadColumnName, string>
   >
+  recordId?: string
   submitLabel: string
-  saveDraftLabel?: string
   submitAndCloseLabel?: string
   savingLabel: string
   onCancel: () => void
@@ -368,6 +387,8 @@ function ClosingTicketEditorForm({
     useState<ClosingTicketFormState>(initialFormState)
   const [pendingFiles, setPendingFiles] =
     useState<PendingFiles>({})
+  const [uploadedFileNames, setUploadedFileNames] =
+    useState<UploadedFileNames>(initialFileNames)
   const [errors, setErrors] = useState<FormErrors>({})
   const [saveError, setSaveError] = useState<
     string | null
@@ -376,19 +397,19 @@ function ClosingTicketEditorForm({
   const submitIntentRef = useRef<'save' | 'submit'>(
     'save'
   )
+  const { userName, userEmail } = useCurrentUser()
+
+  useEffect(() => {
+    setUploadedFileNames(initialFileNames)
+  }, [
+    initialFileNames.cr109_purchaseapplicationform,
+    initialFileNames.cr109_rpttdocument,
+  ])
 
   const ticketStatusOptions = useMemo(
     () =>
       toChoiceOptions(
         Cr7de_closingticketdetailsescr7de_ticketstatus
-      ),
-    []
-  )
-
-  const botStatusOptions = useMemo(
-    () =>
-      toChoiceOptions(
-        Cr7de_closingticketdetailsescr109_botstatus
       ),
     []
   )
@@ -400,6 +421,117 @@ function ClosingTicketEditorForm({
       ),
     []
   )
+
+  const ticketStatusLabel = useMemo(() => {
+    if (!formState.cr7de_ticketstatus) {
+      return ''
+    }
+
+    return (
+      Cr7de_closingticketdetailsescr7de_ticketstatus[
+        formState.cr7de_ticketstatus
+      ] ?? String(formState.cr7de_ticketstatus)
+    )
+  }, [formState.cr7de_ticketstatus])
+
+  const showMoveToPostClosing =
+    ticketStatusLabel === 'ReadyForPostClosing'
+  const showValidate =
+    ticketStatusLabel === 'PostClosing'
+
+  useEffect(() => {
+    if (!userName && !userEmail) {
+      return
+    }
+
+    setFormState((currentState) => ({
+      ...currentState,
+      cr7de_closingagentname:
+        currentState.cr7de_closingagentname ||
+        userName ||
+        '',
+      cr7de_closingagentemail:
+        currentState.cr7de_closingagentemail ||
+        userEmail ||
+        '',
+    }))
+  }, [userEmail, userName])
+
+  const updateTicketStatus = async (
+    nextStatus: typeof POST_CLOSING_STATUS | typeof VALIDATED_STATUS
+  ) => {
+    if (!recordId) {
+      return
+    }
+
+    const nextFormState = {
+      ...formState,
+      cr7de_ticketstatus: nextStatus,
+    }
+
+    setSaving(true)
+    setSaveError(null)
+
+    try {
+      await updateClosingTicket(
+        recordId,
+        buildPayload(nextFormState)
+      )
+      setFormState(nextFormState)
+      await onSuccess()
+    } catch (error) {
+      setSaveError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to update ticket status.'
+      )
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleMoveToPostClosing = async () => {
+    await updateTicketStatus(POST_CLOSING_STATUS)
+  }
+
+  const handleValidate = async () => {
+    await updateTicketStatus(VALIDATED_STATUS)
+  }
+
+  const handleDeleteDocument = async (
+    columnName: UploadColumnName
+  ) => {
+    setPendingFiles((currentFiles) => {
+      const nextFiles = { ...currentFiles }
+      delete nextFiles[columnName]
+      return nextFiles
+    })
+
+    if (!recordId || !uploadedFileNames[columnName]) {
+      return
+    }
+
+    setSaving(true)
+    setSaveError(null)
+
+    try {
+      await deleteClosingTicketFile(recordId, columnName)
+      setUploadedFileNames((currentNames) => {
+        const nextNames = { ...currentNames }
+        delete nextNames[columnName]
+        return nextNames
+      })
+      await onSuccess()
+    } catch (error) {
+      setSaveError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to delete uploaded document.'
+      )
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const updateField = <
     TKey extends keyof ClosingTicketFormState,
@@ -495,14 +627,8 @@ function ClosingTicketEditorForm({
           >
             <select
               value={formState.cr7de_ticketstatus}
-              onChange={(event) =>
-                updateField(
-                  'cr7de_ticketstatus',
-                  Number(
-                    event.target.value
-                  ) as ClosingTicketFormState['cr7de_ticketstatus']
-                )
-              }
+              disabled
+              aria-readonly="true"
             >
               {ticketStatusOptions.map((option) => (
                 <option
@@ -700,32 +826,6 @@ function ClosingTicketEditorForm({
             </select>
           </FormField>
 
-          <FormField label="Bot Status">
-            <select
-              value={formState.cr109_botstatus}
-              onChange={(event) =>
-                updateField(
-                  'cr109_botstatus',
-                  (event.target.value === ''
-                    ? ''
-                    : Number(
-                        event.target.value
-                      )) as ClosingTicketFormState['cr109_botstatus']
-                )
-              }
-            >
-              <option value="">Select bot status</option>
-              {botStatusOptions.map((option) => (
-                <option
-                  key={option.value}
-                  value={option.value}
-                >
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </FormField>
-
           <FormField label="Sale Price">
             <input
               type="number"
@@ -754,18 +854,6 @@ function ClosingTicketEditorForm({
               }
             />
           </FormField>
-
-          <FormField label="Title Role">
-            <input
-              value={formState.cr7de_titlerole}
-              onChange={(event) =>
-                updateField(
-                  'cr7de_titlerole',
-                  event.target.value
-                )
-              }
-            />
-          </FormField>
         </div>
       </section>
 
@@ -775,12 +863,8 @@ function ClosingTicketEditorForm({
           <FormField label="Agent Name">
             <input
               value={formState.cr7de_closingagentname}
-              onChange={(event) =>
-                updateField(
-                  'cr7de_closingagentname',
-                  event.target.value
-                )
-              }
+              disabled
+              aria-readonly="true"
             />
           </FormField>
 
@@ -791,9 +875,17 @@ function ClosingTicketEditorForm({
             <input
               type="email"
               value={formState.cr7de_closingagentemail}
+              disabled
+              aria-readonly="true"
+            />
+          </FormField>
+
+          <FormField label="Title Role">
+            <input
+              value={formState.cr7de_titlerole}
               onChange={(event) =>
                 updateField(
-                  'cr7de_closingagentemail',
+                  'cr7de_titlerole',
                   event.target.value
                 )
               }
@@ -823,7 +915,7 @@ function ClosingTicketEditorForm({
             currentFileName={
               pendingFiles.cr109_purchaseapplicationform
                 ?.name ??
-              initialFileNames.cr109_purchaseapplicationform
+              uploadedFileNames.cr109_purchaseapplicationform
             }
             onFileChange={(file) =>
               setPendingFiles((currentFiles) => ({
@@ -831,18 +923,26 @@ function ClosingTicketEditorForm({
                 cr109_purchaseapplicationform: file,
               }))
             }
+            onDelete={() =>
+              handleDeleteDocument(
+                'cr109_purchaseapplicationform'
+              )
+            }
           />
           <FileUploadField
             label="RPTT Document"
             currentFileName={
               pendingFiles.cr109_rpttdocument?.name ??
-              initialFileNames.cr109_rpttdocument
+              uploadedFileNames.cr109_rpttdocument
             }
             onFileChange={(file) =>
               setPendingFiles((currentFiles) => ({
                 ...currentFiles,
                 cr109_rpttdocument: file,
               }))
+            }
+            onDelete={() =>
+              handleDeleteDocument('cr109_rpttdocument')
             }
           />
         </div>
@@ -900,16 +1000,24 @@ function ClosingTicketEditorForm({
         >
           Cancel
         </button>
-        {saveDraftLabel && (
+        {showMoveToPostClosing && (
           <button
-            className="secondary-action-button"
-            type="submit"
-            onClick={() => {
-              submitIntentRef.current = 'save'
-            }}
+            className="primary-action-button"
+            type="button"
+            onClick={handleMoveToPostClosing}
             disabled={saving}
           >
-            {saving ? savingLabel : saveDraftLabel}
+            Move to Post Closing
+          </button>
+        )}
+        {showValidate && (
+          <button
+            className="primary-action-button"
+            type="button"
+            onClick={handleValidate}
+            disabled={saving}
+          >
+            Validate
           </button>
         )}
         <button
@@ -993,16 +1101,60 @@ function FileUploadField({
   label,
   currentFileName,
   onFileChange,
+  onDelete,
 }: {
   label: string
   currentFileName?: string
   onFileChange: (file: File) => void
+  onDelete: () => void
 }) {
   return (
     <div className="file-upload-field">
       <span>{label}</span>
       <div className="file-upload-box">
-        <p>{currentFileName ?? 'There is no file.'}</p>
+        <div className="flex min-w-0 items-center justify-between gap-3">
+          <p className="min-w-0 truncate">
+            {currentFileName ?? 'There is no file.'}
+          </p>
+          {currentFileName && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  type="button"
+                  aria-label={`Delete ${label}`}
+                  className="shrink-0"
+                >
+                  <Trash2 className="h-4 w-4 text-red-500" />
+                </Button>
+              </AlertDialogTrigger>
+
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Delete Document
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+
+                <AlertDialogFooter>
+                  <AlertDialogCancel>
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={onDelete}
+                    className="bg-red-600 text-white hover:bg-red-700"
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
         <label>
           Upload file
           <input

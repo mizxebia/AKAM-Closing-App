@@ -35,8 +35,21 @@ export function InvoiceTable({
   error,
   onRefresh,
 }: InvoiceTableProps) {
+  const sortedRecords = useMemo(() => {
+    return [...records].sort((a, b) => {
+      const firstCreated = a.createdon
+        ? new Date(a.createdon).getTime()
+        : 0
+      const secondCreated = b.createdon
+        ? new Date(b.createdon).getTime()
+        : 0
+
+      return firstCreated - secondCreated
+    })
+  }, [records])
+
   const groupedRecords = useMemo(() => {
-    return records.reduce<
+    return sortedRecords.reduce<
       Record<InvoiceGroupKey, InvoiceRecord[]>
     >(
       (groups, record) => {
@@ -49,7 +62,7 @@ export function InvoiceTable({
         Other: [],
       }
     )
-  }, [records])
+  }, [sortedRecords])
 
   const totalAmount = useMemo(() => {
     return records.reduce((total, record) => {
@@ -148,4 +161,3 @@ export function InvoiceTable({
     </section>
   )
 }
-

@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { ArrowUpRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import {
@@ -24,6 +25,19 @@ export function ClosingTicketTable({
   columns,
   onRecordSelect,
 }: ClosingTicketTableProps) {
+  const sortedRecords = useMemo(() => {
+    return [...records].sort((a, b) => {
+      const firstCreated = a.createdon
+        ? new Date(a.createdon).getTime()
+        : 0
+      const secondCreated = b.createdon
+        ? new Date(b.createdon).getTime()
+        : 0
+
+      return firstCreated - secondCreated
+    })
+  }, [records])
+
   return (
     <SectionCard
       title="Recent Closings"
@@ -55,7 +69,7 @@ export function ClosingTicketTable({
         </thead>
 
         <tbody>
-          {records.map((record, index) => (
+          {sortedRecords.map((record, index) => (
             <motion.tr
               key={
                 record.cr7de_closingticketdetailsid

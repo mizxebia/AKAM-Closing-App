@@ -6,6 +6,19 @@ import type {
   ClosingTicketUpdateInput,
 } from '../types/closingTicket'
 
+type ClosingTicketUploadColumnName =
+  | 'cr109_purchaseapplicationform'
+  | 'cr109_rpttdocument'
+
+const fileNameColumnByUploadColumn: Record<
+  ClosingTicketUploadColumnName,
+  'cr109_purchaseapplicationform_name' | 'cr109_rpttdocument_name'
+> = {
+  cr109_purchaseapplicationform:
+    'cr109_purchaseapplicationform_name',
+  cr109_rpttdocument: 'cr109_rpttdocument_name',
+}
+
 export async function getClosingTickets(): Promise<
   ClosingTicketRecord[]
 > {
@@ -81,9 +94,7 @@ export async function updateClosingTicket(
 
 export async function uploadClosingTicketFile(
   id: string,
-  columnName:
-    | 'cr109_purchaseapplicationform'
-    | 'cr109_rpttdocument',
+  columnName: ClosingTicketUploadColumnName,
   file: File
 ) {
   const result =
@@ -100,4 +111,29 @@ export async function uploadClosingTicketFile(
         `Failed to upload ${file.name}`
     )
   }
+}
+
+export async function deleteClosingTicketFile(
+  id: string,
+  columnName: ClosingTicketUploadColumnName
+) {
+  const fileNameColumn =
+    fileNameColumnByUploadColumn[columnName]
+  const result =
+    await Cr7de_closingticketdetailsesService.update(
+      id,
+      {
+        [columnName]: null,
+        [fileNameColumn]: null,
+      } as unknown as ClosingTicketUpdateInput
+    )
+
+  if (!result.success) {
+    throw new Error(
+      result.error?.message ||
+        'Failed to delete uploaded document'
+    )
+  }
+
+  return result.data as ClosingTicketRecord
 }

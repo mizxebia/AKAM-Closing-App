@@ -20,7 +20,7 @@ export function PageHeader({
   return (
     <motion.header
       className={cn(
-        'flex flex-col gap-4 rounded-xl border border-slate-200 bg-white/90 p-5 shadow-sm shadow-slate-200/60 backdrop-blur md:flex-row md:items-center md:justify-between',
+        'sticky top-0 z-50 flex flex-col gap-4 rounded-xl border border-slate-200 bg-white/95 p-5 shadow-sm shadow-slate-200/60 backdrop-blur supports-[backdrop-filter]:bg-white/80 md:flex-row md:items-center md:justify-between',
         className
       )}
       initial={{ opacity: 0, y: 8 }}

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ReceiptText } from 'lucide-react'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import { LoadingSkeleton, PageHeader } from '../../../components/enterprise'
+import { Button } from '../../../components/ui/button'
 import {
   ChargesWorkspace,
   useInvoices,
@@ -89,6 +90,10 @@ export function ClosingTicketDetailsPage({
     )
   }
 
+  const handleGenerateInvoice = () => {
+    console.info('Generate Invoice requested')
+  }
+
   return (
     <main className="mx-auto grid w-full max-w-[1500px] gap-5">
       <PageHeader
@@ -96,14 +101,25 @@ export function ClosingTicketDetailsPage({
         title={record?.cr7de_ticketid ?? 'Closing Details'}
         description="Review the closing record, manage charges, and complete the new-owner workflow in one workspace."
         actions={
-          <button
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
-            type="button"
-            onClick={onBack}
-          >
-            <ArrowLeft className="size-4" />
-            Back to dashboard
-          </button>
+          <>
+            <Button
+              className="h-10 rounded-lg bg-slate-950 px-4 font-semibold text-white shadow-sm hover:bg-slate-800"
+              type="button"
+              onClick={handleGenerateInvoice}
+            >
+              <ReceiptText className="size-4" />
+              Generate Invoice
+            </Button>
+            <Button
+              variant="outline"
+              className="h-10 rounded-lg border-slate-200 bg-white px-3 font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+              type="button"
+              onClick={onBack}
+            >
+              <ArrowLeft className="size-4" />
+              Back to dashboard
+            </Button>
+          </>
         }
       />
 

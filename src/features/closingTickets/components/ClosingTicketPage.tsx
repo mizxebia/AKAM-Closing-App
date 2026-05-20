@@ -1,11 +1,22 @@
 import { useState } from 'react'
-import { Plus, RefreshCw } from 'lucide-react'
+import {
+  Plus,
+  RefreshCw,
+} from 'lucide-react'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import {
   EmptyState,
   LoadingSkeleton,
   PageHeader,
 } from '../../../components/enterprise'
+import { Button } from '../../../components/ui/button'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '../../../components/ui/sheet'
 import { closingTicketColumns } from '../constants/closingTicketColumns'
 import { useClosingTicketFilters } from '../hooks/useClosingTicketFilters'
 import { useClosingTickets } from '../hooks/useClosingTickets'
@@ -79,17 +90,18 @@ export function ClosingTicketPage() {
           description="Monitor closings, validate workflow status, and manage owner-ticket handoffs from a single workspace."
           actions={
             <>
-              <button
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+              <Button
+                variant="outline"
+                className="h-10 rounded-lg border-slate-200 bg-white px-3 font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
                 type="button"
                 onClick={refresh}
                 disabled={loading}
               >
                 <RefreshCw className={loading ? 'size-4 animate-spin' : 'size-4'} />
                 {loading ? 'Refreshing' : 'Refresh'}
-              </button>
-              <button
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-slate-950 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+              </Button>
+              <Button
+                className="h-10 rounded-lg bg-slate-950 px-4 font-semibold text-white shadow-sm hover:bg-slate-800"
                 type="button"
                 onClick={() => {
                   setCreateSuccessMessage(null)
@@ -98,7 +110,7 @@ export function ClosingTicketPage() {
               >
                 <Plus className="size-4" />
                 Create New Closing
-              </button>
+              </Button>
             </>
           }
         />
@@ -163,43 +175,28 @@ export function ClosingTicketPage() {
       )}
       </main>
 
-      {createFormOpen && (
-        <div
-          className="modal-backdrop"
-          role="presentation"
-        >
-          <section
-            className="modal-panel"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="create-closing-title"
-          >
-            <div className="modal-header">
-              <div>
-                <p>View and edit property closing record</p>
-                <h2 id="create-closing-title">
-                  New Closing
-                </h2>
-              </div>
-              <button
-                className="modal-close-button"
-                type="button"
-                onClick={() =>
-                  setCreateFormOpen(false)
-                }
-                aria-label="Close create closing form"
-              >
-                x
-              </button>
-            </div>
+      <Sheet open={createFormOpen} onOpenChange={setCreateFormOpen}>
+        <SheetContent className="create-closing-sheet">
+          <SheetHeader className="create-closing-sheet-header">
+            <SheetDescription className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              View and edit property closing record
+            </SheetDescription>
+            <SheetTitle
+              id="create-closing-title"
+              className="text-xl font-semibold text-slate-950"
+            >
+              New Closing
+            </SheetTitle>
+          </SheetHeader>
 
+          <div className="create-closing-sheet-body">
             <CreateClosingTicketForm
               onCancel={() => setCreateFormOpen(false)}
               onCreated={handleCreateClosing}
             />
-          </section>
-        </div>
-      )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }
