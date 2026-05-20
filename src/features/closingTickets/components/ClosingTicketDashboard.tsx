@@ -48,6 +48,7 @@ export function ClosingTicketDashboard({
         icon={Files}
         tone="blue"
         trend="Portfolio wide"
+        accentColor="#1E3A47"
       />
       <StatCard
         label="This Month"
@@ -56,6 +57,7 @@ export function ClosingTicketDashboard({
         icon={CalendarDays}
         tone="violet"
         trend="Current period"
+        accentColor="#C9A96E"
       />
       <StatCard
         label="Active Cases"
@@ -64,6 +66,7 @@ export function ClosingTicketDashboard({
         icon={Activity}
         tone="emerald"
         trend="Needs attention"
+        accentColor="#8B3A2A"
       />
     </section>
   )

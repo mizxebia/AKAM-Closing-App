@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { cn } from '../../lib/utils'
 
 type StatusTone =
@@ -13,13 +14,37 @@ interface StatusBadgeProps {
   tone?: StatusTone
 }
 
-const toneClasses: Record<StatusTone, string> = {
-  draft: 'border-slate-200 bg-slate-50 text-slate-700',
-  processing: 'border-blue-200 bg-blue-50 text-blue-700',
-  postClosing: 'border-amber-200 bg-amber-50 text-amber-700',
-  validate: 'border-violet-200 bg-violet-50 text-violet-700',
-  completed: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  default: 'border-slate-200 bg-white text-slate-600',
+const toneStyles: Record<StatusTone, CSSProperties> = {
+  draft: {
+    backgroundColor: '#F1EFE8',
+    color: '#5F5E5A',
+    border: '1px solid #B4B2A9',
+  },
+  processing: {
+    backgroundColor: '#E1F5EE',
+    color: '#0F6E56',
+    border: '1px solid #5DCAA5',
+  },
+  postClosing: {
+    backgroundColor: '#FAECE7',
+    color: '#8B3A2A',
+    border: '1px solid #F0997B',
+  },
+  validate: {
+    backgroundColor: '#FAECE7',
+    color: '#8B3A2A',
+    border: '1px solid #F0997B',
+  },
+  completed: {
+    backgroundColor: '#E1F5EE',
+    color: '#0F6E56',
+    border: '1px solid #5DCAA5',
+  },
+  default: {
+    backgroundColor: '#F1EFE8',
+    color: '#5F5E5A',
+    border: '1px solid #B4B2A9',
+  },
 }
 
 export function StatusBadge({
@@ -28,10 +53,15 @@ export function StatusBadge({
 }: StatusBadgeProps) {
   return (
     <span
-      className={cn(
-        'inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold leading-none tracking-wide',
-        toneClasses[tone]
-      )}
+      className={cn('inline-flex items-center font-semibold uppercase')}
+      style={{
+        ...toneStyles[tone],
+        borderRadius: '4px',
+        fontSize: '11px',
+        letterSpacing: '0.05em',
+        padding: '3px 10px',
+        lineHeight: 1.4,
+      }}
     >
       {label}
     </span>

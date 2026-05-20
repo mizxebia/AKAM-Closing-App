@@ -13,16 +13,22 @@ export function EmptyState({
   icon: Icon = FileSearch,
 }: EmptyStateProps) {
   return (
-    <div className="grid min-h-48 place-items-center rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
+    <div
+      className="grid min-h-48 place-items-center border border-dashed border-[#C8BBA9] bg-white p-8 text-center"
+      style={{ borderRadius: '12px' }}
+    >
       <div>
-        <div className="mx-auto grid size-11 place-items-center rounded-lg bg-slate-50 text-slate-500 ring-1 ring-slate-200">
+        <div
+          className="mx-auto grid size-11 place-items-center bg-[#E2DAD0] text-[#1E3A47] ring-1 ring-[#D5CBB8]"
+          style={{ borderRadius: '2px' }}
+        >
           <Icon className="size-5" />
         </div>
-        <h3 className="mt-4 text-sm font-semibold text-slate-950">
+        <h3 className="mt-4 text-sm font-semibold text-[#1E3A47]">
           {title}
         </h3>
         {description && (
-          <p className="mt-1 max-w-md text-sm leading-6 text-slate-500">
+          <p className="mt-1 max-w-md text-sm leading-6 text-[#A89880]">
             {description}
           </p>
         )}

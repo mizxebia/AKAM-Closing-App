@@ -19,9 +19,13 @@ export function ClosingTicketFilters({
   onUnitChange,
 }: ClosingTicketFiltersProps) {
   return (
-    <section className="sticky top-0 z-10 grid gap-4 rounded-xl border border-slate-200 bg-white/95 p-4 shadow-sm shadow-slate-200/60 backdrop-blur">
+    <section
+      className="sticky top-[48px] z-10 grid gap-3 border border-[#E2DAD0] bg-white p-4 shadow-sm"
+      style={{ borderRadius: '12px' }}
+    >
+      {/* Tab pill group — single container with shared background */}
       <div
-        className="flex flex-wrap gap-2"
+        className="flex flex-wrap gap-1"
         aria-label="Filter closings by status"
       >
         {closingTicketStatusOptions.map((option) => (
@@ -30,12 +34,15 @@ export function ClosingTicketFilters({
             type="button"
             className={
               filters.status === option.value
-                ? 'rounded-lg bg-slate-950 px-3 py-2 text-sm font-semibold text-white shadow-sm'
-                : 'rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50'
+                ? 'px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-[#F5F2EC] transition'
+                : 'px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-[#5F5E5A] transition hover:text-[#1E3A47]'
             }
-            onClick={() =>
-              onStatusChange(option.value)
+            style={
+              filters.status === option.value
+                ? { backgroundColor: '#1E3A47', borderRadius: '6px' }
+                : { background: 'transparent', borderRadius: '6px' }
             }
+            onClick={() => onStatusChange(option.value)}
           >
             {option.label}
           </button>
@@ -44,7 +51,7 @@ export function ClosingTicketFilters({
 
       <div className="grid gap-3 lg:grid-cols-2">
         <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#A89880]" />
           <SearchFilter
             id="closing-ticket-building-code"
             label="Filter by building code"
@@ -54,7 +61,7 @@ export function ClosingTicketFilters({
           />
         </div>
         <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#A89880]" />
           <SearchFilter
             id="closing-ticket-unit"
             label="Filter by unit ID"

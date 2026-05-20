@@ -31,7 +31,7 @@ export function ClosingTicketTable({
       actions={
         <button
           type="button"
-          className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
+          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold uppercase tracking-[0.06em] text-[#8B3A2A] underline underline-offset-2 transition hover:text-[#6e2d20]"
         >
           View all
           <ArrowUpRight className="size-3.5" />
@@ -41,69 +41,65 @@ export function ClosingTicketTable({
     >
       <div className="-m-5 overflow-x-auto">
         <table className="min-w-[980px] w-full border-collapse">
-        <thead className="sticky top-0 z-[1] bg-slate-50">
-          <tr>
-            {columns.map((column) => (
-              <th
-                key={column.key}
-                className="border-b border-slate-200 px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-slate-500"
-              >
-                {column.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
+          <thead className="sticky top-0 z-[1] bg-[#EDE8E0]">
+            <tr>
+              {columns.map((column) => (
+                <th
+                  key={column.key}
+                  className="border-b border-[#D5CBB8] px-4 py-3 text-left font-semibold uppercase text-[#5F5E5A]"
+                  style={{ fontSize: '11px', letterSpacing: '0.1em' }}
+                >
+                  {column.label}
+                </th>
+              ))}
+            </tr>
+          </thead>
 
-        <tbody>
-          {records.map((record, index) => (
-            <motion.tr
-              key={
-                record.cr7de_closingticketdetailsid
-              }
-              className="cursor-pointer border-b border-slate-100 odd:bg-white even:bg-slate-50/50 transition hover:bg-blue-50/60 focus:outline-none focus:ring-2 focus:ring-blue-200"
-              onClick={() =>
-                onRecordSelect(
-                  record.cr7de_closingticketdetailsid
-                )
-              }
-              tabIndex={0}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{
-                delay: Math.min(index * 0.015, 0.2),
-              }}
-              onKeyDown={(event) => {
-                if (
-                  event.key === 'Enter' ||
-                  event.key === ' '
-                ) {
-                  event.preventDefault()
+          <tbody>
+            {records.map((record, index) => (
+              <motion.tr
+                key={record.cr7de_closingticketdetailsid}
+                className="cursor-pointer odd:bg-white even:bg-[#faf8f4] transition hover:bg-[#F5F2EC] focus:outline-none focus:ring-2 focus:ring-[#D5CBB8]"
+                style={{ height: '44px' }}
+                onClick={() =>
                   onRecordSelect(
                     record.cr7de_closingticketdetailsid
                   )
                 }
-              }}
-            >
-              {columns.map((column) => (
-                <td
-                  key={column.key}
-                  className="max-w-[220px] truncate px-4 py-3 text-sm text-slate-600 first:font-semibold first:text-slate-950"
-                >
-                  {column.key ===
-                  'cr7de_ticketstatus' ? (
-                    <StatusBadge record={record} />
-                  ) : (
-                    formatClosingTicketValue(
-                      record,
-                      column.key
+                tabIndex={0}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{
+                  delay: Math.min(index * 0.015, 0.2),
+                }}
+                onKeyDown={(event) => {
+                  if (
+                    event.key === 'Enter' ||
+                    event.key === ' '
+                  ) {
+                    event.preventDefault()
+                    onRecordSelect(
+                      record.cr7de_closingticketdetailsid
                     )
-                  )}
-                </td>
-              ))}
-            </motion.tr>
-          ))}
-        </tbody>
-      </table>
+                  }
+                }}
+              >
+                {columns.map((column, colIndex) => (
+                  <td
+                    key={column.key}
+                    className={`max-w-[220px] truncate px-4 py-2.5 text-sm text-[#A89880] first:font-semibold first:text-[#1E3A47]${colIndex > 0 ? ' border-b border-[#EDE8E0]' : ''}`}
+                  >
+                    {column.key === 'cr7de_ticketstatus' ? (
+                      <StatusBadge record={record} />
+                    ) : (
+                      formatClosingTicketValue(record, column.key)
+                    )}
+                  </td>
+                ))}
+              </motion.tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </SectionCard>
   )
