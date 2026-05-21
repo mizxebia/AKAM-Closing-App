@@ -45,7 +45,7 @@ function TopNav({ userName }: { userName: string | null }) {
         <img
           src={akamLogo}
           alt="AKAM"
-          style={{ height: '36px', width: 'auto' }}
+          style={{ height: '32px', width: '32px', borderRadius: '6px', objectFit: 'cover' }}
         />
         <span
           style={{
