@@ -7,6 +7,7 @@ type StatusTone =
   | 'postClosing'
   | 'validate'
   | 'completed'
+  | 'failed'
   | 'default'
 
 interface StatusBadgeProps {
@@ -39,6 +40,11 @@ const toneStyles: Record<StatusTone, CSSProperties> = {
     backgroundColor: '#E1F5EE',
     color: '#0F6E56',
     border: '1px solid #5DCAA5',
+  },
+  failed: {
+    backgroundColor: '#FEF2F2',
+    color: '#b91c1c',
+    border: '1px solid #fecaca',
   },
   default: {
     backgroundColor: '#F1EFE8',

@@ -479,7 +479,7 @@ export function NewOwnerTicketForm({
           type="submit"
           disabled={saving}
         >
-          {saving ? 'Saving...' : 'Save Changes'}
+          {saving ? 'Saving...' : 'Save'}
         </button>
       </div>
     </form>

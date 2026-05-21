@@ -264,13 +264,28 @@ function getDataUrl(
   return `data:${contentType};base64,${base64Content}`
 }
 
+function isPdfBase64(base64Content: string) {
+  return base64Content.startsWith('JVBER')
+}
+
+function getResolvedContentType(
+  contentType: string,
+  base64Content: string
+) {
+  if (isPdfBase64(base64Content)) {
+    return 'application/pdf'
+  }
+
+  return contentType
+}
+
 function isValidPdfBase64(
   base64Content: string,
   previewType: DataverseFilePreview['previewType']
 ) {
   return (
     previewType !== 'pdf' ||
-    base64Content.startsWith('JVBER')
+    isPdfBase64(base64Content)
   )
 }
 
@@ -338,9 +353,15 @@ export async function getDataverseFileUrl(
     )
   }
 
+  const resolvedContentType =
+    getResolvedContentType(
+      contentType,
+      base64Content
+    )
+
   const previewType =
     getPreviewType(
-      contentType,
+      resolvedContentType,
       fileName
     )
 
@@ -357,7 +378,7 @@ export async function getDataverseFileUrl(
 
   const fileUrl =
     getDataUrl(
-      contentType,
+      resolvedContentType,
       base64Content
     )
 
@@ -368,7 +389,7 @@ export async function getDataverseFileUrl(
 
   return {
     url: fileUrl,
-    contentType,
+    contentType: resolvedContentType,
     base64Content,
     previewType,
   }

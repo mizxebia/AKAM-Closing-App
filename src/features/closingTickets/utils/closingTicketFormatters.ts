@@ -22,13 +22,21 @@ const statusDisplayByGeneratedLabel: Record<
     label: 'Processing',
     tone: 'processing',
   },
+  ReadyForPostClosing: {
+    label: 'Ready for Post Closing',
+    tone: 'postClosing',
+  },
   PostClosing: {
     label: 'Post Closing',
     tone: 'postClosing',
   },
   Validate: {
-    label: 'Validate',
+    label: 'Validated',
     tone: 'validate',
+  },
+  Failed: {
+    label: 'Failed',
+    tone: 'failed',
   },
   Completed: {
     label: 'Completed',

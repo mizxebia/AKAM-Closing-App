@@ -1,75 +1,113 @@
-# React + TypeScript + Vite
+```md
+# Closing Management System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React + TypeScript frontend for a Power Apps / PCF-style Closing Management System. The app helps manage closing tickets, document previews, invoice/closing actions, workflow statuses, and new owner ticket details.
 
-It is preconfigured to work with Power Apps Code Apps.
+## Tech Stack
 
-Currently, two official plugins are available:
+- React
+- TypeScript
+- TSX
+- Vite
+- Tailwind CSS
+- shadcn/ui
+- lucide-react
+- Framer Motion
+- Microsoft Power Apps / Dataverse integration
+- Power Platform CLI (`pac`)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Prerequisites
 
-## React Compiler
+Install:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Node.js
+- npm
+- Power Platform CLI
 
-## Expanding the ESLint configuration
+Verify:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+node -v
+npm -v
+pac --version
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Install Dependencies
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+npm install
+```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Run Locally
+
+```bash
+npm run dev
+```
+
+Then open the local Vite URL, usually:
+
+```txt
+http://localhost:5173
+```
+
+## Build
+
+```bash
+npm run build
+```
+
+The production build is generated in:
+
+```txt
+dist/
+```
+
+## Power Apps / PAC Deployment
+
+Authenticate with Power Platform:
+
+```bash
+pac auth create
+```
+
+Select or confirm environment:
+
+```bash
+pac org list
+pac org select --environment <environment-id-or-url>
+```
+
+Build the app:
+
+```bash
+npm run build
+```
+
+Deploy using the Power Apps / PAC workflow configured for the project:
+
+```bash
+pac power-fx push
+```
+
+Or, if using a solution-based deployment:
+
+```bash
+pac solution pack --zipfile ClosingManagement.zip --folder <solution-folder>
+pac solution import --path ClosingManagement.zip
+```
+
+## Common Commands
+
+```bash
+npm run dev
+npm run build
+npm run preview
+```
+
+## Project Notes
+
+- Do not change generated Dataverse service/model files manually.
+- Keep backend contracts and Dataverse schema unchanged.
+- UI changes should stay within React components, styles, and frontend behavior.
+- Document preview uses the browser default PDF viewer through an iframe.
 ```

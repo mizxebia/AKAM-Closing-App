@@ -4,10 +4,12 @@ import { getContext } from '@microsoft/power-apps/app'
 type PowerAppsWindowContext = {
   userSettings?: {
     userName?: string
+    userEmail?: string
+    userPrincipalName?: string
   }
 }
 
-function getWindowUserName() {
+function getWindowCurrentUser() {
   const context = (
     window as Window & {
       __power_apps_context__?: PowerAppsWindowContext
@@ -16,6 +18,8 @@ function getWindowUserName() {
           getGlobalContext?: () => {
             userSettings?: {
               userName?: string
+              userEmail?: string
+              userPrincipalName?: string
             }
           }
         }
@@ -23,26 +27,42 @@ function getWindowUserName() {
     }
   )
 
-  return (
+  const windowUserSettings =
     context.__power_apps_context__?.userSettings
-      ?.userName ??
+  const xrmUserSettings =
     context.Xrm?.Utility?.getGlobalContext?.()
-      .userSettings?.userName
-  )
+      .userSettings
+
+  return {
+    userName:
+      windowUserSettings?.userName ??
+      xrmUserSettings?.userName,
+    userEmail:
+      windowUserSettings?.userEmail ??
+      windowUserSettings?.userPrincipalName ??
+      xrmUserSettings?.userEmail ??
+      xrmUserSettings?.userPrincipalName,
+  }
 }
 
 export function useCurrentUser() {
   const [userName, setUserName] =
+    useState<string | null>(null)
+  const [userEmail, setUserEmail] =
     useState<string | null>(null)
 
   useEffect(() => {
     let isMounted = true
 
     async function loadCurrentUser() {
-      const hostUserName = getWindowUserName()
+      const hostUser = getWindowCurrentUser()
 
-      if (hostUserName && isMounted) {
-        setUserName(hostUserName)
+      if (
+        isMounted &&
+        (hostUser.userName || hostUser.userEmail)
+      ) {
+        setUserName(hostUser.userName ?? null)
+        setUserEmail(hostUser.userEmail ?? null)
         return
       }
 
@@ -51,9 +71,14 @@ export function useCurrentUser() {
         const currentUserName =
           context.user.fullName ??
           context.user.userPrincipalName
+        const currentUserEmail =
+          context.user.userPrincipalName
 
         if (isMounted && currentUserName) {
           setUserName(currentUserName)
+        }
+        if (isMounted && currentUserEmail) {
+          setUserEmail(currentUserEmail)
         }
       } catch (error) {
         console.info(
@@ -72,5 +97,6 @@ export function useCurrentUser() {
 
   return {
     userName,
+    userEmail,
   }
 }

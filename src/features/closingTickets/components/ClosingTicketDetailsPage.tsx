@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ReceiptText } from 'lucide-react'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import { LoadingSkeleton, PageHeader } from '../../../components/enterprise'
 import {
@@ -89,6 +89,10 @@ export function ClosingTicketDetailsPage({
     )
   }
 
+  const handleGenerateInvoice = () => {
+    console.info('Generate Invoice requested')
+  }
+
   return (
     <main className="mx-auto grid w-full max-w-[1500px] gap-5">
       <PageHeader
@@ -96,14 +100,24 @@ export function ClosingTicketDetailsPage({
         title={record?.cr7de_ticketid ?? 'Closing Details'}
         description="Review the closing record, manage charges, and complete the new-owner workflow in one workspace."
         actions={
-          <button
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-sm font-semibold text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC]"
-            type="button"
-            onClick={onBack}
-          >
-            <ArrowLeft className="size-4" />
-            Back to dashboard
-          </button>
+          <>
+            <button
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#1E3A47] px-4 text-xs font-semibold uppercase tracking-[0.08em] text-[#F5F2EC] shadow-sm transition hover:bg-[#152d38]"
+              type="button"
+              onClick={handleGenerateInvoice}
+            >
+              <ReceiptText className="size-4" />
+              Generate Invoice
+            </button>
+            <button
+              className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-sm font-semibold text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC]"
+              type="button"
+              onClick={onBack}
+            >
+              <ArrowLeft className="size-4" />
+              Back to dashboard
+            </button>
+          </>
         }
       />
 

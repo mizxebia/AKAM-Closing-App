@@ -429,10 +429,14 @@ body {
 }
 
 .status-banner {
+  position: sticky;
+  top: 96px;
+  z-index: 45;
   border-radius: 8px;
   padding: 11px 14px;
   margin-bottom: 14px;
   font-size: 0.88rem;
+  box-shadow: 0 10px 30px rgba(30, 58, 71, 0.08);
 }
 
 .status-loading {
@@ -524,11 +528,52 @@ body {
   color: #1E3A47;
 }
 
-.create-closing-form {
+.create-closing-sheet {
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: auto !important;
+  z-index: 90 !important;
+  display: flex !important;
+  width: min(100vw, 720px) !important;
+  max-width: none !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+  border-left: 1px solid #dbe5f3;
+  background: #f8fafc !important;
+  padding: 0 !important;
+  box-shadow: -28px 0 70px rgba(15, 23, 42, 0.24);
+}
+
+.create-closing-sheet-header {
+  position: relative;
+  z-index: 3;
+  flex: 0 0 auto;
+  display: grid;
+  gap: 6px;
+  padding: 22px 64px 22px 28px;
+  border-bottom: 1px solid #dbe5f3;
+  background: #ffffff;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+  text-align: left;
+}
+
+.create-closing-sheet-body {
+  min-height: 0;
+  flex: 1 1 auto;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  background: #f8fafc;
+}
+
+.create-closing-form {
   display: grid;
   gap: 14px;
   padding: 20px 24px 24px;
+  min-height: 100%;
 }
 
 .form-section {
@@ -695,15 +740,18 @@ body {
 .form-actions {
   position: sticky;
   bottom: 0;
+  z-index: 2;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  padding: 14px 0 0;
+  margin: 4px -22px -22px;
+  padding: 14px 22px 18px;
   background: linear-gradient(
     180deg,
     rgba(245, 242, 236, 0),
     #F5F2EC 36%
   );
+  border-top: 1px solid rgba(219, 229, 243, 0.82);
 }
 
 .primary-action-button,

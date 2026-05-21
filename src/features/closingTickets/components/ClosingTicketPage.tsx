@@ -7,6 +7,13 @@ import {
   LoadingSkeleton,
   PageHeader,
 } from '../../../components/enterprise'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '../../../components/ui/sheet'
 import { closingTicketColumns } from '../constants/closingTicketColumns'
 import { useClosingTicketFilters } from '../hooks/useClosingTicketFilters'
 import { useClosingTickets } from '../hooks/useClosingTickets'
@@ -180,103 +187,89 @@ export function ClosingTicketPage() {
             }
           />
 
-        {loading && (
-          <LoadingSkeleton />
-        )}
+          {loading && (
+            <LoadingSkeleton />
+          )}
 
-        {error && (
-          <StatusBanner
-            type="error"
-            message={error}
-          />
-        )}
-
-        {createSuccessMessage && (
-          <StatusBanner
-            type="success"
-            message={createSuccessMessage}
-          />
-        )}
-
-        {!loading &&
-          !error &&
-          records.length === 0 && (
-            <EmptyState
-              title="No closing records"
-              description="No records were returned from Dataverse for this environment."
+          {error && (
+            <StatusBanner
+              type="error"
+              message={error}
             />
           )}
 
-        {records.length > 0 && (
-          <div className="grid gap-3">
-            <ClosingTicketDashboard
-              totalRecords={records.length}
-              records={records}
+          {createSuccessMessage && (
+            <StatusBanner
+              type="success"
+              message={createSuccessMessage}
             />
+          )}
 
-            <ClosingTicketFilters
-              filters={filters}
-              onStatusChange={setStatus}
-              onBuildingCodeChange={setBuildingCode}
-              onUnitChange={setUnit}
-            />
-
-            {filteredRecords.length === 0 ? (
+          {!loading &&
+            !error &&
+            records.length === 0 && (
               <EmptyState
-                title="No matching records"
-                description="Adjust the status, building code, or unit filters to broaden the result set."
-              />
-            ) : (
-              <ClosingTicketTable
-                records={filteredRecords}
-                columns={closingTicketColumns}
-                onRecordSelect={(recordId) => {
-                  setCreateSuccessMessage(null)
-                  setSelectedRecordId(recordId)
-                }}
+                title="No closing records"
+                description="No records were returned from Dataverse for this environment."
               />
             )}
-          </div>
-        )}
+
+          {records.length > 0 && (
+            <div className="grid gap-3">
+              <ClosingTicketDashboard
+                totalRecords={records.length}
+                records={records}
+              />
+
+              <ClosingTicketFilters
+                filters={filters}
+                onStatusChange={setStatus}
+                onBuildingCodeChange={setBuildingCode}
+                onUnitChange={setUnit}
+              />
+
+              {filteredRecords.length === 0 ? (
+                <EmptyState
+                  title="No matching records"
+                  description="Adjust the status, building code, or unit filters to broaden the result set."
+                />
+              ) : (
+                <ClosingTicketTable
+                  records={filteredRecords}
+                  columns={closingTicketColumns}
+                  onRecordSelect={(recordId) => {
+                    setCreateSuccessMessage(null)
+                    setSelectedRecordId(recordId)
+                  }}
+                />
+              )}
+            </div>
+          )}
         </main>
 
-        {createFormOpen && (
-          <div
-            className="modal-backdrop"
-            role="presentation"
-          >
-            <section
-              className="modal-panel"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="create-closing-title"
-            >
-              <div className="modal-header">
-                <div>
-                  <p>View and edit property closing record</p>
-                  <h2 id="create-closing-title">
-                    New Closing
-                  </h2>
-                </div>
-                <button
-                  className="modal-close-button"
-                  type="button"
-                  onClick={() =>
-                    setCreateFormOpen(false)
-                  }
-                  aria-label="Close create closing form"
-                >
-                  x
-                </button>
-              </div>
+        <Sheet open={createFormOpen} onOpenChange={setCreateFormOpen}>
+          <SheetContent className="create-closing-sheet">
+            <SheetHeader className="create-closing-sheet-header">
+              <SheetDescription className="text-xs font-semibold uppercase tracking-wide text-[#4B5563]">
+                View and edit property closing record
+              </SheetDescription>
+              <SheetTitle
+                id="create-closing-title"
+                className="text-xl font-semibold text-[#1E3A47]"
+                style={{ fontFamily: "'Playfair Display', Georgia, serif", fontStyle: 'italic' }}
+              >
+                New Closing
+              </SheetTitle>
+            </SheetHeader>
 
+            <div className="create-closing-sheet-body">
               <CreateClosingTicketForm
                 onCancel={() => setCreateFormOpen(false)}
                 onCreated={handleCreateClosing}
               />
-            </section>
-          </div>
-        )}
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </>
   )
