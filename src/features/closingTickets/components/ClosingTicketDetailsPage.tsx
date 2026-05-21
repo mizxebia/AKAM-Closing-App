@@ -97,7 +97,7 @@ export function ClosingTicketDetailsPage({
         description="Review the closing record, manage charges, and complete the new-owner workflow in one workspace."
         actions={
           <button
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-sm font-semibold text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC]"
             type="button"
             onClick={onBack}
           >

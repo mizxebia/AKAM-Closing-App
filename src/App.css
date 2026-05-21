@@ -49,7 +49,7 @@ body {
   justify-content: center;
   gap: 8px;
   border: none;
-  border-radius: 2px;
+  border-radius: 8px;
   padding: 10px 22px;
   min-height: 40px;
   font-size: 0.78rem;
@@ -120,7 +120,7 @@ body {
   gap: 12px;
   background: #ffffff;
   border: 1px solid #D5CBB8;
-  border-radius: 4px;
+  border-radius: 12px;
   padding: 18px 20px;
   box-shadow: 0 1px 3px rgba(30, 58, 71, 0.06);
 }
@@ -157,7 +157,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 2px;
+  border-radius: 6px;
 }
 
 .icon-blue {
@@ -189,7 +189,7 @@ body {
 
 .status-tab {
   border: 1px solid transparent;
-  border-radius: 2px;
+  border-radius: 6px;
   padding: 7px 14px;
   background: transparent;
   color: #4B5563;
@@ -260,7 +260,7 @@ body {
   overflow: hidden;
   background: #ffffff;
   border: 1px solid #D5CBB8;
-  border-radius: 4px;
+  border-radius: 12px;
   box-shadow: 0 1px 3px rgba(30, 58, 71, 0.06);
 }
 
@@ -429,7 +429,7 @@ body {
 }
 
 .status-banner {
-  border-radius: 2px;
+  border-radius: 8px;
   padding: 11px 14px;
   margin-bottom: 14px;
   font-size: 0.88rem;
@@ -510,7 +510,7 @@ body {
   height: 34px;
   flex: 0 0 auto;
   border: 1px solid #D5CBB8;
-  border-radius: 2px;
+  border-radius: 8px;
   background: #ffffff;
   color: #4B5563;
   cursor: pointer;
@@ -534,7 +534,7 @@ body {
 .form-section {
   background: #ffffff;
   border: 1px solid #D5CBB8;
-  border-radius: 4px;
+  border-radius: 12px;
   padding: 18px;
   box-shadow: 0 1px 2px rgba(30, 58, 71, 0.04);
 }
@@ -581,7 +581,7 @@ body {
   min-height: 38px;
   box-sizing: border-box;
   border: 1px solid #D5CBB8;
-  border-radius: 2px;
+  border-radius: 8px;
   padding: 8px 11px;
   background: #ffffff;
   color: #1E3A47;
@@ -608,7 +608,7 @@ body {
 }
 
 .form-alert {
-  border-radius: 2px;
+  border-radius: 8px;
   padding: 10px 12px;
   font-size: 0.86rem;
 }
@@ -632,7 +632,7 @@ body {
   gap: 10px;
   padding: 8px 10px;
   border: 1px solid #D5CBB8;
-  border-radius: 2px;
+  border-radius: 8px;
   background: #ffffff;
 }
 
@@ -660,7 +660,7 @@ body {
   min-height: 96px;
   align-content: center;
   border: 1px dashed #C8BBA9;
-  border-radius: 2px;
+  border-radius: 8px;
   background: #F5F2EC;
   padding: 14px;
 }
@@ -709,7 +709,7 @@ body {
 .primary-action-button,
 .secondary-action-button {
   min-height: 40px;
-  border-radius: 2px;
+  border-radius: 8px;
   padding: 9px 22px;
   cursor: pointer;
   font: inherit;
@@ -794,7 +794,7 @@ body {
 .details-form-shell {
   background: #ffffff;
   border: 1px solid #D5CBB8;
-  border-radius: 4px;
+  border-radius: 12px;
   box-shadow: 0 1px 3px rgba(30, 58, 71, 0.06);
 }
 
@@ -805,7 +805,7 @@ body {
 .workflow-shell {
   overflow: hidden;
   border: 1px solid #D5CBB8;
-  border-radius: 4px;
+  border-radius: 12px;
   background: #ffffff;
   box-shadow: 0 1px 3px rgba(30, 58, 71, 0.06);
 }
@@ -869,7 +869,7 @@ body {
 
 .workflow-card {
   border: 1px solid #D5CBB8;
-  border-radius: 4px;
+  border-radius: 12px;
   background: #ffffff;
   padding: 16px;
   box-shadow: 0 1px 2px rgba(30, 58, 71, 0.04);
@@ -933,7 +933,7 @@ body {
   min-height: 36px;
   box-sizing: border-box;
   border: 1px solid #D5CBB8;
-  border-radius: 2px;
+  border-radius: 8px;
   background: #ffffff;
   color: #1E3A47;
   font: inherit;
@@ -992,7 +992,7 @@ body {
   justify-content: space-between;
   gap: 16px;
   border: 1px solid #D5CBB8;
-  border-radius: 4px;
+  border-radius: 12px;
   background: #ffffff;
   padding: 16px 18px;
   box-shadow: 0 1px 2px rgba(30, 58, 71, 0.04);
@@ -1035,7 +1035,7 @@ body {
 .new-owner-form-panel,
 .document-panel-inner {
   border: 1px solid #D5CBB8;
-  border-radius: 4px;
+  border-radius: 12px;
   background: #ffffff;
   box-shadow: 0 1px 2px rgba(30, 58, 71, 0.04);
 }
@@ -1050,7 +1050,7 @@ body {
   display: grid;
   gap: 12px;
   border: 1px solid #E2DAD0;
-  border-radius: 2px;
+  border-radius: 8px;
   background: #ffffff;
   padding: 14px;
 }
@@ -1115,7 +1115,7 @@ body {
 .document-toggle {
   min-height: 38px;
   border: 1.5px solid #D5CBB8;
-  border-radius: 2px;
+  border-radius: 8px;
   background: #ffffff;
   color: #1E3A47;
   cursor: pointer;
@@ -1255,7 +1255,7 @@ body {
 .new-owner-skeleton {
   min-height: 560px;
   border: 1px solid #D5CBB8;
-  border-radius: 4px;
+  border-radius: 12px;
   background:
     linear-gradient(90deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0)) 0 0 / 260px 100% no-repeat,
     linear-gradient(#E2DAD0 24px, transparent 0) 18px 22px / 42% 72px repeat-y,
@@ -1287,7 +1287,7 @@ body {
 .invoice-panel {
   background: #ffffff;
   border: 1px solid #D5CBB8;
-  border-radius: 4px;
+  border-radius: 12px;
   box-shadow: 0 1px 3px rgba(30, 58, 71, 0.06);
   overflow: hidden;
 }
@@ -1318,7 +1318,7 @@ body {
 .invoice-header button {
   min-height: 34px;
   border: 1.5px solid #1E3A47;
-  border-radius: 2px;
+  border-radius: 8px;
   background: transparent;
   color: #1E3A47;
   cursor: pointer;
@@ -1354,7 +1354,7 @@ body {
 
 .invoice-group {
   border: 1px solid #D5CBB8;
-  border-radius: 4px;
+  border-radius: 12px;
   overflow: hidden;
 }
 
