@@ -31,7 +31,7 @@ const statusDisplayByGeneratedLabel: Record<
     tone: 'postClosing',
   },
   Validate: {
-    label: 'Validated',
+    label: 'Validate',
     tone: 'validate',
   },
   TransferringBuilding: {

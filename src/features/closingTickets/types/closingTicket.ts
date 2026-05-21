@@ -31,11 +31,8 @@ export type ClosingTicketFilters = {
 
 export type ClosingTicketStatusLabel =
   | 'Draft'
-  | 'Processing'
   | 'Ready for Post Closing'
-  | 'Post Closing'
-  | 'Validated'
-  | 'Transferring Building'
+  | 'Validate'
   | 'Failed'
   | 'Completed'
 

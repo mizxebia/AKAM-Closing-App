@@ -41,8 +41,8 @@ type UploadColumnName =
 type PendingFiles = Partial<Record<UploadColumnName, File>>
 type UploadedFileNames = Partial<Record<UploadColumnName, string>>
 
+const READY_FOR_POST_CLOSING_STATUS = 716070006
 const POST_CLOSING_STATUS = 716070004
-const VALIDATED_STATUS = 716070001
 const emptyUploadedFileNames: UploadedFileNames = {}
 
 interface CreateClosingTicketFormProps {
@@ -299,7 +299,7 @@ export function CreateClosingTicketForm({
     <ClosingTicketEditorForm
       mode="create"
       initialFormState={createInitialFormState()}
-      submitLabel="Submit"
+      submitLabel="Save"
       savingLabel="Saving..."
       onCancel={onCancel}
       onSubmit={async (formState, pendingFiles) => {
@@ -436,8 +436,12 @@ function ClosingTicketEditorForm({
 
   const showMoveToPostClosing =
     ticketStatusLabel === 'ReadyForPostClosing'
-  const showValidate =
-    ticketStatusLabel === 'PostClosing'
+  const hasUploadedRealPropertyDocument = Boolean(
+    uploadedFileNames.cr109_rpttdocument
+  )
+  const isCreateMode = mode === 'create'
+  const showDocumentsSection =
+    !isCreateMode || formState.cr7de_buildingnotondomicile
 
   useEffect(() => {
     if (!userName && !userEmail) {
@@ -457,8 +461,19 @@ function ClosingTicketEditorForm({
     }))
   }, [userEmail, userName])
 
+  useEffect(() => {
+    if (
+      !isCreateMode ||
+      formState.cr7de_buildingnotondomicile
+    ) {
+      return
+    }
+
+    setPendingFiles({})
+  }, [formState.cr7de_buildingnotondomicile, isCreateMode])
+
   const updateTicketStatus = async (
-    nextStatus: typeof POST_CLOSING_STATUS | typeof VALIDATED_STATUS
+    nextStatus: typeof POST_CLOSING_STATUS
   ) => {
     if (!recordId) {
       return
@@ -491,11 +506,11 @@ function ClosingTicketEditorForm({
   }
 
   const handleMoveToPostClosing = async () => {
-    await updateTicketStatus(POST_CLOSING_STATUS)
-  }
+    if (!hasUploadedRealPropertyDocument) {
+      return
+    }
 
-  const handleValidate = async () => {
-    await updateTicketStatus(VALIDATED_STATUS)
+    await updateTicketStatus(POST_CLOSING_STATUS)
   }
 
   const handleDeleteDocument = async (
@@ -516,6 +531,23 @@ function ClosingTicketEditorForm({
 
     try {
       await deleteClosingTicketFile(recordId, columnName)
+      const shouldResetToReadyForPostClosing =
+        columnName === 'cr109_rpttdocument' &&
+        ticketStatusLabel === 'PostClosing'
+
+      if (shouldResetToReadyForPostClosing) {
+        const nextFormState: ClosingTicketFormState = {
+          ...formState,
+          cr7de_ticketstatus: READY_FOR_POST_CLOSING_STATUS,
+        }
+
+        await updateClosingTicket(
+          recordId,
+          buildPayload(nextFormState)
+        )
+        setFormState(nextFormState)
+      }
+
       setUploadedFileNames((currentNames) => {
         const nextNames = { ...currentNames }
         delete nextNames[columnName]
@@ -676,187 +708,210 @@ function ClosingTicketEditorForm({
             />
           </FormField>
 
-          <FormField label="Building Name">
-            <input
-              value={formState.cr7de_buildingname}
-              onChange={(event) =>
-                updateField(
-                  'cr7de_buildingname',
-                  event.target.value
-                )
-              }
-              placeholder="Building name"
-            />
-          </FormField>
-
-          <FormField label="Closing Date">
-            <input
-              type="date"
-              value={formState.cr7de_closingdate}
-              onChange={(event) =>
-                updateField(
-                  'cr7de_closingdate',
-                  event.target.value
-                )
-              }
-            />
-          </FormField>
-
-          <div className="form-grid-wide">
-            <FormField label="Building Address">
+          {!isCreateMode && (
+            <FormField label="Building Name">
               <input
-                value={formState.cr7de_buildingaddress}
+                value={formState.cr7de_buildingname}
                 onChange={(event) =>
                   updateField(
-                    'cr7de_buildingaddress',
+                    'cr7de_buildingname',
                     event.target.value
                   )
                 }
-                placeholder="e.g. 10 Park Avenue"
+                placeholder="Building name"
               />
             </FormField>
-          </div>
-          </div>
-        </section>
+          )}
 
-        <section className="form-section">
-          <h3>Parties</h3>
-          <div className="form-grid">
-          <FormField label="Buyer Name">
-            <input
-              value={formState.cr7de_buyername}
-              onChange={(event) =>
-                updateField(
-                  'cr7de_buyername',
-                  event.target.value
-                )
-              }
-              placeholder="Buyer's full name"
-            />
-          </FormField>
+          {isCreateMode ? (
+            <FormField label="Seller Name">
+              <input
+                value={formState.cr7de_sellername}
+                onChange={(event) =>
+                  updateField(
+                    'cr7de_sellername',
+                    event.target.value
+                  )
+                }
+                placeholder="Seller's full name"
+              />
+            </FormField>
+          ) : (
+            <FormField label="Closing Date">
+              <input
+                type="date"
+                value={formState.cr7de_closingdate}
+                onChange={(event) =>
+                  updateField(
+                    'cr7de_closingdate',
+                    event.target.value
+                  )
+                }
+              />
+            </FormField>
+          )}
 
-          <FormField label="Seller Name">
-            <input
-              value={formState.cr7de_sellername}
-              onChange={(event) =>
-                updateField(
-                  'cr7de_sellername',
-                  event.target.value
-                )
-              }
-              placeholder="Seller's full name"
-            />
-          </FormField>
-
-          <FormField label="Buyer T-Code">
-            <input
-              value={formState.cr7de_buyertcode}
-              onChange={(event) =>
-                updateField(
-                  'cr7de_buyertcode',
-                  event.target.value
-                )
-              }
-            />
-          </FormField>
-
-          <FormField label="Seller T-Code">
-            <input
-              value={formState.cr7de_sellertcode}
-              onChange={(event) =>
-                updateField(
-                  'cr7de_sellertcode',
-                  event.target.value
-                )
-              }
-            />
-          </FormField>
-
-          <FormField label="Buyer 2 Name">
-            <input
-              value={formState.cr109_buyer2name}
-              onChange={(event) =>
-                updateField(
-                  'cr109_buyer2name',
-                  event.target.value
-                )
-              }
-            />
-          </FormField>
-
-          <FormField label="Seller 2 Name">
-            <input
-              value={formState.cr109_seller2name}
-              onChange={(event) =>
-                updateField(
-                  'cr109_seller2name',
-                  event.target.value
-                )
-              }
-            />
-          </FormField>
+          {!isCreateMode && (
+            <div className="form-grid-wide">
+              <FormField label="Building Address">
+                <input
+                  value={formState.cr7de_buildingaddress}
+                  onChange={(event) =>
+                    updateField(
+                      'cr7de_buildingaddress',
+                      event.target.value
+                    )
+                  }
+                  placeholder="e.g. 10 Park Avenue"
+                />
+              </FormField>
+            </div>
+          )}
           </div>
         </section>
 
-        <section className="form-section">
-          <h3>Transaction</h3>
-          <div className="form-grid">
-          <FormField label="Transaction Type">
-            <select
-              value={formState.cr109_transactiontypedeal}
-              onChange={(event) =>
-                updateField(
-                  'cr109_transactiontypedeal',
-                  (event.target.value === ''
-                    ? ''
-                    : Number(
-                        event.target.value
-                      )) as ClosingTicketFormState['cr109_transactiontypedeal']
-                )
-              }
-            >
-              <option value="">Select type</option>
-              {transactionTypeOptions.map((option) => (
-                <option
-                  key={option.value}
-                  value={option.value}
-                >
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </FormField>
+        {!isCreateMode && (
+          <section className="form-section">
+            <h3>Parties</h3>
+            <div className="form-grid">
+            <FormField label="Buyer Name">
+              <input
+                value={formState.cr7de_buyername}
+                onChange={(event) =>
+                  updateField(
+                    'cr7de_buyername',
+                    event.target.value
+                  )
+                }
+                placeholder="Buyer's full name"
+              />
+            </FormField>
 
-          <FormField label="Sale Price">
-            <input
-              type="number"
-              inputMode="decimal"
-              value={formState.cr109_saleprice}
-              onChange={(event) =>
-                updateField(
-                  'cr109_saleprice',
-                  event.target.value
-                )
-              }
-              placeholder="0.00"
-            />
-          </FormField>
+            <FormField label="Seller Name">
+              <input
+                value={formState.cr7de_sellername}
+                onChange={(event) =>
+                  updateField(
+                    'cr7de_sellername',
+                    event.target.value
+                  )
+                }
+                placeholder="Seller's full name"
+              />
+            </FormField>
 
-          <FormField label="Shares">
-            <input
-              type="number"
-              inputMode="decimal"
-              value={formState.cr109_shares}
-              onChange={(event) =>
-                updateField(
-                  'cr109_shares',
-                  event.target.value
-                )
-              }
-            />
-          </FormField>
-          </div>
-        </section>
+            <FormField label="Buyer T-Code">
+              <input
+                value={formState.cr7de_buyertcode}
+                onChange={(event) =>
+                  updateField(
+                    'cr7de_buyertcode',
+                    event.target.value
+                  )
+                }
+              />
+            </FormField>
+
+            <FormField label="Seller T-Code">
+              <input
+                value={formState.cr7de_sellertcode}
+                onChange={(event) =>
+                  updateField(
+                    'cr7de_sellertcode',
+                    event.target.value
+                  )
+                }
+              />
+            </FormField>
+
+            <FormField label="Buyer 2 Name">
+              <input
+                value={formState.cr109_buyer2name}
+                onChange={(event) =>
+                  updateField(
+                    'cr109_buyer2name',
+                    event.target.value
+                  )
+                }
+              />
+            </FormField>
+
+            <FormField label="Seller 2 Name">
+              <input
+                value={formState.cr109_seller2name}
+                onChange={(event) =>
+                  updateField(
+                    'cr109_seller2name',
+                    event.target.value
+                  )
+                }
+              />
+            </FormField>
+            </div>
+          </section>
+        )}
+
+        {!isCreateMode && (
+          <section className="form-section">
+            <h3>Transaction</h3>
+            <div className="form-grid">
+            <FormField label="Transaction Type">
+              <select
+                value={formState.cr109_transactiontypedeal}
+                onChange={(event) =>
+                  updateField(
+                    'cr109_transactiontypedeal',
+                    (event.target.value === ''
+                      ? ''
+                      : Number(
+                          event.target.value
+                        )) as ClosingTicketFormState['cr109_transactiontypedeal']
+                  )
+                }
+              >
+                <option value="">Select type</option>
+                {transactionTypeOptions.map((option) => (
+                  <option
+                    key={option.value}
+                    value={option.value}
+                  >
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+
+            <FormField label="Sale Price">
+              <input
+                type="number"
+                inputMode="decimal"
+                value={formState.cr109_saleprice}
+                onChange={(event) =>
+                  updateField(
+                    'cr109_saleprice',
+                    event.target.value
+                  )
+                }
+                placeholder="0.00"
+              />
+            </FormField>
+
+            <FormField label="Shares">
+              <input
+                type="number"
+                inputMode="decimal"
+                value={formState.cr109_shares}
+                onChange={(event) =>
+                  updateField(
+                    'cr109_shares',
+                    event.target.value
+                  )
+                }
+              />
+            </FormField>
+            </div>
+          </section>
+        )}
 
         <section className="form-section">
           <h3>Closing Agent</h3>
@@ -917,47 +972,6 @@ function ClosingTicketEditorForm({
         </section>
 
         <section className="form-section">
-          <h3>Documents</h3>
-          <div className="form-grid">
-          <FileUploadField
-            label="Purchase Application Form"
-            currentFileName={
-              pendingFiles.cr109_purchaseapplicationform
-                ?.name ??
-              uploadedFileNames.cr109_purchaseapplicationform
-            }
-            onFileChange={(file) =>
-              setPendingFiles((currentFiles) => ({
-                ...currentFiles,
-                cr109_purchaseapplicationform: file,
-              }))
-            }
-            onDelete={() =>
-              handleDeleteDocument(
-                'cr109_purchaseapplicationform'
-              )
-            }
-          />
-          <FileUploadField
-            label="RPTT Document"
-            currentFileName={
-              pendingFiles.cr109_rpttdocument?.name ??
-              uploadedFileNames.cr109_rpttdocument
-            }
-            onFileChange={(file) =>
-              setPendingFiles((currentFiles) => ({
-                ...currentFiles,
-                cr109_rpttdocument: file,
-              }))
-            }
-            onDelete={() =>
-              handleDeleteDocument('cr109_rpttdocument')
-            }
-          />
-          </div>
-        </section>
-
-        <section className="form-section">
           <h3>Flags & Notes</h3>
           <div className="form-grid">
           <CheckboxField
@@ -999,6 +1013,49 @@ function ClosingTicketEditorForm({
           </div>
           </div>
         </section>
+
+        {showDocumentsSection && (
+          <section className="form-section">
+            <h3>Documents</h3>
+            <div className="form-grid">
+            <FileUploadField
+              label="Purchase Application Form"
+              currentFileName={
+                pendingFiles.cr109_purchaseapplicationform
+                  ?.name ??
+                uploadedFileNames.cr109_purchaseapplicationform
+              }
+              onFileChange={(file) =>
+                setPendingFiles((currentFiles) => ({
+                  ...currentFiles,
+                  cr109_purchaseapplicationform: file,
+                }))
+              }
+              onDelete={() =>
+                handleDeleteDocument(
+                  'cr109_purchaseapplicationform'
+                )
+              }
+            />
+            <FileUploadField
+              label="RPTT Document"
+              currentFileName={
+                pendingFiles.cr109_rpttdocument?.name ??
+                uploadedFileNames.cr109_rpttdocument
+              }
+              onFileChange={(file) =>
+                setPendingFiles((currentFiles) => ({
+                  ...currentFiles,
+                  cr109_rpttdocument: file,
+                }))
+              }
+              onDelete={() =>
+                handleDeleteDocument('cr109_rpttdocument')
+              }
+            />
+            </div>
+          </section>
+        )}
       </div>
 
       <div className="form-actions">
@@ -1015,19 +1072,16 @@ function ClosingTicketEditorForm({
             className="primary-action-button"
             type="button"
             onClick={handleMoveToPostClosing}
-            disabled={saving}
+            disabled={
+              saving || !hasUploadedRealPropertyDocument
+            }
+            title={
+              hasUploadedRealPropertyDocument
+                ? undefined
+                : 'Upload a Real Property document before moving to Post Closing.'
+            }
           >
             Move to Post Closing
-          </button>
-        )}
-        {showValidate && (
-          <button
-            className="primary-action-button"
-            type="button"
-            onClick={handleValidate}
-            disabled={saving}
-          >
-            Validate
           </button>
         )}
         <button

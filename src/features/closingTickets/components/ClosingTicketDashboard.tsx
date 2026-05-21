@@ -13,7 +13,7 @@ export function ClosingTicketDashboard({
   records,
 }: ClosingTicketDashboardProps) {
   const activeRecords = records.filter((record) =>
-    ['Processing', 'Post Closing', 'Validated'].includes(
+    ['Processing', 'Post Closing', 'Validate'].includes(
       formatClosingTicketStatus(record.cr7de_ticketstatus)
     )
   ).length

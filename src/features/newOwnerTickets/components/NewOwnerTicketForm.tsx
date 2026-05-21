@@ -337,11 +337,14 @@ interface NewOwnerTicketFormProps {
     Record<EditableNewOwnerTicketField, string>
   >
   saving: boolean
+  validating: boolean
+  showValidateButton: boolean
   onFieldChange: <TKey extends keyof NewOwnerTicketFormState>(
     field: TKey,
     value: NewOwnerTicketFormState[TKey]
   ) => void
   onSubmit: () => void
+  onValidate: () => void
 }
 
 function getInputMode(
@@ -362,8 +365,11 @@ export function NewOwnerTicketForm({
   formState,
   errors,
   saving,
+  validating,
+  showValidateButton,
   onFieldChange,
   onSubmit,
+  onValidate,
 }: NewOwnerTicketFormProps) {
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault()
@@ -474,10 +480,20 @@ export function NewOwnerTicketForm({
       })}
 
       <div className="form-actions new-owner-actions">
+        {showValidateButton && (
+          <button
+            className="primary-action-button"
+            type="button"
+            onClick={onValidate}
+            disabled={saving || validating}
+          >
+            {validating ? 'Validating...' : 'Validate'}
+          </button>
+        )}
         <button
           className="primary-action-button"
           type="submit"
-          disabled={saving}
+          disabled={saving || validating}
         >
           {saving ? 'Saving...' : 'Save'}
         </button>

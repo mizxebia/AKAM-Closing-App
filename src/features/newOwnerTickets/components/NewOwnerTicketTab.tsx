@@ -7,6 +7,7 @@ import {
 import { ClipboardList } from 'lucide-react'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import { LoadingSkeleton } from '../../../components/enterprise'
+import { updateClosingTicket } from '../../closingTickets/api/closingTicketsService'
 import type { ClosingTicketRecord } from '../../closingTickets/types/closingTicket'
 import {
   getNewOwnerTicketByTicketId,
@@ -27,11 +28,16 @@ import { NewOwnerTicketForm } from './NewOwnerTicketForm'
 
 interface NewOwnerTicketTabProps {
   closingTicket: ClosingTicketRecord
+  onSaved: () => Promise<void>
 }
 
 type ValidationErrors = Partial<
   Record<EditableNewOwnerTicketField, string>
 >
+
+const VALIDATED_TICKET_STATUS = 716070001
+const TRANSFERRING_BUILDING_STATUS = 716070002
+const INFORMATION_VALIDATED_BOT_STATUS = 396620007
 
 function getDateInputValue(value?: string) {
   if (!value) {
@@ -441,6 +447,7 @@ function validateForm(
 
 export function NewOwnerTicketTab({
   closingTicket,
+  onSaved,
 }: NewOwnerTicketTabProps) {
   const [record, setRecord] =
     useState<NewOwnerTicketRecord | null>(null)
@@ -454,6 +461,7 @@ export function NewOwnerTicketTab({
     )
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [validating, setValidating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] =
@@ -570,6 +578,39 @@ export function NewOwnerTicketTab({
     }
   }, [closingTicket, formState, record])
 
+  const showValidateButton =
+    closingTicket.cr7de_ticketstatus === VALIDATED_TICKET_STATUS
+
+  const validateClosingTicket = useCallback(async () => {
+    const recordId = closingTicket.cr7de_closingticketdetailsid
+
+    if (!recordId) {
+      setError('Unable to validate: closing ticket ID is missing.')
+      return
+    }
+
+    setValidating(true)
+    setError(null)
+    setMessage(null)
+
+    try {
+      await updateClosingTicket(recordId, {
+        cr7de_ticketstatus: TRANSFERRING_BUILDING_STATUS,
+        cr109_botstatus: INFORMATION_VALIDATED_BOT_STATUS,
+      })
+      await onSaved()
+      setMessage('Closing ticket validation submitted successfully.')
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Unable to validate closing ticket.'
+      )
+    } finally {
+      setValidating(false)
+    }
+  }, [closingTicket.cr7de_closingticketdetailsid, onSaved])
+
   return (
     <section className="grid gap-4">
       <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/60">
@@ -608,8 +649,11 @@ export function NewOwnerTicketTab({
               formState={formState}
               errors={validationErrors}
               saving={saving}
+              validating={validating}
+              showValidateButton={showValidateButton}
               onFieldChange={updateField}
               onSubmit={saveRecord}
+              onValidate={validateClosingTicket}
             />
           </div>
 

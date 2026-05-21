@@ -224,6 +224,7 @@ export function ClosingTicketDetailsPage({
           {activeTab === 'newOwner' && (
             <NewOwnerTicketWorkspace
               closingTicket={record}
+              onSaved={handleSaved}
             />
           )}
         </WorkflowTabs>

@@ -1,5 +1,7 @@
 import { Cr7de_closingticketdetailsesService } from '../../../generated'
 import type { Cr7de_closingticketdetailses } from '../../../generated/models/Cr7de_closingticketdetailsesModel'
+import { getClient } from '@microsoft/power-apps/data'
+import { dataSourcesInfo } from '../../../../.power/schemas/appschemas/dataSourcesInfo'
 import type {
   ClosingTicketCreateInput,
   ClosingTicketRecord,
@@ -10,14 +12,8 @@ type ClosingTicketUploadColumnName =
   | 'cr109_purchaseapplicationform'
   | 'cr109_rpttdocument'
 
-const fileNameColumnByUploadColumn: Record<
-  ClosingTicketUploadColumnName,
-  'cr109_purchaseapplicationform_name' | 'cr109_rpttdocument_name'
-> = {
-  cr109_purchaseapplicationform:
-    'cr109_purchaseapplicationform_name',
-  cr109_rpttdocument: 'cr109_rpttdocument_name',
-}
+const closingTicketTableName = 'cr7de_closingticketdetailses'
+const dataverseClient = getClient(dataSourcesInfo)
 
 export async function getClosingTickets(): Promise<
   ClosingTicketRecord[]
@@ -117,15 +113,11 @@ export async function deleteClosingTicketFile(
   id: string,
   columnName: ClosingTicketUploadColumnName
 ) {
-  const fileNameColumn =
-    fileNameColumnByUploadColumn[columnName]
   const result =
-    await Cr7de_closingticketdetailsesService.update(
+    await dataverseClient.deleteFileOrImageFromRecord(
+      closingTicketTableName,
       id,
-      {
-        [columnName]: null,
-        [fileNameColumn]: null,
-      } as unknown as ClosingTicketUpdateInput
+      columnName
     )
 
   if (!result.success) {
@@ -135,5 +127,5 @@ export async function deleteClosingTicketFile(
     )
   }
 
-  return result.data as ClosingTicketRecord
+  return getClosingTicketById(id)
 }
