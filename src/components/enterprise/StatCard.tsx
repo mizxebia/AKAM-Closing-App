@@ -25,7 +25,7 @@ export function StatCard({
       className="group border border-[#D5CBB8] bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-[#C8BBA9] hover:shadow-md"
       style={{
         borderRadius: '12px',
-        padding: '12px 16px',
+        padding: '9px 14px',
         ...(accentColor ? { borderLeft: `3px solid ${accentColor}` } : {}),
       }}
       initial={{ opacity: 0, y: 10 }}
@@ -37,28 +37,28 @@ export function StatCard({
         <div className="min-w-0">
           <p
             className="font-semibold uppercase text-[#4B5563]"
-            style={{ fontSize: '10px', letterSpacing: '0.12em' }}
+            style={{ fontSize: '9px', letterSpacing: '0.12em' }}
           >
             {label}
           </p>
           <strong
             className="mt-1 block font-semibold tracking-tight text-[#1E3A47]"
-            style={{ fontSize: '26px', lineHeight: 1.1 }}
+            style={{ fontSize: '22px', lineHeight: 1.05 }}
           >
             {value}
           </strong>
-          <p className="mt-1 text-sm text-[#4B5563]">
+          <p className="mt-0.5 text-xs text-[#4B5563]">
             {description}
           </p>
         </div>
         <div
           className="grid shrink-0 place-items-center bg-[#E8EFF2] text-[#1E3A47]"
-          style={{ width: '36px', height: '36px', borderRadius: '6px', flexShrink: 0 }}
+          style={{ width: '30px', height: '30px', borderRadius: '6px', flexShrink: 0 }}
         >
           <Icon className="size-4" />
         </div>
       </div>
-      <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-[#4B5563]">
+      <div className="mt-2 flex items-center gap-1.5 text-xs font-medium text-[#4B5563]">
         <TrendingUp className="size-3.5 text-[#1a7a52]" />
         <span>{trend}</span>
       </div>

@@ -7,8 +7,7 @@ import type {
 
 const defaultFilters: ClosingTicketFilters = {
   status: 'All',
-  buildingCode: '',
-  unit: '',
+  search: '',
 }
 
 export function useClosingTicketFilters(
@@ -31,17 +30,10 @@ export function useClosingTicketFilters(
     }))
   }
 
-  const setBuildingCode = (buildingCode: string) => {
+  const setSearch = (search: string) => {
     setFilters((currentFilters) => ({
       ...currentFilters,
-      buildingCode,
-    }))
-  }
-
-  const setUnit = (unit: string) => {
-    setFilters((currentFilters) => ({
-      ...currentFilters,
-      unit,
+      search,
     }))
   }
 
@@ -53,8 +45,7 @@ export function useClosingTicketFilters(
     filters,
     filteredRecords,
     setStatus,
-    setBuildingCode,
-    setUnit,
+    setSearch,
     clearFilters,
   }
 }

@@ -1,28 +1,48 @@
-import { closingTicketSearchFields } from '../constants/closingTicketMetadata'
 import { formatClosingTicketStatus } from './closingTicketFormatters'
 import type {
   ClosingTicketFilters,
   ClosingTicketRecord,
 } from '../types/closingTicket'
 
-function matchesFieldFilter(
+const excludedSearchFields = new Set([
+  'createdon',
+  'modifiedon',
+  'cr7de_closingdate',
+])
+
+function matchesGeneralSearch(
   record: ClosingTicketRecord,
-  field: (typeof closingTicketSearchFields)[number],
-  filterValue: string
+  searchValue: string
 ) {
-  const normalizedFilterValue = filterValue
+  const normalizedSearchValue = searchValue
     .trim()
     .toLowerCase()
 
-  if (!normalizedFilterValue) {
+  if (!normalizedSearchValue) {
     return true
   }
 
-  const value = record[field]
+  if (
+    formatClosingTicketStatus(record.cr7de_ticketstatus)
+      .toLowerCase()
+      .includes(normalizedSearchValue)
+  ) {
+    return true
+  }
 
-  return String(value ?? '')
-    .toLowerCase()
-    .includes(normalizedFilterValue)
+  return Object.entries(record).some(([key, value]) => {
+    if (
+      excludedSearchFields.has(key) ||
+      value === undefined ||
+      value === null
+    ) {
+      return false
+    }
+
+    return String(value)
+      .toLowerCase()
+      .includes(normalizedSearchValue)
+  })
 }
 
 function matchesStatus(
@@ -47,15 +67,6 @@ export function filterClosingTickets(
   return records.filter(
     (record) =>
       matchesStatus(record, filters) &&
-      matchesFieldFilter(
-        record,
-        'cr7de_nyccode',
-        filters.buildingCode
-      ) &&
-      matchesFieldFilter(
-        record,
-        'cr7de_unitnumber',
-        filters.unit
-      )
+      matchesGeneralSearch(record, filters.search)
   )
 }

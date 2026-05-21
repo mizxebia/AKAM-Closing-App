@@ -29,18 +29,18 @@ export function SectionCard({
       transition={{ duration: 0.22 }}
     >
       {(title || description || actions) && (
-        <div className="flex flex-col gap-2 border-b border-[#E2DAD0] px-4 py-3 md:flex-row md:items-start md:justify-between">
+        <div className="flex flex-col gap-2 border-b border-[#E2DAD0] px-4 py-2.5 md:flex-row md:items-center md:justify-between">
           <div className="min-w-0">
             {title && (
               <h2
                 className="text-[#1E3A47]"
-                style={{ fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 600, fontSize: '18px' }}
+                style={{ fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 600, fontSize: '17px' }}
               >
                 {title}
               </h2>
             )}
             {description && (
-              <p className="mt-1 leading-6 text-[#4B5563]" style={{ fontSize: '13px' }}>
+              <p className="mt-0.5 leading-5 text-[#4B5563]" style={{ fontSize: '12px' }}>
                 {description}
               </p>
             )}
@@ -52,7 +52,7 @@ export function SectionCard({
           )}
         </div>
       )}
-      <div className="p-4">{children}</div>
+      <div className="p-3">{children}</div>
     </motion.section>
   )
 }

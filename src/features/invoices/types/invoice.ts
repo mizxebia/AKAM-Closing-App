@@ -42,6 +42,10 @@ export type InvoiceCreateInput = Partial<
   >
 >
 
+export type InvoiceUpdateInput = Partial<
+  Omit<InvoiceCreateInput, 'cr7de_ticketid'>
+>
+
 export type InvoiceChargeFormRow = {
   id: string
   cr109_dueatclosing:

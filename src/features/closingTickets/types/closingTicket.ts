@@ -26,15 +26,16 @@ export type ClosingTicketColumn = {
 
 export type ClosingTicketFilters = {
   status: ClosingTicketTab
-  buildingCode: string
-  unit: string
+  search: string
 }
 
 export type ClosingTicketStatusLabel =
   | 'Draft'
   | 'Processing'
+  | 'Ready for Post Closing'
   | 'Post Closing'
   | 'Validated'
+  | 'Transferring Building'
   | 'Failed'
   | 'Completed'
 

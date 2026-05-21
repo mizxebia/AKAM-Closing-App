@@ -1,9 +1,14 @@
 import { useMemo, useState } from 'react'
-import { createInvoiceDetail } from '../api/invoiceService'
+import {
+  createInvoiceDetail,
+  deleteInvoiceDetail,
+  updateInvoiceDetail,
+} from '../api/invoiceService'
 import type {
   InvoiceChargeFormRow,
   InvoiceCreateInput,
   InvoiceRecord,
+  InvoiceUpdateInput,
 } from '../types/invoice'
 import { InvoiceTable } from './InvoiceTable'
 import { ChargeEntryRow } from './ChargeEntryRow'
@@ -60,11 +65,23 @@ function toInvoicePayload(
   }
 }
 
+function toInvoiceUpdatePayload(
+  row: InvoiceChargeFormRow,
+  index: number
+): InvoiceUpdateInput {
+  const payload = { ...toInvoicePayload(row, '', index) }
+
+  delete payload.cr7de_ticketid
+
+  return payload
+}
+
 function validateRows(rows: InvoiceChargeFormRow[]) {
   const invalidRows = rows.filter(
     (row) =>
       !row.cr109_dueatclosing ||
       !row.cr7de_paidby ||
+      !row.cr7de_payableto ||
       !row.cr7de_amount.trim()
   )
 
@@ -82,6 +99,12 @@ export function ChargesWorkspace({
     [createChargeRow()]
   )
   const [saving, setSaving] = useState(false)
+  const [updatingId, setUpdatingId] = useState<string | null>(
+    null
+  )
+  const [deletingId, setDeletingId] = useState<string | null>(
+    null
+  )
   const [message, setMessage] = useState<string | null>(null)
   const [saveError, setSaveError] = useState<string | null>(
     null
@@ -114,13 +137,17 @@ export function ChargesWorkspace({
     )
   }
 
+  const resetForm = () => {
+    setRows([createChargeRow()])
+  }
+
   const saveCharges = async () => {
     setMessage(null)
     setSaveError(null)
 
     if (!validateRows(rows)) {
       setSaveError(
-        'Charge, paid by, and amount are required for every row.'
+        'Charge, paid by, amount, and payable to are required for every row.'
       )
       return
     }
@@ -134,7 +161,7 @@ export function ChargesWorkspace({
         )
       }
 
-      setRows([createChargeRow()])
+      resetForm()
       await onRefresh()
       setMessage('Charges saved successfully.')
     } catch (err) {
@@ -145,6 +172,62 @@ export function ChargesWorkspace({
       )
     } finally {
       setSaving(false)
+    }
+  }
+
+  const updateSavedCharge = async (
+    recordId: string,
+    row: InvoiceChargeFormRow
+  ) => {
+    setMessage(null)
+    setSaveError(null)
+
+    if (!validateRows([row])) {
+      setSaveError(
+        'Charge, paid by, amount, and payable to are required for this row.'
+      )
+      return false
+    }
+
+    setUpdatingId(recordId)
+
+    try {
+      await updateInvoiceDetail(
+        recordId,
+        toInvoiceUpdatePayload(row, 0)
+      )
+      await onRefresh()
+      setMessage('Charge updated successfully.')
+      return true
+    } catch (err) {
+      setSaveError(
+        err instanceof Error
+          ? err.message
+          : 'Unable to update charge.'
+      )
+      return false
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
+  const deleteCharge = async (recordId: string) => {
+    setMessage(null)
+    setSaveError(null)
+    setDeletingId(recordId)
+
+    try {
+      await deleteInvoiceDetail(recordId)
+      await onRefresh()
+      setMessage('Charge deleted successfully.')
+    } catch (err) {
+      setSaveError(
+        err instanceof Error
+          ? err.message
+          : 'Unable to delete charge.'
+      )
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -159,18 +242,20 @@ export function ChargesWorkspace({
               closing ticket.
             </p>
           </div>
-          <button
-            className="secondary-action-button"
-            type="button"
-            onClick={() =>
-              setRows((currentRows) => [
-                ...currentRows,
-                createChargeRow(),
-              ])
-            }
-          >
-            Add Charge
-          </button>
+          <div className="charge-form-toolbar">
+            <button
+              className="secondary-action-button"
+              type="button"
+              onClick={() =>
+                setRows((currentRows) => [
+                  ...currentRows,
+                  createChargeRow(),
+                ])
+              }
+            >
+              Add Charge
+            </button>
+          </div>
         </div>
 
         {saveError && (
@@ -220,7 +305,9 @@ export function ChargesWorkspace({
             onClick={saveCharges}
             disabled={!canSave || saving}
           >
-            {saving ? 'Saving...' : 'Save Charges'}
+            {saving
+              ? 'Saving...'
+              : 'Save Charges'}
           </button>
         </div>
       </section>
@@ -230,6 +317,10 @@ export function ChargesWorkspace({
         loading={loading}
         error={error}
         onRefresh={onRefresh}
+        onSaveEdit={updateSavedCharge}
+        onDelete={deleteCharge}
+        updatingId={updatingId}
+        deletingId={deletingId}
       />
     </div>
   )

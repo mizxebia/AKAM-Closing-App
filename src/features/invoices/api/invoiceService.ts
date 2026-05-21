@@ -3,6 +3,7 @@ import type { Cr7de_invoicedetailses } from '../../../generated/models/Cr7de_inv
 import type {
   InvoiceCreateInput,
   InvoiceRecord,
+  InvoiceUpdateInput,
 } from '../types/invoice'
 
 function escapeODataString(value: string) {
@@ -56,4 +57,35 @@ export async function createInvoiceDetail(
   }
 
   return result.data as InvoiceRecord
+}
+
+export async function updateInvoiceDetail(
+  invoiceId: string,
+  changedFields: InvoiceUpdateInput
+): Promise<InvoiceRecord> {
+  const result =
+    await Cr7de_invoicedetailsesService.update(
+      invoiceId,
+      changedFields as Partial<
+        Omit<
+          Cr7de_invoicedetailses,
+          'cr7de_invoicedetailsid'
+        >
+      >
+    )
+
+  if (!result.success) {
+    throw new Error(
+      result.error?.message ||
+        'Failed to update invoice detail record'
+    )
+  }
+
+  return result.data as InvoiceRecord
+}
+
+export async function deleteInvoiceDetail(
+  invoiceId: string
+): Promise<void> {
+  await Cr7de_invoicedetailsesService.delete(invoiceId)
 }

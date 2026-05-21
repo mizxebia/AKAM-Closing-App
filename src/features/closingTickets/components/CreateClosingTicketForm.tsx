@@ -600,9 +600,10 @@ function ClosingTicketEditorForm({
         </div>
       )}
 
-      <section className="form-section">
-        <h3>Closing Details</h3>
-        <div className="form-grid">
+      <div className="create-closing-form-scroll">
+        <section className="form-section">
+          <h3>Closing Details</h3>
+          <div className="form-grid">
           <FormField
             label="Ticket ID"
             error={errors.cr7de_ticketid}
@@ -715,12 +716,12 @@ function ClosingTicketEditorForm({
               />
             </FormField>
           </div>
-        </div>
-      </section>
+          </div>
+        </section>
 
-      <section className="form-section">
-        <h3>Parties</h3>
-        <div className="form-grid">
+        <section className="form-section">
+          <h3>Parties</h3>
+          <div className="form-grid">
           <FormField label="Buyer Name">
             <input
               value={formState.cr7de_buyername}
@@ -794,12 +795,12 @@ function ClosingTicketEditorForm({
               }
             />
           </FormField>
-        </div>
-      </section>
+          </div>
+        </section>
 
-      <section className="form-section">
-        <h3>Transaction</h3>
-        <div className="form-grid">
+        <section className="form-section">
+          <h3>Transaction</h3>
+          <div className="form-grid">
           <FormField label="Transaction Type">
             <select
               value={formState.cr109_transactiontypedeal}
@@ -854,17 +855,21 @@ function ClosingTicketEditorForm({
               }
             />
           </FormField>
-        </div>
-      </section>
+          </div>
+        </section>
 
-      <section className="form-section">
-        <h3>Closing Agent</h3>
-        <div className="form-grid">
+        <section className="form-section">
+          <h3>Closing Agent</h3>
+          <div className="form-grid">
           <FormField label="Agent Name">
             <input
               value={formState.cr7de_closingagentname}
-              disabled
-              aria-readonly="true"
+              onChange={(event) =>
+                updateField(
+                  'cr7de_closingagentname',
+                  event.target.value
+                )
+              }
             />
           </FormField>
 
@@ -875,8 +880,12 @@ function ClosingTicketEditorForm({
             <input
               type="email"
               value={formState.cr7de_closingagentemail}
-              disabled
-              aria-readonly="true"
+              onChange={(event) =>
+                updateField(
+                  'cr7de_closingagentemail',
+                  event.target.value
+                )
+              }
             />
           </FormField>
 
@@ -904,12 +913,12 @@ function ClosingTicketEditorForm({
               }
             />
           </FormField>
-        </div>
-      </section>
+          </div>
+        </section>
 
-      <section className="form-section">
-        <h3>Documents</h3>
-        <div className="form-grid">
+        <section className="form-section">
+          <h3>Documents</h3>
+          <div className="form-grid">
           <FileUploadField
             label="Purchase Application Form"
             currentFileName={
@@ -945,12 +954,12 @@ function ClosingTicketEditorForm({
               handleDeleteDocument('cr109_rpttdocument')
             }
           />
-        </div>
-      </section>
+          </div>
+        </section>
 
-      <section className="form-section">
-        <h3>Flags & Notes</h3>
-        <div className="form-grid">
+        <section className="form-section">
+          <h3>Flags & Notes</h3>
+          <div className="form-grid">
           <CheckboxField
             label="Building not on domicile"
             checked={
@@ -988,8 +997,9 @@ function ClosingTicketEditorForm({
               />
             </FormField>
           </div>
-        </div>
-      </section>
+          </div>
+        </section>
+      </div>
 
       <div className="form-actions">
         <button

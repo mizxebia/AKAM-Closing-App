@@ -24,7 +24,7 @@ export function PageHeader({
   return (
     <motion.header
       className={cn(
-        'flex flex-col gap-3 border border-[#D5CBB8] p-4 shadow-sm md:flex-row md:items-center md:justify-between',
+        'flex flex-col gap-2 border border-[#D5CBB8] px-4 py-3 shadow-sm md:flex-row md:items-center md:justify-between',
         gradient ? '' : 'bg-white',
         className
       )}
@@ -40,13 +40,13 @@ export function PageHeader({
         {eyebrow && (
           <p
             className="mb-2 font-semibold uppercase"
-            style={{ fontSize: '13px', letterSpacing: '0.12em', color: '#C9A96E' }}
+            style={{ fontSize: '12px', letterSpacing: '0.12em', color: '#C9A96E' }}
           >
             {eyebrow}
           </p>
         )}
         <h1
-          className="truncate text-2xl tracking-tight md:text-3xl"
+          className="truncate text-2xl tracking-tight"
           style={{
             fontFamily: "'Playfair Display', Georgia, serif",
             fontWeight: 700,
@@ -58,7 +58,7 @@ export function PageHeader({
         </h1>
         {description && (
           <p
-            className="mt-1.5 max-w-3xl text-sm leading-6"
+            className="mt-1 max-w-3xl text-sm leading-5"
             style={{ color: dark ? 'rgba(245,242,236,0.75)' : '#4B5563' }}
           >
             {description}

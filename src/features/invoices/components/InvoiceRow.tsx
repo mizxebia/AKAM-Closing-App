@@ -1,18 +1,270 @@
+import { useEffect, useState } from 'react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../../../components/ui/alert-dialog'
+import {
+  Cr7de_invoicedetailsescr109_dueatclosing,
+  Cr7de_invoicedetailsescr7de_paidby,
+  Cr7de_invoicedetailsescr7de_payableto,
+} from '../../../generated/models/Cr7de_invoicedetailsesModel'
 import type {
+  InvoiceChargeFormRow,
   InvoiceColumn,
   InvoiceRecord,
 } from '../types/invoice'
-import { formatInvoiceValue } from '../utils/invoiceFormatters'
+import {
+  formatDueAtClosing,
+  formatInvoiceDate,
+  formatInvoiceValue,
+} from '../utils/invoiceFormatters'
 
 interface InvoiceRowProps {
   record: InvoiceRecord
   columns: InvoiceColumn[]
+  onSaveEdit: (
+    recordId: string,
+    row: InvoiceChargeFormRow
+  ) => Promise<boolean>
+  onDelete: (recordId: string) => void
+  isUpdating: boolean
+  isDeleting: boolean
+}
+
+type DueAtClosingValue = Exclude<
+  InvoiceChargeFormRow['cr109_dueatclosing'],
+  ''
+>
+
+const dueAtClosingOptions = Object.keys(
+  Cr7de_invoicedetailsescr109_dueatclosing
+).map((value) => Number(value))
+
+const paidByOptions = Object.entries(
+  Cr7de_invoicedetailsescr7de_paidby
+)
+
+const payableToOptions = Object.entries(
+  Cr7de_invoicedetailsescr7de_payableto
+)
+
+function createEditRowFromRecord(
+  record: InvoiceRecord
+): InvoiceChargeFormRow {
+  return {
+    id: record.cr7de_invoicedetailsid,
+    cr109_dueatclosing: record.cr109_dueatclosing ?? '',
+    cr7de_amount: record.cr7de_amount ?? '',
+    cr7de_chequenumber: record.cr7de_chequenumber ?? '',
+    cr7de_index: record.cr7de_index ?? '',
+    cr7de_notapplicabletoledger:
+      record.cr7de_notapplicabletoledger ?? false,
+    cr7de_paidby: record.cr7de_paidby ?? '',
+    cr7de_payableto: record.cr7de_payableto ?? '',
+    cr7de_remarks: record.cr7de_remarks ?? '',
+  }
 }
 
 export function InvoiceRow({
   record,
   columns,
+  onSaveEdit,
+  onDelete,
+  isUpdating,
+  isDeleting,
 }: InvoiceRowProps) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [editRow, setEditRow] = useState(
+    createEditRowFromRecord(record)
+  )
+
+  useEffect(() => {
+    if (!isEditing) {
+      setEditRow(createEditRowFromRecord(record))
+    }
+  }, [isEditing, record])
+
+  const updateEditRow = (
+    changedFields: Partial<InvoiceChargeFormRow>
+  ) => {
+    setEditRow((currentRow) => ({
+      ...currentRow,
+      ...changedFields,
+    }))
+  }
+
+  const cancelEdit = () => {
+    setEditRow(createEditRowFromRecord(record))
+    setIsEditing(false)
+  }
+
+  const saveEdit = async () => {
+    const saved = await onSaveEdit(
+      record.cr7de_invoicedetailsid,
+      editRow
+    )
+
+    if (saved) {
+      setIsEditing(false)
+    }
+  }
+
+  if (isEditing) {
+    return (
+      <tr className="invoice-row-editing">
+        <td>
+          <select
+            className="invoice-edit-control"
+            value={editRow.cr109_dueatclosing}
+            onChange={(event) =>
+              updateEditRow({
+                cr109_dueatclosing:
+                  event.target.value === ''
+                    ? ''
+                    : Number(
+                        event.target.value
+                      ) as InvoiceChargeFormRow['cr109_dueatclosing'],
+              })
+            }
+          >
+            <option value="">Select charge</option>
+            {dueAtClosingOptions.map((value) => (
+              <option key={value} value={value}>
+                {formatDueAtClosing(
+                  value as DueAtClosingValue
+                )}
+              </option>
+            ))}
+          </select>
+        </td>
+        <td>
+          <select
+            className="invoice-edit-control"
+            value={editRow.cr7de_paidby}
+            onChange={(event) =>
+              updateEditRow({
+                cr7de_paidby:
+                  event.target.value === ''
+                    ? ''
+                    : Number(
+                        event.target.value
+                      ) as InvoiceChargeFormRow['cr7de_paidby'],
+              })
+            }
+          >
+            <option value="">Paid by</option>
+            {paidByOptions.map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </td>
+        <td>
+          <input
+            className="invoice-edit-control"
+            type="number"
+            inputMode="decimal"
+            value={editRow.cr7de_amount}
+            onChange={(event) =>
+              updateEditRow({
+                cr7de_amount: event.target.value,
+              })
+            }
+          />
+        </td>
+        <td>
+          <select
+            className="invoice-edit-control"
+            value={editRow.cr7de_payableto}
+            onChange={(event) =>
+              updateEditRow({
+                cr7de_payableto:
+                  event.target.value === ''
+                    ? ''
+                    : Number(
+                        event.target.value
+                      ) as InvoiceChargeFormRow['cr7de_payableto'],
+              })
+            }
+          >
+            <option value="">Payable to</option>
+            {payableToOptions.map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </td>
+        <td>
+          <input
+            className="invoice-edit-control"
+            value={editRow.cr7de_chequenumber}
+            onChange={(event) =>
+              updateEditRow({
+                cr7de_chequenumber: event.target.value,
+              })
+            }
+          />
+        </td>
+        <td>
+          <input
+            className="invoice-edit-control"
+            value={editRow.cr7de_remarks}
+            onChange={(event) =>
+              updateEditRow({
+                cr7de_remarks: event.target.value,
+              })
+            }
+          />
+        </td>
+        <td>
+          <label className="invoice-edit-checkbox">
+            <input
+              type="checkbox"
+              checked={editRow.cr7de_notapplicabletoledger}
+              onChange={(event) =>
+                updateEditRow({
+                  cr7de_notapplicabletoledger:
+                    event.target.checked,
+                })
+              }
+            />
+            N/A
+          </label>
+        </td>
+        <td>{formatInvoiceDate(record.createdon)}</td>
+        <td>
+          <div className="invoice-row-actions">
+            <button
+              className="invoice-row-action-button invoice-row-save-button"
+              type="button"
+              onClick={saveEdit}
+              disabled={isUpdating}
+            >
+              {isUpdating ? 'Saving' : 'Save'}
+            </button>
+            <button
+              className="invoice-row-action-button"
+              type="button"
+              onClick={cancelEdit}
+              disabled={isUpdating}
+            >
+              Cancel
+            </button>
+          </div>
+        </td>
+      </tr>
+    )
+  }
+
   return (
     <tr>
       {columns.map((column) => (
@@ -20,7 +272,50 @@ export function InvoiceRow({
           {formatInvoiceValue(record, column.key)}
         </td>
       ))}
+      <td>
+        <div className="invoice-row-actions">
+          <button
+            className="invoice-row-action-button"
+            type="button"
+            onClick={() => setIsEditing(true)}
+          >
+            Edit
+          </button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button
+                className="invoice-row-action-button invoice-row-delete-button"
+                type="button"
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Delete Charge
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will remove the selected charge from
+                  this closing ticket.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="invoice-confirm-delete-button"
+                  onClick={() =>
+                    onDelete(record.cr7de_invoicedetailsid)
+                  }
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </td>
     </tr>
   )
 }
-

@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { invoiceColumns } from '../constants/invoiceColumns'
 import type {
+  InvoiceChargeFormRow,
   InvoiceGroupKey,
   InvoiceRecord,
 } from '../types/invoice'
@@ -14,7 +15,14 @@ interface InvoiceTableProps {
   records: InvoiceRecord[]
   loading: boolean
   error: string | null
-  onRefresh: () => void
+  onRefresh: () => Promise<void> | void
+  onSaveEdit: (
+    recordId: string,
+    row: InvoiceChargeFormRow
+  ) => Promise<boolean>
+  onDelete: (recordId: string) => void
+  updatingId: string | null
+  deletingId: string | null
 }
 
 const groupOrder: InvoiceGroupKey[] = [
@@ -29,11 +37,23 @@ const groupLabels: Record<InvoiceGroupKey, string> = {
   Other: 'Charges, Fees & Adjustments',
 }
 
+function getInvoiceAmount(record: InvoiceRecord) {
+  const amount = Number(
+    record.cr7de_amount?.replace(/[$,]/g, '') ?? 0
+  )
+
+  return Number.isNaN(amount) ? 0 : amount
+}
+
 export function InvoiceTable({
   records,
   loading,
   error,
   onRefresh,
+  onSaveEdit,
+  onDelete,
+  updatingId,
+  deletingId,
 }: InvoiceTableProps) {
   const sortedRecords = useMemo(() => {
     return [...records].sort((a, b) => {
@@ -64,16 +84,22 @@ export function InvoiceTable({
     )
   }, [sortedRecords])
 
-  const totalAmount = useMemo(() => {
-    return records.reduce((total, record) => {
-      const amount = Number(
-        record.cr7de_amount?.replace(/[$,]/g, '') ?? 0
-      )
+  const totals = useMemo(() => {
+    return records.reduce((currentTotals, record) => {
+      const groupKey = getInvoiceGroupKey(record)
+      const amount = getInvoiceAmount(record)
 
-      return Number.isNaN(amount)
-        ? total
-        : total + amount
-    }, 0)
+      return {
+        ...currentTotals,
+        [groupKey]: currentTotals[groupKey] + amount,
+        total: currentTotals.total + amount,
+      }
+    }, {
+      Seller: 0,
+      Buyer: 0,
+      Other: 0,
+      total: 0,
+    })
   }, [records])
 
   return (
@@ -83,12 +109,30 @@ export function InvoiceTable({
           <h2>Invoice Details</h2>
           <p>
             {records.length} records ·{' '}
-            {formatInvoiceCurrency(String(totalAmount))}
+            {formatInvoiceCurrency(String(totals.total))}
           </p>
         </div>
         <button type="button" onClick={onRefresh}>
           Refresh
         </button>
+      </div>
+
+      <div
+        className="invoice-total-summary"
+        aria-label="Invoice totals by party"
+      >
+        <div>
+          <span>Seller Total</span>
+          <strong>
+            {formatInvoiceCurrency(String(totals.Seller))}
+          </strong>
+        </div>
+        <div>
+          <span>Buyer Total</span>
+          <strong>
+            {formatInvoiceCurrency(String(totals.Buyer))}
+          </strong>
+        </div>
       </div>
 
       {loading && (
@@ -138,6 +182,7 @@ export function InvoiceTable({
                             {column.label}
                           </th>
                         ))}
+                        <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -148,6 +193,16 @@ export function InvoiceTable({
                           }
                           record={record}
                           columns={invoiceColumns}
+                          onSaveEdit={onSaveEdit}
+                          onDelete={onDelete}
+                          isUpdating={
+                            updatingId ===
+                            record.cr7de_invoicedetailsid
+                          }
+                          isDeleting={
+                            deletingId ===
+                            record.cr7de_invoicedetailsid
+                          }
                         />
                       ))}
                     </tbody>

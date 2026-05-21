@@ -34,6 +34,10 @@ const statusDisplayByGeneratedLabel: Record<
     label: 'Validated',
     tone: 'validate',
   },
+  TransferringBuilding: {
+    label: 'Transferring Building',
+    tone: 'processing',
+  },
   Failed: {
     label: 'Failed',
     tone: 'failed',

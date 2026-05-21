@@ -113,8 +113,7 @@ export function ClosingTicketPage() {
     filters,
     filteredRecords,
     setStatus,
-    setBuildingCode,
-    setUnit,
+    setSearch,
     clearFilters,
   } = useClosingTicketFilters(records)
 
@@ -154,7 +153,7 @@ export function ClosingTicketPage() {
   return (
     <>
       <TopNav userName={userName} />
-      <div className="min-h-screen bg-[#F5F2EC] px-4 py-3 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-[#F5F2EC] px-4 py-2 sm:px-6 lg:px-8">
         <main className="mx-auto grid w-full max-w-[1500px] gap-2">
           <PageHeader
             eyebrow="Closing Management"
@@ -164,7 +163,7 @@ export function ClosingTicketPage() {
             actions={
               <>
                 <button
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#1E3A47] bg-transparent px-4 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] transition hover:bg-[rgba(30,58,71,0.06)] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#1E3A47] bg-transparent px-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] transition hover:bg-[rgba(30,58,71,0.06)] disabled:cursor-not-allowed disabled:opacity-50"
                   type="button"
                   onClick={refresh}
                   disabled={loading}
@@ -173,7 +172,7 @@ export function ClosingTicketPage() {
                   {loading ? 'Refreshing' : 'Refresh'}
                 </button>
                 <button
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#1E3A47] px-5 text-xs font-semibold uppercase tracking-[0.08em] text-[#F5F2EC] shadow-sm transition hover:bg-[#152d38]"
+                  className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-[#1E3A47] px-4 text-xs font-semibold uppercase tracking-[0.08em] text-[#F5F2EC] shadow-sm transition hover:bg-[#152d38]"
                   type="button"
                   onClick={() => {
                     setCreateSuccessMessage(null)
@@ -224,14 +223,13 @@ export function ClosingTicketPage() {
               <ClosingTicketFilters
                 filters={filters}
                 onStatusChange={setStatus}
-                onBuildingCodeChange={setBuildingCode}
-                onUnitChange={setUnit}
+                onSearchChange={setSearch}
               />
 
               {filteredRecords.length === 0 ? (
                 <EmptyState
                   title="No matching records"
-                  description="Adjust the status, building code, or unit filters to broaden the result set."
+                  description="Adjust the status or search text to broaden the result set."
                 />
               ) : (
                 <ClosingTicketTable
@@ -251,14 +249,14 @@ export function ClosingTicketPage() {
           <SheetContent className="create-closing-sheet">
             <SheetHeader className="create-closing-sheet-header">
               <SheetDescription className="text-xs font-semibold uppercase tracking-wide text-[#4B5563]">
-                View and edit property closing record
+                Create closing record
               </SheetDescription>
               <SheetTitle
                 id="create-closing-title"
                 className="text-xl font-semibold text-[#1E3A47]"
                 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontStyle: 'italic' }}
               >
-                New Closing
+                New Closing Ticket
               </SheetTitle>
             </SheetHeader>
 
