@@ -8,6 +8,8 @@ interface PageHeaderProps {
   description?: string
   actions?: ReactNode
   className?: string
+  gradient?: string
+  dark?: boolean
 }
 
 export function PageHeader({
@@ -16,14 +18,20 @@ export function PageHeader({
   description,
   actions,
   className,
+  gradient,
+  dark = false,
 }: PageHeaderProps) {
   return (
     <motion.header
       className={cn(
-        'flex flex-col gap-4 border border-[#D5CBB8] bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between',
+        'flex flex-col gap-4 border border-[#D5CBB8] p-6 shadow-sm md:flex-row md:items-center md:justify-between',
+        gradient ? '' : 'bg-white',
         className
       )}
-      style={{ borderRadius: '12px' }}
+      style={{
+        borderRadius: '12px',
+        ...(gradient ? { background: gradient } : {}),
+      }}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.24 }}
@@ -38,13 +46,21 @@ export function PageHeader({
           </p>
         )}
         <h1
-          className="truncate text-2xl tracking-tight text-[#1E3A47] md:text-3xl"
-          style={{ fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 700, fontStyle: 'italic' }}
+          className="truncate text-2xl tracking-tight md:text-3xl"
+          style={{
+            fontFamily: "'Playfair Display', Georgia, serif",
+            fontWeight: 700,
+            fontStyle: 'italic',
+            color: dark ? '#F5F2EC' : '#1E3A47',
+          }}
         >
           {title}
         </h1>
         {description && (
-          <p className="mt-1.5 max-w-3xl text-sm leading-6 text-[#4B5563]">
+          <p
+            className="mt-1.5 max-w-3xl text-sm leading-6"
+            style={{ color: dark ? 'rgba(245,242,236,0.75)' : '#4B5563' }}
+          >
             {description}
           </p>
         )}

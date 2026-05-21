@@ -153,10 +153,12 @@ export function ClosingTicketPage() {
             eyebrow="Closing Management"
             title={welcomeMessage}
             description="Monitor closings, validate workflow status, and manage owner-ticket handoffs from a single workspace."
+            gradient="linear-gradient(135deg, #1E3A47 0%, #2a5870 55%, #1a3d52 100%)"
+            dark
             actions={
               <>
                 <button
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[#1E3A47] bg-transparent px-4 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] transition hover:bg-[rgba(30,58,71,0.06)] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-[rgba(245,242,236,0.35)] bg-[rgba(245,242,236,0.1)] px-4 text-xs font-semibold uppercase tracking-[0.08em] text-[#F5F2EC] transition hover:bg-[rgba(245,242,236,0.18)] disabled:cursor-not-allowed disabled:opacity-50"
                   type="button"
                   onClick={refresh}
                   disabled={loading}
@@ -165,7 +167,7 @@ export function ClosingTicketPage() {
                   {loading ? 'Refreshing' : 'Refresh'}
                 </button>
                 <button
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#1E3A47] px-5 text-xs font-semibold uppercase tracking-[0.08em] text-[#F5F2EC] shadow-sm transition hover:bg-[#152d38]"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#C9A96E] px-5 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] shadow-sm transition hover:bg-[#b8944f]"
                   type="button"
                   onClick={() => {
                     setCreateSuccessMessage(null)
