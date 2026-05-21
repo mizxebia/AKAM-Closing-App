@@ -29,7 +29,7 @@ export function SectionCard({
       transition={{ duration: 0.22 }}
     >
       {(title || description || actions) && (
-        <div className="flex flex-col gap-3 border-b border-[#E2DAD0] px-5 py-4 md:flex-row md:items-start md:justify-between">
+        <div className="flex flex-col gap-2 border-b border-[#E2DAD0] px-4 py-3 md:flex-row md:items-start md:justify-between">
           <div className="min-w-0">
             {title && (
               <h2
@@ -52,7 +52,7 @@ export function SectionCard({
           )}
         </div>
       )}
-      <div className="p-5">{children}</div>
+      <div className="p-4">{children}</div>
     </motion.section>
   )
 }

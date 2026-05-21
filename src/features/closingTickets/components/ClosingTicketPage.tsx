@@ -154,8 +154,8 @@ export function ClosingTicketPage() {
   return (
     <>
       <TopNav userName={userName} />
-      <div className="min-h-screen bg-[#F5F2EC] px-4 py-5 sm:px-6 lg:px-8">
-        <main className="mx-auto grid w-full max-w-[1500px] gap-3">
+      <div className="min-h-screen bg-[#F5F2EC] px-4 py-3 sm:px-6 lg:px-8">
+        <main className="mx-auto grid w-full max-w-[1500px] gap-2">
           <PageHeader
             eyebrow="Closing Management"
             title={welcomeMessage}
@@ -215,7 +215,7 @@ export function ClosingTicketPage() {
             )}
 
           {records.length > 0 && (
-            <div className="grid gap-3">
+            <div className="grid gap-2">
               <ClosingTicketDashboard
                 totalRecords={records.length}
                 records={records}

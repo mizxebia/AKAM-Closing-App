@@ -20,7 +20,7 @@ export function ClosingTicketFilters({
 }: ClosingTicketFiltersProps) {
   return (
     <section
-      className="sticky top-[48px] z-10 grid gap-3 border border-[#E2DAD0] bg-white p-4 shadow-sm"
+      className="sticky top-[48px] z-10 grid gap-2 border border-[#E2DAD0] bg-white p-3 shadow-sm"
       style={{ borderRadius: '12px' }}
     >
       {/* Tab pill group — single container with shared background */}

@@ -24,7 +24,7 @@ export function PageHeader({
   return (
     <motion.header
       className={cn(
-        'flex flex-col gap-4 border border-[#D5CBB8] p-6 shadow-sm md:flex-row md:items-center md:justify-between',
+        'flex flex-col gap-3 border border-[#D5CBB8] p-4 shadow-sm md:flex-row md:items-center md:justify-between',
         gradient ? '' : 'bg-white',
         className
       )}

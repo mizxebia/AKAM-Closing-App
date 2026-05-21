@@ -38,7 +38,7 @@ export function ClosingTicketDashboard({
 
   return (
     <section
-      className="grid gap-4 md:grid-cols-3"
+      className="grid gap-2 md:grid-cols-3"
       aria-label="Closing ticket summary"
     >
       <StatCard

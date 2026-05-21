@@ -25,7 +25,7 @@ export function StatCard({
       className="group border border-[#D5CBB8] bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-[#C8BBA9] hover:shadow-md"
       style={{
         borderRadius: '12px',
-        padding: '16px 20px',
+        padding: '12px 16px',
         ...(accentColor ? { borderLeft: `3px solid ${accentColor}` } : {}),
       }}
       initial={{ opacity: 0, y: 10 }}
@@ -42,8 +42,8 @@ export function StatCard({
             {label}
           </p>
           <strong
-            className="mt-2 block font-semibold tracking-tight text-[#1E3A47]"
-            style={{ fontSize: '32px', lineHeight: 1.1 }}
+            className="mt-1 block font-semibold tracking-tight text-[#1E3A47]"
+            style={{ fontSize: '26px', lineHeight: 1.1 }}
           >
             {value}
           </strong>
