@@ -87,7 +87,7 @@ export function ClosingTicketTable({
                 {columns.map((column, colIndex) => (
                   <td
                     key={column.key}
-                    className={`max-w-[220px] truncate px-4 py-2.5 text-sm text-[#A89880] first:font-semibold first:text-[#1E3A47]${colIndex > 0 ? ' border-b border-[#EDE8E0]' : ''}`}
+                    className={`max-w-[220px] truncate px-4 py-2.5 text-sm text-[#4B5563] first:font-semibold first:text-[#1E3A47]${colIndex > 0 ? ' border-b border-[#EDE8E0]' : ''}`}
                   >
                     {column.key === 'cr7de_ticketstatus' ? (
                       <StatusBadge record={record} />

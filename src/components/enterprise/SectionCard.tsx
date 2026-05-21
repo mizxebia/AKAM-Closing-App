@@ -40,7 +40,7 @@ export function SectionCard({
               </h2>
             )}
             {description && (
-              <p className="mt-1 leading-6 text-[#A89880]" style={{ fontSize: '13px' }}>
+              <p className="mt-1 leading-6 text-[#4B5563]" style={{ fontSize: '13px' }}>
                 {description}
               </p>
             )}

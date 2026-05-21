@@ -36,7 +36,7 @@ export function StatCard({
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <p
-            className="font-semibold uppercase text-[#A89880]"
+            className="font-semibold uppercase text-[#4B5563]"
             style={{ fontSize: '10px', letterSpacing: '0.12em' }}
           >
             {label}
@@ -47,7 +47,7 @@ export function StatCard({
           >
             {value}
           </strong>
-          <p className="mt-1 text-sm text-[#A89880]">
+          <p className="mt-1 text-sm text-[#4B5563]">
             {description}
           </p>
         </div>
@@ -58,7 +58,7 @@ export function StatCard({
           <Icon className="size-4" />
         </div>
       </div>
-      <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-[#A89880]">
+      <div className="mt-3 flex items-center gap-1.5 text-xs font-medium text-[#4B5563]">
         <TrendingUp className="size-3.5 text-[#1a7a52]" />
         <span>{trend}</span>
       </div>

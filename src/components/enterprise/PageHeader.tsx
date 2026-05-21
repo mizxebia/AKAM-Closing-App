@@ -44,7 +44,7 @@ export function PageHeader({
           {title}
         </h1>
         {description && (
-          <p className="mt-1.5 max-w-3xl text-sm leading-6 text-[#A89880]">
+          <p className="mt-1.5 max-w-3xl text-sm leading-6 text-[#4B5563]">
             {description}
           </p>
         )}

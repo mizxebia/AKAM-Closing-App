@@ -51,7 +51,7 @@ export function ClosingTicketFilters({
 
       <div className="grid gap-3 lg:grid-cols-2">
         <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#A89880]" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#4B5563]" />
           <SearchFilter
             id="closing-ticket-building-code"
             label="Filter by building code"
@@ -61,7 +61,7 @@ export function ClosingTicketFilters({
           />
         </div>
         <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#A89880]" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#4B5563]" />
           <SearchFilter
             id="closing-ticket-unit"
             label="Filter by unit ID"

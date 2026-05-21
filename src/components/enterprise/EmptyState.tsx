@@ -28,7 +28,7 @@ export function EmptyState({
           {title}
         </h3>
         {description && (
-          <p className="mt-1 max-w-md text-sm leading-6 text-[#A89880]">
+          <p className="mt-1 max-w-md text-sm leading-6 text-[#4B5563]">
             {description}
           </p>
         )}

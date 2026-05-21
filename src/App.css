@@ -37,7 +37,7 @@ body {
 
 .app-subtitle {
   margin: 5px 0 0;
-  color: #A89880;
+  color: #4B5563;
   font-size: 0.88rem;
   letter-spacing: 0.03em;
 }
@@ -127,7 +127,7 @@ body {
 
 .dashboard-card-label {
   display: block;
-  color: #A89880;
+  color: #4B5563;
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -146,7 +146,7 @@ body {
 .dashboard-card-sub {
   display: block;
   margin-top: 6px;
-  color: #A89880;
+  color: #4B5563;
   font-size: 0.84rem;
 }
 
@@ -192,7 +192,7 @@ body {
   border-radius: 2px;
   padding: 7px 14px;
   background: transparent;
-  color: #A89880;
+  color: #4B5563;
   cursor: pointer;
   font-size: 0.78rem;
   font-weight: 600;
@@ -229,7 +229,7 @@ body {
   top: 50%;
   width: 16px;
   height: 16px;
-  color: #A89880;
+  color: #4B5563;
   transform: translateY(-50%);
   pointer-events: none;
 }
@@ -317,7 +317,7 @@ body {
 
 .record-table th {
   background: #F5F2EC;
-  color: #A89880;
+  color: #4B5563;
   font-size: 0.68rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -325,7 +325,7 @@ body {
 }
 
 .record-table td {
-  color: #A89880;
+  color: #4B5563;
   font-size: 0.84rem;
 }
 
@@ -405,7 +405,7 @@ body {
 .status-draft,
 .status-default {
   background: #E2DAD0;
-  color: #A89880;
+  color: #4B5563;
 }
 
 .status-processing {
@@ -449,7 +449,7 @@ body {
 
 .status-info {
   background: #ffffff;
-  color: #A89880;
+  color: #4B5563;
   border: 1px solid #D5CBB8;
 }
 
@@ -490,7 +490,7 @@ body {
 
 .modal-header p {
   margin: 0;
-  color: #A89880;
+  color: #4B5563;
   font-size: 0.78rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -512,7 +512,7 @@ body {
   border: 1px solid #D5CBB8;
   border-radius: 2px;
   background: #ffffff;
-  color: #A89880;
+  color: #4B5563;
   cursor: pointer;
   font-size: 1rem;
   font-weight: 600;
@@ -667,7 +667,7 @@ body {
 
 .file-upload-box p {
   margin: 0;
-  color: #A89880;
+  color: #4B5563;
   font-size: 0.86rem;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -759,7 +759,7 @@ body {
 
 .details-header p {
   margin: 8px 0 0;
-  color: #A89880;
+  color: #4B5563;
   font-size: 0.84rem;
 }
 
@@ -827,7 +827,7 @@ body {
   min-height: 48px;
   border: none;
   background: transparent;
-  color: #A89880;
+  color: #4B5563;
   cursor: pointer;
   font: inherit;
   font-size: 0.78rem;
@@ -893,7 +893,7 @@ body {
 
 .workflow-card-header p {
   margin: 4px 0 0;
-  color: #A89880;
+  color: #4B5563;
   font-size: 0.84rem;
 }
 
@@ -920,7 +920,7 @@ body {
 }
 
 .charge-entry-table th {
-  color: #A89880;
+  color: #4B5563;
   font-size: 0.68rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -945,7 +945,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #A89880;
+  color: #4B5563;
   font-size: 0.82rem;
   font-weight: 600;
 }
@@ -1001,7 +1001,7 @@ body {
 .new-owner-workflow-header p,
 .document-panel-header p {
   margin: 0;
-  color: #A89880;
+  color: #4B5563;
   font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -1021,7 +1021,7 @@ body {
 .new-owner-workflow-header span {
   display: block;
   margin-top: 5px;
-  color: #A89880;
+  color: #4B5563;
   font-size: 0.84rem;
 }
 
@@ -1129,7 +1129,7 @@ body {
 }
 
 .document-toggle:hover:not(:disabled) {
-  border-color: #A89880;
+  border-color: #4B5563;
   background: #F5F2EC;
 }
 
@@ -1188,7 +1188,7 @@ body {
   place-content: center;
   gap: 8px;
   padding: 28px;
-  color: #A89880;
+  color: #4B5563;
   text-align: center;
 }
 
@@ -1230,7 +1230,7 @@ body {
   place-content: center;
   gap: 12px;
   background: rgba(245, 242, 236, 0.88);
-  color: #A89880;
+  color: #4B5563;
   font-size: 0.9rem;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -1311,7 +1311,7 @@ body {
 
 .invoice-header p {
   margin: 4px 0 0;
-  color: #A89880;
+  color: #4B5563;
   font-size: 0.84rem;
 }
 
@@ -1337,7 +1337,7 @@ body {
 
 .invoice-state {
   padding: 18px;
-  color: #A89880;
+  color: #4B5563;
   font-size: 0.9rem;
 }
 
@@ -1407,7 +1407,7 @@ body {
 }
 
 .invoice-table th {
-  color: #A89880;
+  color: #4B5563;
   font-size: 0.66rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -1415,7 +1415,7 @@ body {
 }
 
 .invoice-table td {
-  color: #A89880;
+  color: #4B5563;
   font-size: 0.82rem;
 }
 
