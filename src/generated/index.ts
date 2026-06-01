@@ -8,6 +8,8 @@ export * as CommonModels from './models/CommonModels';
 export * as Cr7de_closingticketdetailsesModel from './models/Cr7de_closingticketdetailsesModel';
 export * as Cr7de_invoicedetailsesModel from './models/Cr7de_invoicedetailsesModel';
 export * as Cr7de_newownerticketdetailsesModel from './models/Cr7de_newownerticketdetailsesModel';
+export * as Crc5c_copyscheduledchargesesModel from './models/Crc5c_copyscheduledchargesesModel';
+export * as Crc5c_unpaidchargesesModel from './models/Crc5c_unpaidchargesesModel';
 export * as NSC_Generate_InvoiceModel from './models/NSC_Generate_InvoiceModel';
 export * as NSC_Generate_New_Owner_TicketModel from './models/NSC_Generate_New_Owner_TicketModel';
 
@@ -15,5 +17,7 @@ export * as NSC_Generate_New_Owner_TicketModel from './models/NSC_Generate_New_O
 export * from './services/Cr7de_closingticketdetailsesService';
 export * from './services/Cr7de_invoicedetailsesService';
 export * from './services/Cr7de_newownerticketdetailsesService';
+export * from './services/Crc5c_copyscheduledchargesesService';
+export * from './services/Crc5c_unpaidchargesesService';
 export * from './services/NSC_Generate_InvoiceService';
 export * from './services/NSC_Generate_New_Owner_TicketService';

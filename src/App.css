@@ -1857,6 +1857,327 @@ body {
   background: #991b1b !important;
 }
 
+.dataverse-charges-workspace {
+  display: grid;
+  gap: 14px;
+}
+
+.dataverse-charges-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid #D5CBB8;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 16px 18px;
+  box-shadow: 0 1px 3px rgba(30, 58, 71, 0.06);
+}
+
+.dataverse-charges-toolbar h2 {
+  margin: 0;
+  color: #1E3A47;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.12rem;
+  font-weight: 650;
+}
+
+.dataverse-charges-toolbar p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.dataverse-charges-toolbar button,
+.charge-save-button {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1.5px solid #1E3A47;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1E3A47;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  padding: 7px 12px;
+  text-transform: uppercase;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease;
+}
+
+.dataverse-charges-toolbar button:hover {
+  background: rgba(30, 58, 71, 0.06);
+}
+
+.dataverse-charge-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.dataverse-charge-card,
+.dataverse-charge-empty {
+  border: 1px solid #D5CBB8;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(30, 58, 71, 0.06);
+  overflow: hidden;
+}
+
+.dataverse-charge-empty {
+  padding: 18px;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.dataverse-charge-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #E2DAD0;
+  background: #F8F6F1;
+  padding: 13px 16px;
+}
+
+.dataverse-charge-card-header h3 {
+  margin: 0;
+  color: #1E3A47;
+  font-size: 0.95rem;
+  font-weight: 750;
+}
+
+.dataverse-charge-card-header p {
+  margin: 3px 0 0;
+  color: #64748b;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.dataverse-charge-table-wrap {
+  overflow-x: auto;
+}
+
+.dataverse-charge-save-error {
+  border-bottom: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.84rem;
+  font-weight: 700;
+  padding: 10px 14px;
+}
+
+.dataverse-charge-table {
+  width: 100%;
+  min-width: 1080px;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.dataverse-charge-table th,
+.dataverse-charge-table td {
+  border-bottom: 1px solid #E8E0D7;
+  padding: 14px 18px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.dataverse-charge-table th {
+  background: #FBFAF7;
+  color: #4B5563;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    'Liberation Mono', 'Courier New', monospace;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.dataverse-unpaid-charge-table th:nth-child(1),
+.dataverse-unpaid-charge-table td:nth-child(1) {
+  width: 17%;
+}
+
+.dataverse-unpaid-charge-table th:nth-child(2),
+.dataverse-unpaid-charge-table td:nth-child(2) {
+  width: 14%;
+}
+
+.dataverse-unpaid-charge-table th:nth-child(3),
+.dataverse-unpaid-charge-table td:nth-child(3) {
+  width: 14%;
+}
+
+.dataverse-unpaid-charge-table th:nth-child(4),
+.dataverse-unpaid-charge-table td:nth-child(4) {
+  width: 13%;
+}
+
+.dataverse-unpaid-charge-table th:nth-child(5),
+.dataverse-unpaid-charge-table td:nth-child(5) {
+  width: 11%;
+}
+
+.dataverse-unpaid-charge-table th:nth-child(6),
+.dataverse-unpaid-charge-table td:nth-child(6) {
+  width: 21%;
+}
+
+.dataverse-unpaid-charge-table th:nth-child(7),
+.dataverse-unpaid-charge-table td:nth-child(7) {
+  width: 10%;
+}
+
+.dataverse-scheduled-charge-table th:nth-child(1),
+.dataverse-scheduled-charge-table td:nth-child(1) {
+  width: 17%;
+}
+
+.dataverse-scheduled-charge-table th:nth-child(2),
+.dataverse-scheduled-charge-table td:nth-child(2),
+.dataverse-scheduled-charge-table th:nth-child(3),
+.dataverse-scheduled-charge-table td:nth-child(3) {
+  width: 14%;
+}
+
+.dataverse-scheduled-charge-table th:nth-child(4),
+.dataverse-scheduled-charge-table td:nth-child(4) {
+  width: 14%;
+}
+
+.dataverse-scheduled-charge-table th:nth-child(5),
+.dataverse-scheduled-charge-table td:nth-child(5) {
+  width: 14%;
+}
+
+.dataverse-scheduled-charge-table th:nth-child(6),
+.dataverse-scheduled-charge-table td:nth-child(6) {
+  width: 11%;
+}
+
+.dataverse-scheduled-charge-table th:nth-child(7),
+.dataverse-scheduled-charge-table td:nth-child(7) {
+  width: 12%;
+}
+
+.dataverse-charge-table th::after {
+  content: ' \2195';
+  color: #9ca3af;
+  font-family: inherit;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.dataverse-charge-table tbody tr {
+  transition: background 160ms ease;
+}
+
+.dataverse-charge-table tbody tr:nth-child(even) {
+  background: #FFFCF6;
+}
+
+.dataverse-charge-table tbody tr:hover {
+  background: #F5F2EC;
+}
+
+.dataverse-charge-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.dataverse-charge-table input {
+  width: 100%;
+  min-height: 36px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #1E3A47;
+  font: inherit;
+  font-size: 0.86rem;
+  padding: 7px 8px;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.dataverse-charge-table input:hover,
+.dataverse-charge-table input:focus {
+  border-color: #D5CBB8;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(30, 58, 71, 0.08);
+  outline: none;
+}
+
+.dataverse-charge-table input[type='date'] {
+  min-width: 132px;
+  padding-right: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.charge-amount-input {
+  max-width: 130px;
+  font-variant-numeric: tabular-nums;
+}
+
+.charge-boolean-pill {
+  display: inline-flex;
+  min-width: 90px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #D5CBB8;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #64748b;
+  cursor: pointer;
+  font-size: 0.76rem;
+  font-weight: 800;
+  padding: 6px 10px;
+  white-space: nowrap;
+}
+
+.charge-boolean-pill input {
+  width: 11px;
+  min-height: 11px;
+  padding: 0;
+  accent-color: #1E3A47;
+}
+
+.charge-boolean-pill-active {
+  border-color: #BFE1CA;
+  background: #EAF7EE;
+  color: #20814A;
+}
+
+.charge-save-button {
+  border-color: #1E3A47;
+  background: #1E3A47;
+  color: #ffffff;
+  white-space: nowrap;
+  width: 100%;
+  max-width: 128px;
+}
+
+.charge-save-button:hover {
+  background: #294C5C;
+}
+
+.charge-save-button:disabled {
+  border-color: #CBD5E1;
+  background: #CBD5E1;
+  cursor: not-allowed;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

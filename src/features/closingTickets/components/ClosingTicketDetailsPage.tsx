@@ -7,9 +7,13 @@ import {
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import { LoadingSkeleton, PageHeader } from '../../../components/enterprise'
 import {
-  ChargesWorkspace,
+  ChargesWorkspace as InvoiceWorkspace,
   useInvoices,
 } from '../../invoices'
+import {
+  ChargesWorkspace,
+  useCharges,
+} from '../../charges'
 import { NewOwnerTicketWorkspace } from '../../newOwnerTickets'
 import { getClosingTicketById } from '../api/closingTicketsService'
 import type { ClosingTicketRecord } from '../types/closingTicket'
@@ -56,6 +60,13 @@ export function ClosingTicketDetailsPage({
     error: invoicesError,
     refresh: refreshInvoices,
   } = useInvoices(ticketId)
+  const {
+    unpaidCharges,
+    scheduledCharges,
+    loading: chargesLoading,
+    error: chargesError,
+    refresh: refreshCharges,
+  } = useCharges(ticketId)
 
   useEffect(() => {
     let isMounted = true
@@ -99,6 +110,7 @@ export function ClosingTicketDetailsPage({
     )
     setRecord(updatedRecord)
     await refreshInvoices()
+    await refreshCharges()
     setSuccessMessage(
       'Closing record updated successfully.'
     )
@@ -318,12 +330,16 @@ export function ClosingTicketDetailsPage({
               label: 'Closing Details',
             },
             {
-              key: 'charges',
-              label: 'Charges',
+              key: 'invoice',
+              label: 'Invoice',
             },
             {
               key: 'documents',
               label: 'Documents',
+            },
+            {
+              key: 'charges',
+              label: 'Charges',
             },
             {
               key: 'newOwner',
@@ -345,13 +361,23 @@ export function ClosingTicketDetailsPage({
             </div>
           )}
 
-          {activeTab === 'charges' && (
-            <ChargesWorkspace
+          {activeTab === 'invoice' && (
+            <InvoiceWorkspace
               ticketId={record.cr7de_ticketid ?? ''}
               records={invoiceRecords}
               loading={invoicesLoading}
               error={invoicesError}
               onRefresh={refreshInvoices}
+            />
+          )}
+
+          {activeTab === 'charges' && (
+            <ChargesWorkspace
+              unpaidCharges={unpaidCharges}
+              scheduledCharges={scheduledCharges}
+              loading={chargesLoading}
+              error={chargesError}
+              onRefresh={refreshCharges}
             />
           )}
 

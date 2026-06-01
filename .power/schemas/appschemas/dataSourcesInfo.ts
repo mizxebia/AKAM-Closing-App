@@ -12,6 +12,13 @@ export const dataSourcesInfo = {
     "dataSourceType": "Dataverse",
     "apis": {}
   },
+  "crc5c_copyscheduledchargeses": {
+    "tableId": "",
+    "version": "",
+    "primaryKey": "crc5c_copyscheduledchargesid",
+    "dataSourceType": "Dataverse",
+    "apis": {}
+  },
   "cr7de_invoicedetailses": {
     "tableId": "",
     "version": "",
@@ -23,6 +30,13 @@ export const dataSourcesInfo = {
     "tableId": "",
     "version": "",
     "primaryKey": "cr7de_newownerticketdetailsid",
+    "dataSourceType": "Dataverse",
+    "apis": {}
+  },
+  "crc5c_unpaidchargeses": {
+    "tableId": "",
+    "version": "",
+    "primaryKey": "crc5c_unpaidchargesid",
     "dataSourceType": "Dataverse",
     "apis": {}
   },

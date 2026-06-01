@@ -51,6 +51,14 @@
         "newownerticketdetails": {
           "entitySetName": "cr7de_newownerticketdetailses",
           "logicalName": "cr7de_newownerticketdetails"
+        },
+        "unpaidcharges": {
+          "entitySetName": "crc5c_unpaidchargeses",
+          "logicalName": "crc5c_unpaidcharges"
+        },
+        "copyscheduledcharges": {
+          "entitySetName": "crc5c_copyscheduledchargeses",
+          "logicalName": "crc5c_copyscheduledcharges"
         }
       },
       "environmentVariableName": ""

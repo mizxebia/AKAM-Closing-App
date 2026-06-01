@@ -3,8 +3,9 @@ import { AnimatePresence, motion } from 'framer-motion'
 
 export type WorkflowTabKey =
   | 'details'
-  | 'charges'
+  | 'invoice'
   | 'documents'
+  | 'charges'
   | 'newOwner'
 
 export type WorkflowTab = {

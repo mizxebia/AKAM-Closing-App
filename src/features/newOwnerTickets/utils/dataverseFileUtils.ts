@@ -76,7 +76,7 @@ export const GENERATED_CLOSING_DOCUMENTS:
     },
     {
       key: 'closingTicketDetailsPdf',
-      label: 'Closing Ticket Details PDF',
+      label: 'Invoice',
       columnName: 'cr109_closingticketdetailspdf',
       fileNameColumn: 'cr109_closingticketdetailspdf_name',
     },
