@@ -47,6 +47,16 @@ const FIELD_CONFIGS = [
   },
   {
     section: 'Ticket',
+    name: 'cr109_nyccode',
+    label: 'Building Code',
+  },
+  {
+    section: 'Ticket',
+    name: 'cr109_buildingname',
+    label: 'Building Name',
+  },
+  {
+    section: 'Ticket',
     name: 'cr7de_closingdate',
     label: 'Closing Date',
     kind: 'date',
@@ -92,6 +102,11 @@ const FIELD_CONFIGS = [
     section: 'Primary Owner',
     name: 'cr7de_primaryownerssnein',
     label: 'Primary Owner SSN/EIN',
+  },
+  {
+    section: 'Primary Owner',
+    name: 'cr109_primaryownertcode',
+    label: 'Primary Owner T-Code',
   },
   {
     section: 'Primary Owner',

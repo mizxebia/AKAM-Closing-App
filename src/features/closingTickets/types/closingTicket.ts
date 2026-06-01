@@ -1,6 +1,7 @@
 import type {
   Cr7de_closingticketdetailses,
   Cr7de_closingticketdetailsescr109_botstatus,
+  Cr7de_closingticketdetailsescr109_packagetype,
   Cr7de_closingticketdetailsescr109_transactiontypedeal,
   Cr7de_closingticketdetailsescr7de_ticketstatus,
 } from '../../../generated/models/Cr7de_closingticketdetailsesModel'
@@ -64,6 +65,8 @@ export type ClosingTicketCreateInput = Partial<
     Cr7de_closingticketdetailses,
     | 'cr109_botstatus'
     | 'cr109_buyer2name'
+    | 'cr109_domecilepackageurl'
+    | 'cr109_packagetype'
     | 'cr109_saleprice'
     | 'cr109_seller2name'
     | 'cr109_shares'
@@ -95,6 +98,10 @@ export type ClosingTicketUpdateInput =
 export type ClosingTicketFormState = {
   cr109_botstatus: '' | Cr7de_closingticketdetailsescr109_botstatus
   cr109_buyer2name: string
+  cr109_domecilepackageurl: string
+  cr109_packagetype:
+    | ''
+    | Cr7de_closingticketdetailsescr109_packagetype
   cr109_saleprice: string
   cr109_seller2name: string
   cr109_shares: string

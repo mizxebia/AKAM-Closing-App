@@ -10,7 +10,7 @@ import { LoadingSkeleton } from '../../../components/enterprise'
 import { updateClosingTicket } from '../../closingTickets/api/closingTicketsService'
 import type { ClosingTicketRecord } from '../../closingTickets/types/closingTicket'
 import {
-  getNewOwnerTicketByTicketId,
+  ensureNewOwnerTicketForClosingTicket,
   saveNewOwnerTicket,
 } from '../api/newOwnerTicketService'
 import type {
@@ -21,8 +21,9 @@ import type {
 } from '../types/newOwnerTicket'
 import {
   getDefaultDocument,
-  type NewOwnerDocumentKey,
+  type ClosingTicketDocumentKey,
 } from '../utils/dataverseFileUtils'
+import { buildClosingPayloadFromNewOwnerTicket } from '../utils/sharedTicketFields'
 import { DocumentViewerPanel } from './DocumentViewerPanel'
 import { NewOwnerTicketForm } from './NewOwnerTicketForm'
 
@@ -71,6 +72,10 @@ function getInitialFormState(
     cr109_amountfinanced: valueOrEmpty(
       record?.cr109_amountfinanced
     ),
+    cr109_buildingname: valueOrEmpty(
+      record?.cr109_buildingname ??
+        closingTicket.cr7de_buildingname
+    ),
     cr109_buyer1address: valueOrEmpty(
       record?.cr109_buyer1address
     ),
@@ -98,8 +103,15 @@ function getInitialFormState(
     cr109_lendersname: valueOrEmpty(
       record?.cr109_lendersname
     ),
+    cr109_nyccode: valueOrEmpty(
+      record?.cr109_nyccode ?? closingTicket.cr7de_nyccode
+    ),
     cr109_primaryhomephonenumber: valueOrEmpty(
       record?.cr109_primaryhomephonenumber
+    ),
+    cr109_primaryownertcode: valueOrEmpty(
+      record?.cr109_primaryownertcode ??
+        closingTicket.cr7de_buyertcode
     ),
     cr109_primaryworkphonenumber: valueOrEmpty(
       record?.cr109_primaryworkphonenumber
@@ -252,6 +264,9 @@ function toPayload(
     cr109_amountfinanced: normalizeText(
       formState.cr109_amountfinanced
     ),
+    cr109_buildingname: normalizeText(
+      formState.cr109_buildingname
+    ),
     cr109_buyer1address: normalizeText(
       formState.cr109_buyer1address
     ),
@@ -279,8 +294,12 @@ function toPayload(
     cr109_lendersname: normalizeText(
       formState.cr109_lendersname
     ),
+    cr109_nyccode: normalizeText(formState.cr109_nyccode),
     cr109_primaryhomephonenumber: normalizeText(
       formState.cr109_primaryhomephonenumber
+    ),
+    cr109_primaryownertcode: normalizeText(
+      formState.cr109_primaryownertcode
     ),
     cr109_primaryworkphonenumber: normalizeText(
       formState.cr109_primaryworkphonenumber
@@ -456,7 +475,7 @@ export function NewOwnerTicketTab({
       getInitialFormState(closingTicket)
     )
   const [selectedDocument, setSelectedDocument] =
-    useState<NewOwnerDocumentKey | null>(() =>
+    useState<ClosingTicketDocumentKey | null>(() =>
       getDefaultDocument(closingTicket)
     )
   const [loading, setLoading] = useState(true)
@@ -486,8 +505,8 @@ export function NewOwnerTicketTab({
 
       try {
         const existingRecord =
-          await getNewOwnerTicketByTicketId(
-            closingTicket.cr7de_ticketid ?? ''
+          await ensureNewOwnerTicketForClosingTicket(
+            closingTicket
           )
 
         if (isMounted) {
@@ -558,10 +577,16 @@ export function NewOwnerTicketTab({
     setMessage(null)
 
     try {
+      const payload = toPayload(formState, Boolean(record))
       const savedRecord = await saveNewOwnerTicket(
         record?.cr7de_newownerticketdetailsid ?? null,
-        toPayload(formState, Boolean(record))
+        payload
       )
+      await updateClosingTicket(
+        closingTicket.cr7de_closingticketdetailsid,
+        buildClosingPayloadFromNewOwnerTicket(payload)
+      )
+      await onSaved()
       setRecord(savedRecord)
       setFormState(
         getInitialFormState(closingTicket, savedRecord)
@@ -576,7 +601,7 @@ export function NewOwnerTicketTab({
     } finally {
       setSaving(false)
     }
-  }, [closingTicket, formState, record])
+  }, [closingTicket, formState, onSaved, record])
 
   const showValidateButton =
     closingTicket.cr7de_ticketstatus === VALIDATED_TICKET_STATUS

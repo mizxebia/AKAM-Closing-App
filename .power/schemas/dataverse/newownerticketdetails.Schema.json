@@ -42,6 +42,14 @@
           "x-ms-schema-name": "cr109_AmountFinanced",
           "maxLength": 100
         },
+        "cr109_buildingname": {
+          "type": "string",
+          "title": "Building Name",
+          "x-ms-dataverse-attribute": "cr109_buildingname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_BuildingName",
+          "maxLength": 100
+        },
         "cr109_buyer1address": {
           "type": "string",
           "title": "Buyer 1 Address",
@@ -114,12 +122,28 @@
           "x-ms-schema-name": "cr109_LendersName",
           "maxLength": 100
         },
+        "cr109_nyccode": {
+          "type": "string",
+          "title": "NYC CODE",
+          "x-ms-dataverse-attribute": "cr109_nyccode",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_NYCCODE",
+          "maxLength": 100
+        },
         "cr109_primaryhomephonenumber": {
           "type": "string",
           "title": "Primary Owner Home Phone Number",
           "x-ms-dataverse-attribute": "cr109_primaryhomephonenumber",
           "x-ms-dataverse-type": "StringType",
           "x-ms-schema-name": "cr109_PrimaryHomePhoneNumber",
+          "maxLength": 100
+        },
+        "cr109_primaryownertcode": {
+          "type": "string",
+          "title": "Primary Owner TCODE",
+          "x-ms-dataverse-attribute": "cr109_primaryownertcode",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_PrimaryOwnerTCODE",
           "maxLength": 100
         },
         "cr109_primaryworkphonenumber": {

@@ -18,6 +18,7 @@ export interface Cr7de_newownerticketdetailsesBase {
   cr109_additionaloccupant2name?: string;
   cr109_additionaloccupant3name?: string;
   cr109_amountfinanced?: string;
+  cr109_buildingname?: string;
   cr109_buyer1address?: string;
   cr109_buyer1city?: string;
   cr109_buyer1state?: string;
@@ -27,7 +28,9 @@ export interface Cr7de_newownerticketdetailsesBase {
   cr109_buyer2state?: string;
   cr109_buyer2zip?: string;
   cr109_lendersname?: string;
+  cr109_nyccode?: string;
   cr109_primaryhomephonenumber?: string;
+  cr109_primaryownertcode?: string;
   cr109_primaryworkphonenumber?: string;
   cr109_purchaseprice?: string;
   cr109_purchaser1occupancy?: string;

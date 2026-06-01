@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
-import { Trash2 } from 'lucide-react'
+import { CalendarDays, Trash2 } from 'lucide-react'
 import { Button } from '../../../components/ui/button'
 import {
   AlertDialog,
@@ -14,6 +14,7 @@ import {
   AlertDialogTrigger,
 } from '../../../components/ui/alert-dialog'
 import {
+  Cr7de_closingticketdetailsescr109_packagetype,
   Cr7de_closingticketdetailsescr109_transactiontypedeal,
   Cr7de_closingticketdetailsescr7de_ticketstatus,
 } from '../../../generated/models/Cr7de_closingticketdetailsesModel'
@@ -23,6 +24,7 @@ import {
   updateClosingTicket,
   uploadClosingTicketFile,
 } from '../api/closingTicketsService'
+import { syncNewOwnerTicketFromClosingTicket } from '../../newOwnerTickets/api/newOwnerTicketService'
 import type {
   ClosingTicketCreateInput,
   ClosingTicketFormState,
@@ -60,6 +62,8 @@ interface EditClosingTicketFormProps {
 const emptyFormState: ClosingTicketFormState = {
   cr109_botstatus: '',
   cr109_buyer2name: '',
+  cr109_domecilepackageurl: '',
+  cr109_packagetype: '',
   cr109_saleprice: '',
   cr109_seller2name: '',
   cr109_shares: '',
@@ -117,6 +121,9 @@ function getRecordFormState(
   return {
     cr109_botstatus: record.cr109_botstatus ?? '',
     cr109_buyer2name: record.cr109_buyer2name ?? '',
+    cr109_domecilepackageurl:
+      record.cr109_domecilepackageurl ?? '',
+    cr109_packagetype: record.cr109_packagetype ?? '',
     cr109_saleprice: record.cr109_saleprice ?? '',
     cr109_seller2name: record.cr109_seller2name ?? '',
     cr109_shares: record.cr109_shares ?? '',
@@ -163,6 +170,98 @@ function toChoiceOptions<T extends Record<number, string>>(
   )
 }
 
+function getDateFromInputValue(value: string) {
+  const [year, month, day] = value
+    .split('-')
+    .map(Number)
+
+  if (!year || !month || !day) {
+    return undefined
+  }
+
+  return new Date(year, month - 1, day)
+}
+
+function getInputValueFromDate(value: Date) {
+  const year = value.getFullYear()
+  const month = String(value.getMonth() + 1).padStart(
+    2,
+    '0'
+  )
+  const day = String(value.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
+function formatDisplayDate(value: string) {
+  const date = getDateFromInputValue(value)
+
+  if (!date) {
+    return ''
+  }
+
+  return date.toLocaleDateString(undefined, {
+    month: '2-digit',
+    day: '2-digit',
+    year: 'numeric',
+  })
+}
+
+const monthNames = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+]
+
+const weekdayNames = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
+
+function getCalendarDates(viewDate: Date) {
+  const firstDayOfMonth = new Date(
+    viewDate.getFullYear(),
+    viewDate.getMonth(),
+    1
+  )
+  const firstVisibleDate = new Date(firstDayOfMonth)
+  firstVisibleDate.setDate(
+    firstVisibleDate.getDate() - firstDayOfMonth.getDay()
+  )
+
+  return Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(firstVisibleDate)
+    date.setDate(firstVisibleDate.getDate() + index)
+    return date
+  })
+}
+
+function isSameCalendarDate(
+  firstDate?: Date,
+  secondDate?: Date
+) {
+  return (
+    firstDate?.getFullYear() === secondDate?.getFullYear() &&
+    firstDate?.getMonth() === secondDate?.getMonth() &&
+    firstDate?.getDate() === secondDate?.getDate()
+  )
+}
+
+function formatChoiceLabel(value: string) {
+  return value
+    .replace(/_/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/\b\w/g, (character) =>
+      character.toUpperCase()
+    )
+}
+
 function normalizeText(value: string) {
   const trimmedValue = value.trim()
 
@@ -180,6 +279,11 @@ function buildPayload(
     cr109_buyer2name: normalizeText(
       formState.cr109_buyer2name
     ),
+    cr109_domecilepackageurl: normalizeText(
+      formState.cr109_domecilepackageurl
+    ),
+    cr109_packagetype:
+      formState.cr109_packagetype || undefined,
     cr109_saleprice: normalizeText(
       formState.cr109_saleprice
     ),
@@ -306,6 +410,7 @@ export function CreateClosingTicketForm({
         const record = await createClosingTicket(
           buildPayload(formState)
         )
+        await syncNewOwnerTicketFromClosingTicket(record)
         await uploadPendingFiles(
           record.cr7de_closingticketdetailsid,
           pendingFiles
@@ -338,10 +443,11 @@ export function EditClosingTicketForm({
       savingLabel="Saving..."
       onCancel={onCancel}
       onSubmit={async (formState, pendingFiles) => {
-        await updateClosingTicket(
+        const updatedRecord = await updateClosingTicket(
           record.cr7de_closingticketdetailsid,
           buildPayload(formState)
         )
+        await syncNewOwnerTicketFromClosingTicket(updatedRecord)
         await uploadPendingFiles(
           record.cr7de_closingticketdetailsid,
           pendingFiles
@@ -418,6 +524,14 @@ function ClosingTicketEditorForm({
     () =>
       toChoiceOptions(
         Cr7de_closingticketdetailsescr109_transactiontypedeal
+      ),
+    []
+  )
+
+  const packageTypeOptions = useMemo(
+    () =>
+      toChoiceOptions(
+        Cr7de_closingticketdetailsescr109_packagetype
       ),
     []
   )
@@ -643,6 +757,8 @@ function ClosingTicketEditorForm({
           >
             <input
               value={formState.cr7de_ticketid}
+              readOnly
+              aria-readonly="true"
               onChange={(event) =>
                 updateField(
                   'cr7de_ticketid',
@@ -708,6 +824,32 @@ function ClosingTicketEditorForm({
             />
           </FormField>
 
+          <FormField label="Package Type">
+            <select
+              value={formState.cr109_packagetype}
+              onChange={(event) =>
+                updateField(
+                  'cr109_packagetype',
+                  (event.target.value === ''
+                    ? ''
+                    : Number(
+                        event.target.value
+                      )) as ClosingTicketFormState['cr109_packagetype']
+                )
+              }
+            >
+              <option value="">Select package</option>
+              {packageTypeOptions.map((option) => (
+                <option
+                  key={option.value}
+                  value={option.value}
+                >
+                  {formatChoiceLabel(option.label)}
+                </option>
+              ))}
+            </select>
+          </FormField>
+
           {!isCreateMode && (
             <FormField label="Building Name">
               <input
@@ -738,13 +880,12 @@ function ClosingTicketEditorForm({
             </FormField>
           ) : (
             <FormField label="Closing Date">
-              <input
-                type="date"
+              <DatePickerField
                 value={formState.cr7de_closingdate}
-                onChange={(event) =>
+                onChange={(value) =>
                   updateField(
                     'cr7de_closingdate',
-                    event.target.value
+                    value
                   )
                 }
               />
@@ -763,6 +904,18 @@ function ClosingTicketEditorForm({
                     )
                   }
                   placeholder="e.g. 10 Park Avenue"
+                />
+              </FormField>
+            </div>
+          )}
+
+          {!isCreateMode && (
+            <div className="form-grid-wide">
+              <FormField label="Domecile Package Url">
+                <input
+                  value={formState.cr109_domecilepackageurl}
+                  readOnly
+                  aria-readonly="true"
                 />
               </FormField>
             </div>
@@ -1108,6 +1261,156 @@ function ClosingTicketEditorForm({
         )}
       </div>
     </form>
+  )
+}
+
+function DatePickerField({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (value: string) => void
+}) {
+  const selectedDate = getDateFromInputValue(value)
+  const today = new Date()
+  const [open, setOpen] = useState(false)
+  const [viewDate, setViewDate] = useState(
+    selectedDate ?? today
+  )
+  const calendarDates = getCalendarDates(viewDate)
+  const yearOptions = Array.from(
+    { length: 21 },
+    (_, index) => viewDate.getFullYear() - 10 + index
+  )
+
+  const moveMonth = (offset: number) => {
+    setViewDate(
+      (currentDate) =>
+        new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth() + offset,
+          1
+        )
+    )
+  }
+
+  return (
+    <div className="date-picker-field">
+      <button
+        className="date-picker-trigger"
+        type="button"
+        aria-expanded={open}
+        onClick={() => {
+          setOpen((isOpen) => !isOpen)
+          setViewDate(selectedDate ?? today)
+        }}
+      >
+        <span>
+          {value ? formatDisplayDate(value) : 'Select date'}
+        </span>
+        <CalendarDays className="size-4" />
+      </button>
+
+      {open && (
+        <div className="closing-date-popover">
+          <div className="date-picker-header">
+            <button
+              type="button"
+              aria-label="Previous month"
+              onClick={() => moveMonth(-1)}
+            >
+              &lt;
+            </button>
+            <div className="date-picker-caption">
+              <select
+                value={viewDate.getMonth()}
+                onChange={(event) =>
+                  setViewDate(
+                    new Date(
+                      viewDate.getFullYear(),
+                      Number(event.target.value),
+                      1
+                    )
+                  )
+                }
+              >
+                {monthNames.map((month, index) => (
+                  <option key={month} value={index}>
+                    {month}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={viewDate.getFullYear()}
+                onChange={(event) =>
+                  setViewDate(
+                    new Date(
+                      Number(event.target.value),
+                      viewDate.getMonth(),
+                      1
+                    )
+                  )
+                }
+              >
+                {yearOptions.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              type="button"
+              aria-label="Next month"
+              onClick={() => moveMonth(1)}
+            >
+              &gt;
+            </button>
+          </div>
+
+          <div className="date-picker-grid">
+            {weekdayNames.map((weekday) => (
+              <span
+                key={weekday}
+                className="date-picker-weekday"
+              >
+                {weekday}
+              </span>
+            ))}
+            {calendarDates.map((date) => {
+              const inCurrentMonth =
+                date.getMonth() === viewDate.getMonth()
+              const isSelected = isSameCalendarDate(
+                date,
+                selectedDate
+              )
+              const isToday = isSameCalendarDate(date, today)
+
+              return (
+                <button
+                  key={date.toISOString()}
+                  type="button"
+                  className={
+                    isSelected
+                      ? 'date-picker-day date-picker-day-selected'
+                      : isToday
+                        ? 'date-picker-day date-picker-day-today'
+                        : 'date-picker-day'
+                  }
+                  data-muted={!inCurrentMonth}
+                  onClick={() => {
+                    onChange(getInputValueFromDate(date))
+                    setOpen(false)
+                  }}
+                >
+                  {date.getDate()}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 

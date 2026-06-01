@@ -25,7 +25,8 @@
             "Seller Details Updated",
             "Owner Record Created",
             "Failed Seller Info Retrieval",
-            "Failed Form Download"
+            "Failed Form Download",
+            "Failed Domecile Dump Retrieval"
           ],
           "x-ms-enum-values": [
             396620004,
@@ -36,9 +37,11 @@
             396620002,
             396620003,
             396620005,
-            396620008
+            396620008,
+            396620009
           ],
           "Color": [
+            null,
             null,
             null,
             null,
@@ -69,6 +72,116 @@
           "x-ms-dataverse-type": "StringType",
           "x-ms-schema-name": "cr109_Buyer2Name",
           "maxLength": 100
+        },
+        "cr109_closingticketdetailspdf": {
+          "type": "string",
+          "title": "Closing Ticket Details PDF",
+          "x-ms-dataverse-attribute": "cr109_closingticketdetailspdf",
+          "x-ms-dataverse-type": "FileType",
+          "x-ms-schema-name": "cr109_ClosingTicketDetailsPDF",
+          "x-ms-read-only": true
+        },
+        "cr109_closingticketdetailspdf_name": {
+          "type": "string",
+          "title": "cr109_closingticketdetailspdf_name",
+          "x-ms-dataverse-attribute": "cr109_closingticketdetailspdf_name",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_ClosingTicketDetailsPDF_Name",
+          "x-ms-read-only": true,
+          "maxLength": 200
+        },
+        "cr109_domecilechargesextracted": {
+          "type": "string",
+          "title": "Domecile Charges Extracted",
+          "x-ms-dataverse-attribute": "cr109_domecilechargesextracted",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "cr109_DomecileChargesExtracted",
+          "enum": [
+            "No",
+            "Yes"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "ca6925a1-e459-f111-bec6-000d3a19e68b",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Domecile Charges Extracted",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "cr109_domecilechargesextractedname": {
+          "type": "string",
+          "title": "cr109_domecilechargesextractedname",
+          "x-ms-dataverse-attribute": "cr109_domecilechargesextractedname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "cr109_domecilechargesextractedName",
+          "x-ms-read-only": true
+        },
+        "cr109_domecilepackageurl": {
+          "type": "string",
+          "title": "Domecile Package Url",
+          "x-ms-dataverse-attribute": "cr109_domecilepackageurl",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_DomecilePackageUrl",
+          "maxLength": 100
+        },
+        "cr109_newownerticketpdf": {
+          "type": "string",
+          "title": "New Owner Ticket PDF",
+          "x-ms-dataverse-attribute": "cr109_newownerticketpdf",
+          "x-ms-dataverse-type": "FileType",
+          "x-ms-schema-name": "cr109_NewOwnerTicketPDF",
+          "x-ms-read-only": true
+        },
+        "cr109_newownerticketpdf_name": {
+          "type": "string",
+          "title": "cr109_newownerticketpdf_name",
+          "x-ms-dataverse-attribute": "cr109_newownerticketpdf_name",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_NewOwnerTicketPDF_Name",
+          "x-ms-read-only": true,
+          "maxLength": 200
+        },
+        "cr109_packagetype": {
+          "type": "string",
+          "title": "Package Type",
+          "x-ms-dataverse-attribute": "cr109_packagetype",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "cr109_PackageType",
+          "enum": [
+            "condo_sale",
+            "coop_sale",
+            "condo_lease",
+            "coop_transfer"
+          ],
+          "x-ms-enum-values": [
+            396620000,
+            396620001,
+            396620002,
+            396620003
+          ],
+          "Color": [
+            null,
+            null,
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "4c7a10a3-b955-f111-bec6-6045bdd7b738",
+          "x-ms-isGlobal": true,
+          "x-ms-optionsetdisplayname": "Package Type",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "cr109_packagetypename": {
+          "type": "string",
+          "title": "cr109_packagetypename",
+          "x-ms-dataverse-attribute": "cr109_packagetypename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "cr109_packagetypeName",
+          "x-ms-read-only": true
         },
         "cr109_purchaseapplicationform": {
           "type": "string",

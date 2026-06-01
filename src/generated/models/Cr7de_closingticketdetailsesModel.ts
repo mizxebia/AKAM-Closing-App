@@ -11,9 +11,17 @@ export const Cr7de_closingticketdetailsescr109_botstatus = {
   396620002: 'SellerDetailsUpdated',
   396620003: 'OwnerRecordCreated',
   396620005: 'FailedSellerInfoRetrieval',
-  396620008: 'FailedFormDownload'
+  396620008: 'FailedFormDownload',
+  396620009: 'FailedDomecileDumpRetrieval'
 } as const;
 export type Cr7de_closingticketdetailsescr109_botstatus = keyof typeof Cr7de_closingticketdetailsescr109_botstatus;
+export const Cr7de_closingticketdetailsescr109_packagetype = {
+  396620000: 'condo_sale',
+  396620001: 'coop_sale',
+  396620002: 'condo_lease',
+  396620003: 'coop_transfer'
+} as const;
+export type Cr7de_closingticketdetailsescr109_packagetype = keyof typeof Cr7de_closingticketdetailsescr109_packagetype;
 export const Cr7de_closingticketdetailsescr109_transactiontypedeal = {
   396620000: 'AllCash',
   396620001: 'Financing',
@@ -46,6 +54,9 @@ export type Cr7de_closingticketdetailsesstatuscode = keyof typeof Cr7de_closingt
 export interface Cr7de_closingticketdetailsesBase {
   cr109_botstatus?: Cr7de_closingticketdetailsescr109_botstatus;
   cr109_buyer2name?: string;
+  cr109_domecilechargesextracted?: boolean;
+  cr109_domecilepackageurl?: string;
+  cr109_packagetype?: Cr7de_closingticketdetailsescr109_packagetype;
   cr109_saleprice?: string;
   cr109_seller2name?: string;
   cr109_shares?: string;
@@ -81,6 +92,12 @@ export interface Cr7de_closingticketdetailsesBase {
 
 export interface Cr7de_closingticketdetailses extends Cr7de_closingticketdetailsesBase {
   cr109_botstatusname?: string;
+  cr109_closingticketdetailspdf?: string;
+  cr109_closingticketdetailspdf_name?: string;
+  cr109_domecilechargesextractedname?: string;
+  cr109_newownerticketpdf?: string;
+  cr109_newownerticketpdf_name?: string;
+  cr109_packagetypename?: string;
   cr109_purchaseapplicationform?: string;
   cr109_purchaseapplicationform_name?: string;
   cr109_rpttdocument?: string;
@@ -120,4 +137,4 @@ export interface Cr7de_closingticketdetailses extends Cr7de_closingticketdetails
   owninguser?: object;
   _owninguser_value?: string;
 }
-export type Cr7de_closingticketdetailsesUploadColumnName = 'cr109_purchaseapplicationform' | 'cr109_rpttdocument';
+export type Cr7de_closingticketdetailsesUploadColumnName = 'cr109_closingticketdetailspdf' | 'cr109_newownerticketpdf' | 'cr109_purchaseapplicationform' | 'cr109_rpttdocument';

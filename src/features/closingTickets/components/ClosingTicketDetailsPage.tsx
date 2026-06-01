@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
   ArrowLeft,
-  FileCheck2,
   ReceiptText,
   UserPlus,
 } from 'lucide-react'
@@ -14,7 +13,12 @@ import {
 import { NewOwnerTicketWorkspace } from '../../newOwnerTickets'
 import { getClosingTicketById } from '../api/closingTicketsService'
 import type { ClosingTicketRecord } from '../types/closingTicket'
+import {
+  NSC_Generate_InvoiceService,
+  NSC_Generate_New_Owner_TicketService,
+} from '../../../generated'
 import { EditClosingTicketForm } from './CreateClosingTicketForm'
+import { GeneratedDocumentsWorkspace } from './GeneratedDocumentsWorkspace'
 import {
   WorkflowTabs,
   type WorkflowTabKey,
@@ -37,6 +41,12 @@ export function ClosingTicketDetailsPage({
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] =
     useState<string | null>(null)
+  const [generatingInvoice, setGeneratingInvoice] =
+    useState(false)
+  const [
+    generatingNewOwnerTicket,
+    setGeneratingNewOwnerTicket,
+  ] = useState(false)
   const [activeTab, setActiveTab] =
     useState<WorkflowTabKey>('details')
   const ticketId = record?.cr7de_ticketid
@@ -94,16 +104,114 @@ export function ClosingTicketDetailsPage({
     )
   }
 
-  const handleGenerateInvoice = () => {
-    console.info('Generate Invoice requested')
+  const refreshClosingRecord = async () => {
+    const updatedRecord = await getClosingTicketById(
+      recordId
+    )
+    setRecord(updatedRecord)
+    await onSaved()
   }
 
-  const handleGenerateNewOwnerTicket = () => {
-    console.info('Generate New Owner Ticket requested')
+  const handleGenerateInvoice = async () => {
+    const currentTicketId = record?.cr7de_ticketid?.trim()
+
+    if (!currentTicketId) {
+      setError(
+        'Unable to generate invoice because this ticket does not have a Ticket ID.'
+      )
+      setSuccessMessage(null)
+      return
+    }
+
+    setGeneratingInvoice(true)
+    setError(null)
+    setSuccessMessage(null)
+
+    try {
+      const result = await NSC_Generate_InvoiceService.Run({
+        text: currentTicketId,
+      })
+
+      if (!result.success) {
+        throw new Error(
+          result.error?.message ||
+            ' Invoice Generation failed.'
+        )
+      }
+
+      const flowStatus = result.data?.status?.trim()
+
+      if (flowStatus?.toLowerCase() === 'failed') {
+        throw new Error(
+          'Generate Invoice flow returned Failed.'
+        )
+      }
+
+      setSuccessMessage(
+        'Invoice Generated Successfully.'
+      )
+      await refreshClosingRecord()
+      await refreshInvoices()
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Unable to generate invoice.'
+      )
+    } finally {
+      setGeneratingInvoice(false)
+    }
   }
 
-  const handleGenerateClosing = () => {
-    console.info('Generate Closing requested')
+  const handleGenerateNewOwnerTicket = async () => {
+    const currentTicketId = record?.cr7de_ticketid?.trim()
+
+    if (!currentTicketId) {
+      setError(
+        'Unable to generate new owner ticket because this ticket does not have a Ticket ID.'
+      )
+      setSuccessMessage(null)
+      return
+    }
+
+    setGeneratingNewOwnerTicket(true)
+    setError(null)
+    setSuccessMessage(null)
+
+    try {
+      const result =
+        await NSC_Generate_New_Owner_TicketService.Run({
+          text: currentTicketId,
+        })
+
+      if (!result.success) {
+        throw new Error(
+          result.error?.message ||
+            'New Owner Ticket Generation failed.'
+        )
+      }
+
+      const flowStatus = result.data?.status?.trim()
+
+      if (flowStatus?.toLowerCase() === 'failed') {
+        throw new Error(
+          'Generate New Owner Ticket flow returned Failed.'
+        )
+      }
+
+      setSuccessMessage(
+        'New Owner Ticket Generated Successfully.'
+      )
+      await refreshClosingRecord()
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Unable to generate new owner ticket.'
+      )
+    } finally {
+      setGeneratingNewOwnerTicket(false)
+    }
   }
 
   const renderPageActions = () => (
@@ -114,30 +222,52 @@ export function ClosingTicketDetailsPage({
             className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#1E3A47] px-4 text-xs font-semibold uppercase tracking-[0.08em] text-[#F5F2EC] shadow-sm transition hover:bg-[#152d38]"
             type="button"
             onClick={handleGenerateInvoice}
+            disabled={generatingInvoice}
           >
             <ReceiptText className="size-4" />
-            Generate Invoice
+            {generatingInvoice
+              ? 'Generating...'
+              : 'Generate Invoice'}
           </button>
           <button
             className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-sm font-semibold text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC]"
             type="button"
             onClick={handleGenerateNewOwnerTicket}
+            disabled={generatingNewOwnerTicket}
           >
             <UserPlus className="size-4" />
-            Generate New Owner Ticket
+            {generatingNewOwnerTicket
+              ? 'Generating...'
+              : 'Generate New Owner Ticket'}
           </button>
         </>
       )}
 
       {activeTab === 'newOwner' && (
-        <button
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#1E3A47] px-4 text-xs font-semibold uppercase tracking-[0.08em] text-[#F5F2EC] shadow-sm transition hover:bg-[#152d38]"
-          type="button"
-          onClick={handleGenerateClosing}
-        >
-          <FileCheck2 className="size-4" />
-          Generate Closing
-        </button>
+        <>
+          <button
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-sm font-semibold text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC]"
+            type="button"
+            onClick={handleGenerateNewOwnerTicket}
+            disabled={generatingNewOwnerTicket}
+          >
+            <UserPlus className="size-4" />
+            {generatingNewOwnerTicket
+              ? 'Generating...'
+              : 'Generate New Owner Ticket'}
+          </button>
+          <button
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#1E3A47] px-4 text-xs font-semibold uppercase tracking-[0.08em] text-[#F5F2EC] shadow-sm transition hover:bg-[#152d38]"
+            type="button"
+            onClick={handleGenerateInvoice}
+            disabled={generatingInvoice}
+          >
+            <ReceiptText className="size-4" />
+            {generatingInvoice
+              ? 'Generating...'
+              : 'Generate Invoice'}
+          </button>
+        </>
       )}
 
       <button
@@ -192,6 +322,10 @@ export function ClosingTicketDetailsPage({
               label: 'Charges',
             },
             {
+              key: 'documents',
+              label: 'Documents',
+            },
+            {
               key: 'newOwner',
               label: 'New Owner Ticket',
             },
@@ -218,6 +352,12 @@ export function ClosingTicketDetailsPage({
               loading={invoicesLoading}
               error={invoicesError}
               onRefresh={refreshInvoices}
+            />
+          )}
+
+          {activeTab === 'documents' && (
+            <GeneratedDocumentsWorkspace
+              closingTicket={record}
             />
           )}
 

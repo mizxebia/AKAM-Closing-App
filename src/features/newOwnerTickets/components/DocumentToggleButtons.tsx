@@ -1,18 +1,21 @@
 import {
   NEW_OWNER_DOCUMENTS,
   hasDocument,
-  type NewOwnerDocumentKey,
+  type ClosingTicketDocumentKey,
+  type NewOwnerDocumentDefinition,
 } from '../utils/dataverseFileUtils'
 import type { ClosingTicketRecord } from '../../closingTickets/types/closingTicket'
 
 interface DocumentToggleButtonsProps {
   closingTicket: ClosingTicketRecord
-  selectedDocument: NewOwnerDocumentKey | null
-  onSelectDocument: (documentKey: NewOwnerDocumentKey) => void
+  documents?: readonly NewOwnerDocumentDefinition[]
+  selectedDocument: ClosingTicketDocumentKey | null
+  onSelectDocument: (documentKey: ClosingTicketDocumentKey) => void
 }
 
 export function DocumentToggleButtons({
   closingTicket,
+  documents = NEW_OWNER_DOCUMENTS,
   selectedDocument,
   onSelectDocument,
 }: DocumentToggleButtonsProps) {
@@ -21,7 +24,7 @@ export function DocumentToggleButtons({
       className="grid grid-cols-2 gap-2"
       aria-label="Document preview selector"
     >
-      {NEW_OWNER_DOCUMENTS.map((document) => {
+      {documents.map((document) => {
         const documentExists = hasDocument(
           closingTicket,
           document

@@ -12,16 +12,19 @@ import {
   getDocumentDefinition,
   getDocumentFileName,
   hasDocument,
-  type NewOwnerDocumentKey,
+  NEW_OWNER_DOCUMENTS,
+  type ClosingTicketDocumentKey,
+  type NewOwnerDocumentDefinition,
 } from '../utils/dataverseFileUtils'
 
 import { DocumentToggleButtons } from './DocumentToggleButtons'
 
 interface DocumentViewerPanelProps {
   closingTicket: ClosingTicketRecord
-  selectedDocument: NewOwnerDocumentKey | null
+  documents?: readonly NewOwnerDocumentDefinition[]
+  selectedDocument: ClosingTicketDocumentKey | null
   onSelectDocument: (
-    documentKey: NewOwnerDocumentKey
+    documentKey: ClosingTicketDocumentKey
   ) => void
 }
 
@@ -176,6 +179,7 @@ function renderDocumentViewer(
 
 export function DocumentViewerPanel({
   closingTicket,
+  documents = NEW_OWNER_DOCUMENTS,
   selectedDocument,
   onSelectDocument,
 }: DocumentViewerPanelProps) {
@@ -209,10 +213,11 @@ export function DocumentViewerPanel({
       () =>
         selectedDocument
           ? getDocumentDefinition(
-              selectedDocument
+              selectedDocument,
+              documents
             )
           : null,
-      [selectedDocument]
+      [documents, selectedDocument]
     )
 
   const fileName = useMemo(() => {
@@ -336,6 +341,7 @@ export function DocumentViewerPanel({
 
           <DocumentToggleButtons
             closingTicket={closingTicket}
+            documents={documents}
             selectedDocument={selectedDocument}
             onSelectDocument={onSelectDocument}
           />

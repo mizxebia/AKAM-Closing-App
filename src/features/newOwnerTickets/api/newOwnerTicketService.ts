@@ -4,6 +4,8 @@ import type {
   NewOwnerTicketInput,
   NewOwnerTicketRecord,
 } from '../types/newOwnerTicket'
+import type { ClosingTicketRecord } from '../../closingTickets/types/closingTicket'
+import { buildNewOwnerPayloadFromClosingTicket } from '../utils/sharedTicketFields'
 
 function escapeODataString(value: string) {
   return value.replace(/'/g, "''")
@@ -72,4 +74,42 @@ export async function saveNewOwnerTicket(
   }
 
   return result.data as NewOwnerTicketRecord
+}
+
+export async function ensureNewOwnerTicketForClosingTicket(
+  closingTicket: ClosingTicketRecord
+) {
+  const ticketId = closingTicket.cr7de_ticketid ?? ''
+  if (!ticketId.trim()) {
+    return null
+  }
+
+  const existingRecord =
+    await getNewOwnerTicketByTicketId(ticketId)
+
+  if (existingRecord) {
+    return existingRecord
+  }
+
+  return saveNewOwnerTicket(
+    null,
+    buildNewOwnerPayloadFromClosingTicket(closingTicket)
+  )
+}
+
+export async function syncNewOwnerTicketFromClosingTicket(
+  closingTicket: ClosingTicketRecord
+) {
+  const ticketId = closingTicket.cr7de_ticketid ?? ''
+  if (!ticketId.trim()) {
+    return null
+  }
+
+  const existingRecord =
+    await getNewOwnerTicketByTicketId(ticketId)
+
+  return saveNewOwnerTicket(
+    existingRecord?.cr7de_newownerticketdetailsid ?? null,
+    buildNewOwnerPayloadFromClosingTicket(closingTicket)
+  )
 }

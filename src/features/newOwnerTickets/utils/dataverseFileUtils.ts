@@ -8,11 +8,21 @@ export type NewOwnerDocumentKey =
   | 'purchaseApplicationForm'
   | 'rptt'
 
+export type GeneratedClosingDocumentKey =
+  | 'newOwnerTicketPdf'
+  | 'closingTicketDetailsPdf'
+
+export type ClosingTicketDocumentKey =
+  | NewOwnerDocumentKey
+  | GeneratedClosingDocumentKey
+
 export interface NewOwnerDocumentDefinition {
-  key: NewOwnerDocumentKey
+  key: ClosingTicketDocumentKey
   label: string
   columnName: Cr7de_closingticketdetailsesUploadColumnName
   fileNameColumn:
+    | 'cr109_closingticketdetailspdf_name'
+    | 'cr109_newownerticketpdf_name'
     | 'cr109_purchaseapplicationform_name'
     | 'cr109_rpttdocument_name'
 }
@@ -55,12 +65,31 @@ export const NEW_OWNER_DOCUMENTS:
     },
   ]
 
+export const GENERATED_CLOSING_DOCUMENTS:
+  readonly NewOwnerDocumentDefinition[] =
+  [
+    {
+      key: 'newOwnerTicketPdf',
+      label: 'New Owner Ticket PDF',
+      columnName: 'cr109_newownerticketpdf',
+      fileNameColumn: 'cr109_newownerticketpdf_name',
+    },
+    {
+      key: 'closingTicketDetailsPdf',
+      label: 'Closing Ticket Details PDF',
+      columnName: 'cr109_closingticketdetailspdf',
+      fileNameColumn: 'cr109_closingticketdetailspdf_name',
+    },
+  ]
+
 export function getDocumentDefinition(
-  key: NewOwnerDocumentKey
+  key: ClosingTicketDocumentKey,
+  documents: readonly NewOwnerDocumentDefinition[] =
+    NEW_OWNER_DOCUMENTS
 ) {
 
   return (
-    NEW_OWNER_DOCUMENTS.find(
+    documents.find(
       (document) =>
         document.key === key
     ) ?? null
@@ -83,11 +112,13 @@ export function hasDocument(
 }
 
 export function getDefaultDocument(
-  closingTicket: ClosingTicketRecord
-): NewOwnerDocumentKey | null {
+  closingTicket: ClosingTicketRecord,
+  documents: readonly NewOwnerDocumentDefinition[] =
+    NEW_OWNER_DOCUMENTS
+): ClosingTicketDocumentKey | null {
 
   return (
-    NEW_OWNER_DOCUMENTS.find(
+    documents.find(
       (document) =>
         hasDocument(
           closingTicket,
