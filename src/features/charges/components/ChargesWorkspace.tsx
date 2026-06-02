@@ -6,8 +6,10 @@ import {
   updateUnpaidCharge,
 } from '../api/chargesService'
 import type {
+  BuyerLedgerRecord,
   ScheduledChargeRecord,
   ScheduledChargeUpdateInput,
+  SellerLedgerRecord,
   UnpaidChargeRecord,
   UnpaidChargeUpdateInput,
 } from '../types/charges'
@@ -15,6 +17,8 @@ import type {
 interface ChargesWorkspaceProps {
   unpaidCharges: UnpaidChargeRecord[]
   scheduledCharges: ScheduledChargeRecord[]
+  sellerLedgers: SellerLedgerRecord[]
+  buyerLedgers: BuyerLedgerRecord[]
   loading: boolean
   error: string | null
   onRefresh: () => Promise<void> | void
@@ -110,6 +114,41 @@ function buildScheduledPayload(
     cr109_move: draft.cr109_move ?? false,
     cr109_partiallypaid: draft.cr109_partiallypaid ?? false,
   }
+}
+
+function formatLedgerDate(value?: string) {
+  if (!value) {
+    return '-'
+  }
+
+  const parsedDate = new Date(value)
+  if (Number.isNaN(parsedDate.getTime())) {
+    return value.slice(0, 10)
+  }
+
+  return parsedDate.toLocaleDateString('en-US', {
+    month: '2-digit',
+    day: '2-digit',
+    year: 'numeric',
+  })
+}
+
+function formatLedgerValue(value?: string) {
+  const trimmed = value?.trim()
+  return trimmed ? trimmed : '-'
+}
+
+function parseLedgerNumber(value?: string) {
+  if (!value) {
+    return 0
+  }
+
+  const parsed = Number(value.replace(/,/g, '').trim())
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+function formatLedgerNumber(value: number) {
+  return value.toFixed(2)
 }
 
 function BooleanPill({
@@ -563,11 +602,17 @@ function ChargeTableShell({
   title,
   subtitle,
   children,
+  tableWrapClassName,
 }: {
   title: string
   subtitle: string
   children: ReactNode
+  tableWrapClassName?: string
 }) {
+  const wrapClassName = tableWrapClassName
+    ? `dataverse-charge-table-wrap ${tableWrapClassName}`
+    : 'dataverse-charge-table-wrap'
+
   return (
     <section className="dataverse-charge-card">
       <div className="dataverse-charge-card-header">
@@ -576,16 +621,97 @@ function ChargeTableShell({
           <p>{subtitle}</p>
         </div>
       </div>
-      <div className="dataverse-charge-table-wrap">
+      <div className={wrapClassName}>
         {children}
       </div>
     </section>
   )
 }
 
+function LedgerTable({
+  title,
+  subtitle,
+  records,
+  paymentsHeader,
+  useRunningBalance = false,
+}: {
+  title: string
+  subtitle: string
+  records: Array<SellerLedgerRecord | BuyerLedgerRecord>
+  paymentsHeader: string
+  useRunningBalance?: boolean
+}) {
+  let runningBalance = 0
+
+  return (
+    <ChargeTableShell
+      title={title}
+      subtitle={subtitle}
+      tableWrapClassName="dataverse-charge-table-wrap--no-scroll"
+    >
+      <table className="dataverse-charge-table dataverse-ledger-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Charges</th>
+            <th>{paymentsHeader}</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          {records.map((record, index) => {
+            const key =
+              'crc5c_sellerledgerid' in record
+                ? record.crc5c_sellerledgerid
+                : record.crc5c_buyerledgerid
+
+            return (
+              <tr key={key ?? `${title}-${index}`}>
+                <td>
+                  {formatLedgerDate(record.cr109_date)}
+                </td>
+                <td>
+                  {formatLedgerValue(
+                    record.cr109_description
+                  )}
+                </td>
+                <td className="dataverse-ledger-number-cell">
+                  {formatLedgerValue(record.cr109_charges)}
+                </td>
+                <td className="dataverse-ledger-number-cell">
+                  {formatLedgerValue(record.cr109_payments)}
+                </td>
+                <td className="dataverse-ledger-number-cell">
+                  {useRunningBalance
+                    ? (() => {
+                        runningBalance +=
+                          parseLedgerNumber(
+                            record.cr109_charges
+                          ) -
+                          parseLedgerNumber(
+                            record.cr109_payments
+                          )
+                        return formatLedgerNumber(
+                          runningBalance
+                        )
+                      })()
+                    : formatLedgerValue(record.cr109_balance)}
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </ChargeTableShell>
+  )
+}
+
 export function ChargesWorkspace({
   unpaidCharges,
   scheduledCharges,
+  sellerLedgers,
+  buyerLedgers,
   loading,
   error,
   onRefresh,
@@ -648,6 +774,23 @@ export function ChargesWorkspace({
               onSavingChange={setSavingId}
             />
           )}
+
+          <div className="dataverse-ledger-grid">
+            <LedgerTable
+              title="Seller Ledger"
+              subtitle={`${sellerLedgers.length} records`}
+              records={sellerLedgers}
+              paymentsHeader="Payments"
+            />
+
+            <LedgerTable
+              title="Buyer Ledger"
+              subtitle={`${buyerLedgers.length} records`}
+              records={buyerLedgers}
+              paymentsHeader="Payment"
+              useRunningBalance
+            />
+          </div>
         </div>
       )}
     </div>

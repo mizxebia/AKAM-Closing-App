@@ -59,6 +59,14 @@
         "copyscheduledcharges": {
           "entitySetName": "crc5c_copyscheduledchargeses",
           "logicalName": "crc5c_copyscheduledcharges"
+        },
+        "sellerledgers": {
+          "entitySetName": "crc5c_sellerledgers",
+          "logicalName": "crc5c_sellerledger"
+        },
+        "buyerledgers": {
+          "entitySetName": "crc5c_buyerledgers",
+          "logicalName": "crc5c_buyerledger"
         }
       },
       "environmentVariableName": ""

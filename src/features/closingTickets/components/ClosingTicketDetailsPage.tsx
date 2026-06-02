@@ -63,6 +63,8 @@ export function ClosingTicketDetailsPage({
   const {
     unpaidCharges,
     scheduledCharges,
+    sellerLedgers,
+    buyerLedgers,
     loading: chargesLoading,
     error: chargesError,
     refresh: refreshCharges,
@@ -375,6 +377,8 @@ export function ClosingTicketDetailsPage({
             <ChargesWorkspace
               unpaidCharges={unpaidCharges}
               scheduledCharges={scheduledCharges}
+              sellerLedgers={sellerLedgers}
+              buyerLedgers={buyerLedgers}
               loading={chargesLoading}
               error={chargesError}
               onRefresh={refreshCharges}

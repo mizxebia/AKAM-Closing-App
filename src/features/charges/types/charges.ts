@@ -1,9 +1,13 @@
 import type { Crc5c_copyscheduledchargeses } from '../../../generated/models/Crc5c_copyscheduledchargesesModel'
 import type { Crc5c_unpaidchargeses } from '../../../generated/models/Crc5c_unpaidchargesesModel'
+import type { Crc5c_sellerledgers } from '../../../generated/models/Crc5c_sellerledgersModel'
+import type { Crc5c_buyerledgers } from '../../../generated/models/Crc5c_buyerledgersModel'
 
 export type UnpaidChargeRecord = Crc5c_unpaidchargeses
 export type ScheduledChargeRecord =
   Crc5c_copyscheduledchargeses
+export type SellerLedgerRecord = Crc5c_sellerledgers
+export type BuyerLedgerRecord = Crc5c_buyerledgers
 
 export type UnpaidChargeUpdateInput = Partial<
   Pick<
