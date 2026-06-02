@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   getBuyerLedgersByTicketId,
   getScheduledChargesByTicketId,
@@ -28,6 +28,8 @@ export function useCharges(ticketId?: string) {
     BuyerLedgerRecord[]
   >([])
   const [loading, setLoading] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
+  const initialLoad = useRef(false)
   const [error, setError] = useState<string | null>(null)
 
   const normalizeText = (value?: string) => value?.trim() ?? ''
@@ -61,10 +63,18 @@ export function useCharges(ticketId?: string) {
       setScheduledCharges([])
       setSellerLedgers([])
       setBuyerLedgers([])
+      initialLoad.current = false
+      setLoading(false)
+      setRefreshing(false)
       return
     }
 
-    setLoading(true)
+    const isInitialLoad = !initialLoad.current
+    if (isInitialLoad) {
+      setLoading(true)
+    } else {
+      setRefreshing(true)
+    }
     setError(null)
 
     try {
@@ -149,7 +159,9 @@ export function useCharges(ticketId?: string) {
           : 'Unable to load charges.'
       )
     } finally {
+      initialLoad.current = true
       setLoading(false)
+      setRefreshing(false)
     }
   }, [ticketId])
 
@@ -163,6 +175,7 @@ export function useCharges(ticketId?: string) {
     sellerLedgers,
     buyerLedgers,
     loading,
+    refreshing,
     error,
     refresh,
   }

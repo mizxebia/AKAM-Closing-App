@@ -21,6 +21,7 @@ interface ChargesWorkspaceProps {
   sellerLedgers: SellerLedgerRecord[]
   buyerLedgers: BuyerLedgerRecord[]
   loading: boolean
+  refreshing: boolean
   error: string | null
   onRefresh: () => Promise<void> | void
 }
@@ -764,6 +765,7 @@ export function ChargesWorkspace({
   sellerLedgers,
   buyerLedgers,
   loading,
+  refreshing,
   error,
   onRefresh,
 }: ChargesWorkspaceProps) {
@@ -781,13 +783,17 @@ export function ChargesWorkspace({
             this closing.
           </p>
         </div>
-        <button type="button" onClick={onRefresh}>
+        <button
+          type="button"
+          onClick={onRefresh}
+          disabled={refreshing || loading}
+        >
           <RotateCw className="size-4" />
-          Refresh
+          {refreshing ? 'Refreshing...' : 'Refresh'}
         </button>
       </div>
 
-      {loading && (
+      {loading && !refreshing && (
         <div className="invoice-state">Loading charges...</div>
       )}
       {error && (

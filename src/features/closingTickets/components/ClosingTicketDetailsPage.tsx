@@ -66,6 +66,7 @@ export function ClosingTicketDetailsPage({
     sellerLedgers,
     buyerLedgers,
     loading: chargesLoading,
+    refreshing: chargesRefreshing,
     error: chargesError,
     refresh: refreshCharges,
   } = useCharges(ticketId)
@@ -380,6 +381,7 @@ export function ClosingTicketDetailsPage({
               sellerLedgers={sellerLedgers}
               buyerLedgers={buyerLedgers}
               loading={chargesLoading}
+              refreshing={chargesRefreshing}
               error={chargesError}
               onRefresh={refreshCharges}
             />
