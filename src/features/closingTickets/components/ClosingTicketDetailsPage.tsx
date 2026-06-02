@@ -384,6 +384,7 @@ export function ClosingTicketDetailsPage({
               refreshing={chargesRefreshing}
               error={chargesError}
               onRefresh={refreshCharges}
+              invoices={invoiceRecords}
             />
           )}
 
