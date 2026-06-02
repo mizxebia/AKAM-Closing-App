@@ -4,6 +4,7 @@ import { RotateCw, Save } from 'lucide-react'
 import {
   updateScheduledCharge,
   updateUnpaidCharge,
+  syncBuyerLedgerWithUnpaidCharge,
 } from '../api/chargesService'
 import type {
   BuyerLedgerRecord,
@@ -221,22 +222,68 @@ function UnpaidChargesTable({
     }))
   }
 
-  const saveRecord = async (id: string) => {
-    const draft = drafts[id]
-    if (!draft) {
+  const saveAll = async () => {
+    const changedIds = Object.keys(drafts).filter(
+      (id) =>
+        JSON.stringify(drafts[id]) !==
+        JSON.stringify(initialDrafts[id])
+    )
+    if (changedIds.length === 0) {
       return
     }
 
-    onSavingChange(id)
+    onSavingChange('all-unpaid')
     setSaveError(null)
     try {
-      await updateUnpaidCharge(id, buildUnpaidPayload(draft))
+      const failures: string[] = []
+
+      for (const id of changedIds) {
+        const prev = records.find(
+          (r) => r.crc5c_unpaidchargesid === id
+        )
+        try {
+          const updated = await updateUnpaidCharge(
+            id,
+            buildUnpaidPayload(drafts[id])
+          )
+
+          // sync buyer ledger: if move was unticked we delete matching buyer ledger records
+          try {
+            await syncBuyerLedgerWithUnpaidCharge(
+              prev as UnpaidChargeRecord,
+              updated
+            )
+          } catch (syncErr) {
+            // don't fail the whole batch for ledger sync issues; collect and continue
+            failures.push(
+              `Ledger sync failed for ${id}: ${
+                syncErr instanceof Error
+                  ? syncErr.message
+                  : String(syncErr)
+              }`
+            )
+          }
+        } catch (err) {
+          failures.push(
+            `Save failed for ${id}: ${
+              err instanceof Error ? err.message : String(err)
+            }`
+          )
+        }
+      }
+
+      if (failures.length > 0) {
+        setSaveError(
+          `Completed with ${failures.length} error(s). ${failures[0]}`
+        )
+      }
+
       await onSaved()
     } catch (err) {
       setSaveError(
         err instanceof Error
           ? err.message
-          : 'Unable to save unpaid charge.'
+          : 'Unable to save unpaid charges.'
       )
     } finally {
       onSavingChange(null)
@@ -247,6 +294,17 @@ function UnpaidChargesTable({
     <ChargeTableShell
       title="Unpaid Charges"
       subtitle={`${records.length} records`}
+      headerActions={
+        <button
+          className="charge-save-button"
+          type="button"
+          onClick={saveAll}
+          disabled={savingId === 'all-unpaid'}
+        >
+          <Save className="size-4" />
+          {savingId === 'all-unpaid' ? 'Saving' : 'Save All'}
+        </button>
+      }
     >
       {saveError && (
         <div className="dataverse-charge-save-error">
@@ -262,7 +320,6 @@ function UnpaidChargesTable({
             <th>Partially Paid</th>
             <th>Move</th>
             <th>Notes</th>
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -351,25 +408,7 @@ function UnpaidChargesTable({
                     }
                   />
                 </td>
-                <td>
-                  <button
-                    className="charge-save-button"
-                    type="button"
-                    onClick={() =>
-                      saveRecord(record.crc5c_unpaidchargesid)
-                    }
-                    disabled={
-                      savingId ===
-                      record.crc5c_unpaidchargesid
-                    }
-                  >
-                    <Save className="size-4" />
-                    {savingId ===
-                    record.crc5c_unpaidchargesid
-                      ? 'Saving'
-                      : 'Save'}
-                  </button>
-                </td>
+                
               </tr>
             )
           })}
@@ -422,35 +461,61 @@ function ScheduledChargesTable({
     }))
   }
 
-  const saveRecord = async (id: string) => {
-    const draft = drafts[id]
-    if (!draft) {
-      return
-    }
 
-    onSavingChange(id)
-    setSaveError(null)
-    try {
-      await updateScheduledCharge(
-        id,
-        buildScheduledPayload(draft)
-      )
-      await onSaved()
-    } catch (err) {
-      setSaveError(
-        err instanceof Error
-          ? err.message
-          : 'Unable to save scheduled charge.'
-      )
-    } finally {
-      onSavingChange(null)
-    }
-  }
 
   return (
     <ChargeTableShell
       title="Scheduled Charges"
       subtitle={`${records.length} records`}
+      headerActions={
+        <button
+          className="charge-save-button"
+          type="button"
+          onClick={async () => {
+            const changedIds = Object.keys(drafts).filter(
+              (id) =>
+                JSON.stringify(drafts[id]) !==
+                JSON.stringify(initialDrafts[id])
+            )
+            if (changedIds.length === 0) return
+
+            onSavingChange('all-scheduled')
+            setSaveError(null)
+            try {
+              const promises = changedIds.map((id) =>
+                updateScheduledCharge(
+                  id,
+                  buildScheduledPayload(drafts[id])
+                )
+              )
+              const results = await Promise.allSettled(promises)
+              const failed = results
+                .map((r, idx) => ({ r, id: changedIds[idx] }))
+                .filter((x) => x.r.status === 'rejected')
+
+              if (failed.length > 0) {
+                setSaveError(
+                  `Failed to save ${failed.length} scheduled charge(s).`
+                )
+              } else {
+                await onSaved()
+              }
+            } catch (err) {
+              setSaveError(
+                err instanceof Error
+                  ? err.message
+                  : 'Unable to save scheduled charges.'
+              )
+            } finally {
+              onSavingChange(null)
+            }
+          }}
+          disabled={savingId === 'all-scheduled'}
+        >
+          <Save className="size-4" />
+          {savingId === 'all-scheduled' ? 'Saving' : 'Save All'}
+        </button>
+      }
     >
       {saveError && (
         <div className="dataverse-charge-save-error">
@@ -466,7 +531,6 @@ function ScheduledChargesTable({
             <th>Amount</th>
             <th>Partially Paid</th>
             <th>Move</th>
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -568,27 +632,7 @@ function ScheduledChargesTable({
                     }
                   />
                 </td>
-                <td>
-                  <button
-                    className="charge-save-button"
-                    type="button"
-                    onClick={() =>
-                      saveRecord(
-                        record.crc5c_copyscheduledchargesid
-                      )
-                    }
-                    disabled={
-                      savingId ===
-                      record.crc5c_copyscheduledchargesid
-                    }
-                  >
-                    <Save className="size-4" />
-                    {savingId ===
-                    record.crc5c_copyscheduledchargesid
-                      ? 'Saving'
-                      : 'Save'}
-                  </button>
-                </td>
+                
               </tr>
             )
           })}
@@ -603,11 +647,13 @@ function ChargeTableShell({
   subtitle,
   children,
   tableWrapClassName,
+  headerActions,
 }: {
   title: string
   subtitle: string
   children: ReactNode
   tableWrapClassName?: string
+  headerActions?: ReactNode
 }) {
   const wrapClassName = tableWrapClassName
     ? `dataverse-charge-table-wrap ${tableWrapClassName}`
@@ -620,6 +666,11 @@ function ChargeTableShell({
           <h3>{title}</h3>
           <p>{subtitle}</p>
         </div>
+        {headerActions && (
+          <div className="dataverse-charge-card-header-actions">
+            {headerActions}
+          </div>
+        )}
       </div>
       <div className={wrapClassName}>
         {children}
@@ -747,20 +798,6 @@ export function ChargesWorkspace({
 
       {!loading && !error && (
         <div className="dataverse-charge-grid">
-          {unpaidCharges.length === 0 ? (
-            <section className="dataverse-charge-empty">
-              No unpaid charge records were found for this
-              closing.
-            </section>
-          ) : (
-            <UnpaidChargesTable
-              records={unpaidCharges}
-              savingId={savingId}
-              onSaved={onRefresh}
-              onSavingChange={setSavingId}
-            />
-          )}
-
           {scheduledCharges.length === 0 ? (
             <section className="dataverse-charge-empty">
               No scheduled charge records were found for this
@@ -769,6 +806,20 @@ export function ChargesWorkspace({
           ) : (
             <ScheduledChargesTable
               records={scheduledCharges}
+              savingId={savingId}
+              onSaved={onRefresh}
+              onSavingChange={setSavingId}
+            />
+          )}
+
+          {unpaidCharges.length === 0 ? (
+            <section className="dataverse-charge-empty">
+              No unpaid charge records were found for this
+              closing.
+            </section>
+          ) : (
+            <UnpaidChargesTable
+              records={unpaidCharges}
               savingId={savingId}
               onSaved={onRefresh}
               onSavingChange={setSavingId}
