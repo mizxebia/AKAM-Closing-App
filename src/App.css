@@ -1925,6 +1925,24 @@ body {
   display: grid;
   gap: 14px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+.dataverse-ledger-grid .dataverse-charge-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.dataverse-ledger-grid .dataverse-charge-table-wrap--no-scroll {
+  flex: 1;
+}
+
+.dataverse-ledger-grid .dataverse-charge-table-wrap--no-scroll .dataverse-charge-table {
+  height: 1px; /* trick: makes tbody fill remaining card height in some browsers */
+}
+
+.dataverse-ledger-grid .dataverse-charge-table-wrap--no-scroll .dataverse-charge-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .dataverse-charge-card,
@@ -2157,6 +2175,7 @@ body {
 
 .dataverse-ledger-table td:nth-child(2) {
   line-height: 1.35;
+  overflow: hidden;
 }
 
 .dataverse-charge-table input {

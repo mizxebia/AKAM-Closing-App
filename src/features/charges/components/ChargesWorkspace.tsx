@@ -884,7 +884,9 @@ function LedgerTable({
     // Seller = paidby 716070000, Buyer = paidby 716070001
     const targetPaidBy = isSellerLedger ? 716070000 : 716070001
     const filteredInvoices = invoices.filter(
-      (inv) => Number(inv.cr7de_paidby) === targetPaidBy
+      (inv) =>
+        Number(inv.cr7de_paidby) === targetPaidBy &&
+        !inv.cr7de_notapplicabletoledger
     )
 
     const rows: LedgerDisplayRow[] = []
@@ -1045,9 +1047,18 @@ function LedgerTable({
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
+                    minWidth: 0,
+                    overflow: 'hidden',
                   }}
                 >
-                  <span style={{ flex: 1, color: row.isInvoiceRow ? '#166534' : undefined }}>
+                  <span style={{
+                    flex: 1,
+                    minWidth: 0,
+                    overflow: 'hidden',
+                    whiteSpace: 'nowrap',
+                    textOverflow: 'ellipsis',
+                    color: row.isInvoiceRow ? '#166534' : undefined,
+                  }}>
                     {formatLedgerValue(
                       row.cr109_description
                     )}
