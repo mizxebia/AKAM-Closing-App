@@ -21,14 +21,6 @@ function normalizeLedgerValue(value?: string) {
   return value?.trim() ?? ''
 }
 
-function extractSellerChargeCode(description?: string) {
-  if (!description) {
-    return ''
-  }
-
-  const [chargeCode] = description.split('-')
-  return normalizeLedgerValue(chargeCode)
-}
 
 export const SellerLedgerChargeStatus = {
   Active: 396620000,
