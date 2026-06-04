@@ -882,11 +882,13 @@ function LedgerTable({
 
     // -- Check with Invoice mode --
     // Seller = paidby 716070000, Buyer = paidby 716070001
+    // Payable To: Building = 716070000 (only show Building invoices)
     const targetPaidBy = isSellerLedger ? 716070000 : 716070001
     const filteredInvoices = invoices.filter(
       (inv) =>
         Number(inv.cr7de_paidby) === targetPaidBy &&
-        !inv.cr7de_notapplicabletoledger
+        !inv.cr7de_notapplicabletoledger &&
+        Number(inv.cr7de_payableto) === 716070000
     )
 
     const rows: LedgerDisplayRow[] = []

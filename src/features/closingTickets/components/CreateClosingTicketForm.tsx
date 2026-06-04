@@ -45,6 +45,8 @@ type UploadedFileNames = Partial<Record<UploadColumnName, string>>
 
 const READY_FOR_POST_CLOSING_STATUS = 716070006
 const POST_CLOSING_STATUS = 716070004
+const VALIDATE_STATUS = 716070001
+const PURCHASE_FORM_DATA_EXTRACTED_BOT_STATUS = 396620013
 const emptyUploadedFileNames: UploadedFileNames = {}
 
 interface CreateClosingTicketFormProps {
@@ -587,7 +589,8 @@ function ClosingTicketEditorForm({
   }, [formState.cr7de_buildingnotondomicile, isCreateMode])
 
   const updateTicketStatus = async (
-    nextStatus: typeof POST_CLOSING_STATUS
+    nextStatus: number,
+    nextBotStatus?: number
   ) => {
     if (!recordId) {
       return
@@ -596,6 +599,9 @@ function ClosingTicketEditorForm({
     const nextFormState = {
       ...formState,
       cr7de_ticketstatus: nextStatus,
+      ...(nextBotStatus !== undefined
+        ? { cr109_botstatus: nextBotStatus }
+        : {}),
     }
 
     setSaving(true)
@@ -647,12 +653,17 @@ function ClosingTicketEditorForm({
       await deleteClosingTicketFile(recordId, columnName)
       const shouldResetToReadyForPostClosing =
         columnName === 'cr109_rpttdocument' &&
-        ticketStatusLabel === 'PostClosing'
+        (ticketStatusLabel === 'PostClosing' ||
+          ticketStatusLabel === 'Validate')
 
       if (shouldResetToReadyForPostClosing) {
+        const isFromValidate = ticketStatusLabel === 'Validate'
         const nextFormState: ClosingTicketFormState = {
           ...formState,
           cr7de_ticketstatus: READY_FOR_POST_CLOSING_STATUS,
+          ...(isFromValidate
+            ? { cr109_botstatus: PURCHASE_FORM_DATA_EXTRACTED_BOT_STATUS }
+            : {}),
         }
 
         await updateClosingTicket(

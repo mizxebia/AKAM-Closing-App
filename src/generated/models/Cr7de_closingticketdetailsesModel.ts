@@ -7,12 +7,23 @@ export const Cr7de_closingticketdetailsescr109_botstatus = {
   396620000: 'SellerInfoRetrieved',
   396620006: 'DomecileDumpRetrieved',
   396620001: 'FormDownloaded',
+  396620010: 'RPTTUploaded',
+  396620011: 'YARDIChargesFetched',
   396620007: 'InformationValidated',
   396620002: 'SellerDetailsUpdated',
   396620003: 'OwnerRecordCreated',
   396620005: 'FailedSellerInfoRetrieval',
+  396620015: 'PurchaseFormUploadOnedrive',
   396620008: 'FailedFormDownload',
-  396620009: 'FailedDomecileDumpRetrieval'
+  396620009: 'FailedDomecileDumpRetrieval',
+  396620012: 'FailedYardiChargesFetch',
+  396620013: 'PurchaseFormDataExtracted',
+  396620014: 'FailedPurchaseFormDataExtraction',
+  396620016: 'FailedPurchaseFormUploadOnedrive',
+  396620017: 'FailedSellerDetailsUpdate',
+  396620018: 'FailedCreateNewOwner',
+  396620019: 'FailedRPTTExtraction',
+  396620020: 'RPTTExtracted'
 } as const;
 export type Cr7de_closingticketdetailsescr109_botstatus = keyof typeof Cr7de_closingticketdetailsescr109_botstatus;
 export const Cr7de_closingticketdetailsescr109_packagetype = {
