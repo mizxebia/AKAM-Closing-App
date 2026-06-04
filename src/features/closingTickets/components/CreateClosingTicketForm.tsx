@@ -45,7 +45,6 @@ type UploadedFileNames = Partial<Record<UploadColumnName, string>>
 
 const READY_FOR_POST_CLOSING_STATUS = 716070006
 const POST_CLOSING_STATUS = 716070004
-const VALIDATE_STATUS = 716070001
 const PURCHASE_FORM_DATA_EXTRACTED_BOT_STATUS = 396620013
 const emptyUploadedFileNames: UploadedFileNames = {}
 
@@ -598,9 +597,9 @@ function ClosingTicketEditorForm({
 
     const nextFormState = {
       ...formState,
-      cr7de_ticketstatus: nextStatus,
+      cr7de_ticketstatus: nextStatus as ClosingTicketFormState['cr7de_ticketstatus'],
       ...(nextBotStatus !== undefined
-        ? { cr109_botstatus: nextBotStatus }
+        ? { cr109_botstatus: nextBotStatus as ClosingTicketFormState['cr109_botstatus'] }
         : {}),
     }
 

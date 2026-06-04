@@ -668,7 +668,7 @@ export function NewOwnerTicketTab({
       )}
 
       {!loading && (
-        <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_440px] 2xl:grid-cols-[minmax(0,1fr)_520px]">
+        <div className="grid items-start gap-4 xl:grid-cols-2">
           <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/60">
             <NewOwnerTicketForm
               formState={formState}

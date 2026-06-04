@@ -27,7 +27,7 @@ export function WorkflowTabs({
   children,
 }: WorkflowTabsProps) {
   return (
-    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/60">
+    <section className="rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/60">
       <div className="sticky top-0 z-20 flex gap-1 overflow-x-auto border-b border-slate-200 bg-white/95 px-3 py-2 backdrop-blur">
         {tabs.map((tab) => (
           <button
