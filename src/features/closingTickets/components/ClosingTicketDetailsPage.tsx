@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
   ArrowLeft,
+  AlertTriangle,
   ReceiptText,
   UserPlus,
 } from 'lucide-react'
@@ -27,6 +28,26 @@ import {
   WorkflowTabs,
   type WorkflowTabKey,
 } from './WorkflowTabs'
+
+const FAILED_TICKET_STATUS = 716070007
+
+const BOT_STATUS_FAILURE_REASONS: Record<number, string> = {
+  396620005: 'Seller information could not be retrieved from the source system.',
+  396620008: 'The purchase application form failed to download.',
+  396620009: 'The Domicile dump could not be retrieved.',
+  396620012: 'YARDI charges could not be fetched.',
+  396620014: 'Purchase form data extraction failed.',
+  396620016: 'Purchase form could not be uploaded to OneDrive.',
+  396620017: 'Seller details update failed.',
+  396620018: 'New owner record could not be created.',
+  396620019: 'RPTT document extraction failed.',
+}
+
+function getFailureReason(record: ClosingTicketRecord): string | null {
+  if (Number(record.cr7de_ticketstatus) !== FAILED_TICKET_STATUS) return null
+  const botStatus = Number(record.cr109_botstatus)
+  return BOT_STATUS_FAILURE_REASONS[botStatus] ?? 'An unexpected error occurred during processing.'
+}
 
 interface ClosingTicketDetailsPageProps {
   recordId: string
@@ -304,6 +325,32 @@ export function ClosingTicketDetailsPage({
         description="Review the closing record, manage charges, and complete the new-owner workflow in one workspace."
         actions={renderPageActions()}
       />
+
+      {record && getFailureReason(record) && (
+        <div
+          className="flex items-start gap-3 rounded-xl border px-4 py-3"
+          style={{
+            background: '#FFF7ED',
+            borderColor: '#FED7AA',
+          }}
+        >
+          <AlertTriangle
+            className="mt-0.5 shrink-0"
+            style={{ color: '#C2410C', width: '18px', height: '18px' }}
+          />
+          <div>
+            <p
+              className="text-xs font-semibold uppercase tracking-wide"
+              style={{ color: '#C2410C', letterSpacing: '0.08em' }}
+            >
+              Failure Reason
+            </p>
+            <p className="mt-0.5 text-sm" style={{ color: '#7C2D12' }}>
+              {getFailureReason(record)}
+            </p>
+          </div>
+        </div>
+      )}
 
       {loading && (
         <LoadingSkeleton />
