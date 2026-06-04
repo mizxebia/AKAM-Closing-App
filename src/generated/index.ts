@@ -10,6 +10,7 @@ export * as Cr7de_invoicedetailsesModel from './models/Cr7de_invoicedetailsesMod
 export * as Cr7de_newownerticketdetailsesModel from './models/Cr7de_newownerticketdetailsesModel';
 export * as Crc5c_buyerledgersModel from './models/Crc5c_buyerledgersModel';
 export * as Crc5c_copyscheduledchargesesModel from './models/Crc5c_copyscheduledchargesesModel';
+export * as Crc5c_manualchargesesModel from './models/Crc5c_manualchargesesModel';
 export * as Crc5c_sellerledgersModel from './models/Crc5c_sellerledgersModel';
 export * as Crc5c_unpaidchargesesModel from './models/Crc5c_unpaidchargesesModel';
 export * as NSC_Generate_InvoiceModel from './models/NSC_Generate_InvoiceModel';
@@ -21,6 +22,7 @@ export * from './services/Cr7de_invoicedetailsesService';
 export * from './services/Cr7de_newownerticketdetailsesService';
 export * from './services/Crc5c_buyerledgersService';
 export * from './services/Crc5c_copyscheduledchargesesService';
+export * from './services/Crc5c_manualchargesesService';
 export * from './services/Crc5c_sellerledgersService';
 export * from './services/Crc5c_unpaidchargesesService';
 export * from './services/NSC_Generate_InvoiceService';

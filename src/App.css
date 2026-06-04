@@ -2066,36 +2066,45 @@ body {
   width: 10%;
 }
 
+.dataverse-scheduled-charge-table {
+  min-width: 0 !important;
+}
+
 .dataverse-scheduled-charge-table th:nth-child(1),
 .dataverse-scheduled-charge-table td:nth-child(1) {
-  width: 17%;
+  width: 14%;
 }
 
 .dataverse-scheduled-charge-table th:nth-child(2),
 .dataverse-scheduled-charge-table td:nth-child(2),
 .dataverse-scheduled-charge-table th:nth-child(3),
 .dataverse-scheduled-charge-table td:nth-child(3) {
-  width: 14%;
+  width: 13%;
 }
 
 .dataverse-scheduled-charge-table th:nth-child(4),
 .dataverse-scheduled-charge-table td:nth-child(4) {
-  width: 14%;
+  width: 12%;
 }
 
 .dataverse-scheduled-charge-table th:nth-child(5),
 .dataverse-scheduled-charge-table td:nth-child(5) {
-  width: 14%;
+  width: 12%;
 }
 
 .dataverse-scheduled-charge-table th:nth-child(6),
 .dataverse-scheduled-charge-table td:nth-child(6) {
-  width: 11%;
+  width: 10%;
 }
 
 .dataverse-scheduled-charge-table th:nth-child(7),
 .dataverse-scheduled-charge-table td:nth-child(7) {
-  width: 12%;
+  width: 10%;
+}
+
+.dataverse-scheduled-charge-table th:nth-child(8),
+.dataverse-scheduled-charge-table td:nth-child(8) {
+  width: 8%;
 }
 
 .dataverse-charge-table th::after {
@@ -2149,6 +2158,23 @@ body {
 .dataverse-ledger-number-cell {
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+/* --- Add Scheduled Charge --- */
+.manual-charge-fields {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.manual-charge-notes {
+  grid-column: 1 / -1;
+}
+
+.manual-charge-hold {
+  display: flex;
+  align-items: center;
 }
 
 .dataverse-ledger-table th,

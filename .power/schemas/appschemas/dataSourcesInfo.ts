@@ -33,6 +33,13 @@ export const dataSourcesInfo = {
     "dataSourceType": "Dataverse",
     "apis": {}
   },
+  "crc5c_manualchargeses": {
+    "tableId": "",
+    "version": "",
+    "primaryKey": "crc5c_manualchargesid",
+    "dataSourceType": "Dataverse",
+    "apis": {}
+  },
   "cr7de_newownerticketdetailses": {
     "tableId": "",
     "version": "",

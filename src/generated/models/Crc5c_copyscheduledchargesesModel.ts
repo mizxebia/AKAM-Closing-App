@@ -18,6 +18,7 @@ export interface Crc5c_copyscheduledchargesesBase {
   cr109_chargecode?: string;
   cr109_chargefrom?: string;
   cr109_chargeto?: string;
+  cr109_manual?: boolean;
   cr109_move?: boolean;
   cr109_partiallypaid?: boolean;
   crc5c_copyscheduledchargesid: string;
@@ -33,6 +34,7 @@ export interface Crc5c_copyscheduledchargesesBase {
 }
 
 export interface Crc5c_copyscheduledchargeses extends Crc5c_copyscheduledchargesesBase {
+  cr109_manualname?: string;
   cr109_movename?: string;
   cr109_partiallypaidname?: string;
   createdbyname?: string;

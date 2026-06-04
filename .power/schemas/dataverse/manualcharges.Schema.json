@@ -1,156 +1,252 @@
 {
-  "name": "crc5c_copyscheduledcharges",
-  "title": "CopyScheduledCharges",
+  "name": "crc5c_manualcharges",
+  "title": "Manual Charges",
   "schema": {
     "type": "array",
     "items": {
       "type": "object",
       "x-ms-dataverse-entity": true,
-      "x-ms-dataverse-entityset": "crc5c_copyscheduledchargeses",
-      "x-ms-dataverse-primary-id": "crc5c_copyscheduledchargesid",
+      "x-ms-dataverse-entityset": "crc5c_manualchargeses",
+      "x-ms-dataverse-primary-id": "crc5c_manualchargesid",
       "x-ms-dataverse-primary-name": "crc5c_ticketid",
       "properties": {
-        "cr109_chargeamount": {
+        "cr109_amount": {
           "type": "string",
-          "title": "ChargeAmount",
-          "x-ms-dataverse-attribute": "cr109_chargeamount",
+          "title": "Amount",
+          "x-ms-dataverse-attribute": "cr109_amount",
           "x-ms-dataverse-type": "StringType",
-          "x-ms-schema-name": "cr109_ChargeAmount",
+          "x-ms-schema-name": "cr109_Amount",
           "maxLength": 100
         },
         "cr109_chargecode": {
           "type": "string",
           "title": "ChargeCode",
           "x-ms-dataverse-attribute": "cr109_chargecode",
-          "x-ms-dataverse-type": "StringType",
+          "x-ms-dataverse-type": "PicklistType",
           "x-ms-schema-name": "cr109_ChargeCode",
-          "maxLength": 100
+          "enum": [
+            "specasmt",
+            "bike",
+            "capasmnt",
+            "capasmt1",
+            "capasmt2",
+            "capcont",
+            "comg",
+            "comst",
+            "electr",
+            "gym",
+            "garage",
+            "locker",
+            "assesmt",
+            "parking",
+            "secdepca",
+            "specasny",
+            "storage",
+            "sublet",
+            "meter"
+          ],
+          "x-ms-enum-values": [
+            396620000,
+            396620001,
+            396620002,
+            396620003,
+            396620004,
+            396620005,
+            396620006,
+            396620007,
+            396620008,
+            396620009,
+            396620010,
+            396620011,
+            396620012,
+            396620013,
+            396620014,
+            396620015,
+            396620016,
+            396620017,
+            396620018
+          ],
+          "Color": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "0f7ee08e-4960-f111-a826-70a8a59830be",
+          "x-ms-isGlobal": true,
+          "x-ms-optionsetdisplayname": "Manual Charges",
+          "x-ms-optionSetType": "Picklist"
         },
-        "cr109_chargefrom": {
+        "cr109_chargecodename": {
           "type": "string",
-          "title": "ChargeFrom",
-          "x-ms-dataverse-attribute": "cr109_chargefrom",
+          "title": "cr109_chargecodename",
+          "x-ms-dataverse-attribute": "cr109_chargecodename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "cr109_chargecodeName",
+          "x-ms-read-only": true
+        },
+        "cr109_datefrom": {
+          "type": "string",
+          "title": "Date From",
+          "x-ms-dataverse-attribute": "cr109_datefrom",
+          "x-ms-dataverse-type": "DateTimeType",
+          "x-ms-schema-name": "cr109_DateFrom"
+        },
+        "cr109_dateto": {
+          "type": "string",
+          "title": "Date To",
+          "x-ms-dataverse-attribute": "cr109_dateto",
+          "x-ms-dataverse-type": "DateTimeType",
+          "x-ms-schema-name": "cr109_DateTo"
+        },
+        "cr109_epaytype": {
+          "type": "string",
+          "title": "E-Pay Type",
+          "x-ms-dataverse-attribute": "cr109_epaytype",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "cr109_EPayType",
+          "enum": [
+            "EFT",
+            "Credit Card"
+          ],
+          "x-ms-enum-values": [
+            396620000,
+            396620001
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "6d8f520c-4a60-f111-a826-7ced8d1a5443",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "E-Pay Type",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "cr109_epaytypename": {
+          "type": "string",
+          "title": "cr109_epaytypename",
+          "x-ms-dataverse-attribute": "cr109_epaytypename",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "cr109_epaytypeName",
+          "x-ms-read-only": true
+        },
+        "cr109_hold": {
+          "type": "string",
+          "title": "Hold",
+          "x-ms-dataverse-attribute": "cr109_hold",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "cr109_Hold",
+          "enum": [
+            "No",
+            "Yes"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "32f0ac47-4a60-f111-a826-7ced8d1a5443",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Hold",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "cr109_holdname": {
+          "type": "string",
+          "title": "cr109_holdname",
+          "x-ms-dataverse-attribute": "cr109_holdname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "cr109_holdName",
+          "x-ms-read-only": true
+        },
+        "cr109_maxpostings": {
+          "type": "string",
+          "title": "Max Postings",
+          "x-ms-dataverse-attribute": "cr109_maxpostings",
           "x-ms-dataverse-type": "StringType",
-          "x-ms-schema-name": "cr109_ChargeFrom",
+          "x-ms-schema-name": "cr109_MaxPostings",
           "maxLength": 100
         },
-        "cr109_chargeto": {
+        "cr109_notes": {
           "type": "string",
-          "title": "ChargeTo",
-          "x-ms-dataverse-attribute": "cr109_chargeto",
+          "title": "Notes",
+          "x-ms-dataverse-attribute": "cr109_notes",
           "x-ms-dataverse-type": "StringType",
-          "x-ms-schema-name": "cr109_ChargeTo",
+          "x-ms-schema-name": "cr109_Notes",
           "maxLength": 100
         },
-        "cr109_manual": {
+        "cr109_ratesqft": {
           "type": "string",
-          "title": "Manual",
-          "x-ms-dataverse-attribute": "cr109_manual",
-          "x-ms-dataverse-type": "BooleanType",
-          "x-ms-schema-name": "cr109_Manual",
+          "title": "Rate/Sqft",
+          "x-ms-dataverse-attribute": "cr109_ratesqft",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_RateSqft",
+          "maxLength": 100
+        },
+        "cr109_type": {
+          "type": "string",
+          "title": "Type",
+          "x-ms-dataverse-attribute": "cr109_type",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "cr109_Type",
           "enum": [
-            "No",
-            "Yes"
+            "Detail",
+            "NoCharge"
           ],
           "x-ms-enum-values": [
-            0,
-            1
+            396620000,
+            396620001
           ],
           "Color": [
             null,
             null
           ],
-          "x-ms-optionsetmetadataid": "edd8e542-5060-f111-a826-6045bdd7b738",
+          "x-ms-optionsetmetadataid": "231889df-4960-f111-a826-70a8a59830be",
           "x-ms-isGlobal": false,
-          "x-ms-optionsetdisplayname": "Manual",
-          "x-ms-optionSetType": "Boolean"
+          "x-ms-optionsetdisplayname": "Type",
+          "x-ms-optionSetType": "Picklist"
         },
-        "cr109_manualname": {
+        "cr109_typename": {
           "type": "string",
-          "title": "cr109_manualname",
-          "x-ms-dataverse-attribute": "cr109_manualname",
+          "title": "cr109_typename",
+          "x-ms-dataverse-attribute": "cr109_typename",
           "x-ms-dataverse-type": "VirtualType",
-          "x-ms-schema-name": "cr109_manualName",
+          "x-ms-schema-name": "cr109_typeName",
           "x-ms-read-only": true
         },
-        "cr109_move": {
+        "crc5c_manualchargesid": {
           "type": "string",
-          "title": "Move",
-          "x-ms-dataverse-attribute": "cr109_move",
-          "x-ms-dataverse-type": "BooleanType",
-          "x-ms-schema-name": "cr109_Move",
-          "enum": [
-            "No",
-            "Yes"
-          ],
-          "x-ms-enum-values": [
-            0,
-            1
-          ],
-          "Color": [
-            null,
-            null
-          ],
-          "x-ms-optionsetmetadataid": "a39cd8c8-e05d-f111-a826-6045bdd7b738",
-          "x-ms-isGlobal": false,
-          "x-ms-optionsetdisplayname": "Move",
-          "x-ms-optionSetType": "Boolean"
-        },
-        "cr109_movename": {
-          "type": "string",
-          "title": "cr109_movename",
-          "x-ms-dataverse-attribute": "cr109_movename",
-          "x-ms-dataverse-type": "VirtualType",
-          "x-ms-schema-name": "cr109_moveName",
-          "x-ms-read-only": true
-        },
-        "cr109_partiallypaid": {
-          "type": "string",
-          "title": "Partially Paid",
-          "x-ms-dataverse-attribute": "cr109_partiallypaid",
-          "x-ms-dataverse-type": "BooleanType",
-          "x-ms-schema-name": "cr109_PartiallyPaid",
-          "enum": [
-            "No",
-            "Yes"
-          ],
-          "x-ms-enum-values": [
-            0,
-            1
-          ],
-          "Color": [
-            null,
-            null
-          ],
-          "x-ms-optionsetmetadataid": "f706eece-e05d-f111-a826-6045bdd7b738",
-          "x-ms-isGlobal": false,
-          "x-ms-optionsetdisplayname": "Partially Paid",
-          "x-ms-optionSetType": "Boolean"
-        },
-        "cr109_partiallypaidname": {
-          "type": "string",
-          "title": "cr109_partiallypaidname",
-          "x-ms-dataverse-attribute": "cr109_partiallypaidname",
-          "x-ms-dataverse-type": "VirtualType",
-          "x-ms-schema-name": "cr109_partiallypaidName",
-          "x-ms-read-only": true
-        },
-        "crc5c_copyscheduledchargesid": {
-          "type": "string",
-          "title": "CopyScheduledCharges",
-          "x-ms-dataverse-attribute": "crc5c_copyscheduledchargesid",
+          "title": "Manual Charges",
+          "x-ms-dataverse-attribute": "crc5c_manualchargesid",
           "x-ms-dataverse-type": "UniqueidentifierType",
-          "x-ms-schema-name": "crc5c_CopyScheduledChargesId",
+          "x-ms-schema-name": "crc5c_ManualChargesId",
           "x-ms-dataverse-primary-id": true,
           "required": true,
           "x-ms-keyType": "primary"
         },
         "crc5c_ticketid": {
           "type": "string",
-          "title": "TicketId",
+          "title": "Ticket ID",
           "x-ms-dataverse-attribute": "crc5c_ticketid",
           "x-ms-dataverse-type": "StringType",
-          "x-ms-schema-name": "crc5c_TicketId",
+          "x-ms-schema-name": "crc5c_TicketID",
           "x-ms-dataverse-primary-name": true,
           "maxLength": 850
         },
@@ -381,7 +477,7 @@
             null,
             null
           ],
-          "x-ms-optionsetmetadataid": "6a6f571c-df5d-f111-a825-7ced8d1dcf7b",
+          "x-ms-optionsetmetadataid": "2e7c54e8-4660-f111-a827-6045bdff68b4",
           "x-ms-isGlobal": false,
           "x-ms-optionsetdisplayname": "Status",
           "x-ms-optionSetType": "State"
@@ -412,7 +508,7 @@
             null,
             null
           ],
-          "x-ms-optionsetmetadataid": "7b6f571c-df5d-f111-a825-7ced8d1dcf7b",
+          "x-ms-optionsetmetadataid": "3e7c54e8-4660-f111-a827-6045bdff68b4",
           "x-ms-isGlobal": false,
           "x-ms-optionsetdisplayname": "Status Reason",
           "x-ms-optionSetType": "Status"
@@ -449,7 +545,7 @@
         }
       },
       "required": [
-        "crc5c_copyscheduledchargesid",
+        "crc5c_manualchargesid",
         "createdbyyominame",
         "createdonbehalfbyyominame",
         "modifiedbyyominame",

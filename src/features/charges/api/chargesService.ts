@@ -1,11 +1,16 @@
 import {
   Crc5c_buyerledgersService,
   Crc5c_copyscheduledchargesesService,
+  Crc5c_manualchargesesService,
   Crc5c_sellerledgersService,
   Crc5c_unpaidchargesesService,
 } from '../../../generated'
+import {
+  Crc5c_manualchargesescr109_chargecode,
+} from '../../../generated/models/Crc5c_manualchargesesModel'
 import type {
   BuyerLedgerRecord,
+  ManualChargeCreateInput,
   ScheduledChargeRecord,
   ScheduledChargeUpdateInput,
   SellerLedgerRecord,
@@ -376,4 +381,46 @@ export async function updateScheduledCharge(
   }
 
   return result.data as ScheduledChargeRecord
+}
+
+export async function deleteScheduledCharge(
+  chargeId: string
+): Promise<void> {
+  await Crc5c_copyscheduledchargesesService.delete(chargeId)
+}
+
+export async function createManualCharge(
+  input: ManualChargeCreateInput
+): Promise<void> {
+  const result = await Crc5c_manualchargesesService.create(
+    input as Parameters<typeof Crc5c_manualchargesesService.create>[0]
+  )
+
+  if (!result.success) {
+    throw new Error(
+      result.error?.message || 'Failed to create manual charge'
+    )
+  }
+
+  // Also create a corresponding Scheduled Charge record
+  const chargeCodeName = input.cr109_chargecode !== undefined
+    ? Crc5c_manualchargesescr109_chargecode[input.cr109_chargecode]
+    : undefined
+
+  const scheduledResult = await Crc5c_copyscheduledchargesesService.create({
+    crc5c_ticketid: input.crc5c_ticketid,
+    cr109_chargecode: chargeCodeName,
+    cr109_chargeamount: input.cr109_amount,
+    cr109_chargefrom: input.cr109_datefrom,
+    cr109_chargeto: input.cr109_dateto,
+    cr109_move: true,
+    cr109_manual: true,
+    cr109_partiallypaid: false,
+  } as unknown as Parameters<typeof Crc5c_copyscheduledchargesesService.create>[0])
+
+  if (!scheduledResult.success) {
+    throw new Error(
+      scheduledResult.error?.message || 'Failed to create scheduled charge record'
+    )
+  }
 }

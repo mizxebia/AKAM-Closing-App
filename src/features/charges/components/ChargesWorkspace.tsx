@@ -1,13 +1,27 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { RotateCw, Save } from 'lucide-react'
+import { Plus, RotateCw, Save } from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../../../components/ui/alert-dialog'
 import {
   updateScheduledCharge,
   updateUnpaidCharge,
   syncBuyerLedgerWithUnpaidCharge,
+  createManualCharge,
+  deleteScheduledCharge,
 } from '../api/chargesService'
 import type {
   BuyerLedgerRecord,
+  ManualChargeCreateInput,
   ScheduledChargeRecord,
   ScheduledChargeUpdateInput,
   SellerLedgerRecord,
@@ -17,6 +31,7 @@ import type {
 import type { InvoiceRecord } from '../../invoices/types/invoice'
 
 interface ChargesWorkspaceProps {
+  ticketId?: string
   unpaidCharges: UnpaidChargeRecord[]
   scheduledCharges: ScheduledChargeRecord[]
   sellerLedgers: SellerLedgerRecord[]
@@ -534,6 +549,8 @@ function ScheduledChargesTable({
             <th>Amount</th>
             <th>Partially Paid</th>
             <th>Move</th>
+            <th>Manual</th>
+            <th />
           </tr>
         </thead>
         <tbody>
@@ -635,6 +652,71 @@ function ScheduledChargesTable({
                     }
                   />
                 </td>
+                <td>
+                  {record.cr109_manual ? (
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        padding: '2px 8px',
+                        borderRadius: '9999px',
+                        fontSize: '0.68rem',
+                        fontWeight: 700,
+                        backgroundColor: '#DBEAFE',
+                        color: '#1E40AF',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
+                      }}
+                    >
+                      Yes
+                    </span>
+                  ) : (
+                    <span style={{ color: '#94a3b8', fontSize: '0.78rem' }}>No</span>
+                  )}
+                </td>
+                <td>
+                  {record.cr109_manual && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <button
+                          type="button"
+                          className="invoice-row-action-button invoice-row-delete-button"
+                          style={{ fontSize: '0.72rem', padding: '3px 8px', minHeight: '26px' }}
+                          disabled={savingId === 'deleting-' + record.crc5c_copyscheduledchargesid}
+                        >
+                          {savingId === 'deleting-' + record.crc5c_copyscheduledchargesid ? 'Deleting...' : 'Delete'}
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Scheduled Charge</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently remove this manual charge record. This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            className="invoice-confirm-delete-button"
+                            onClick={async () => {
+                              onSavingChange('deleting-' + record.crc5c_copyscheduledchargesid)
+                              try {
+                                await deleteScheduledCharge(record.crc5c_copyscheduledchargesid)
+                                await onSaved()
+                              } catch {
+                                // refresh will show current state
+                              } finally {
+                                onSavingChange(null)
+                              }
+                            }}
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </td>
                 
               </tr>
             )
@@ -642,6 +724,277 @@ function ScheduledChargesTable({
         </tbody>
       </table>
     </ChargeTableShell>
+  )
+}
+
+// --- Manual charge code display names (from mapping) ---
+const MANUAL_CHARGE_CODE_OPTIONS: Array<{ value: number; code: string; label: string }> = [
+  { value: 396620000, code: 'specasmt',  label: 'Assessment 1' },
+  { value: 396620001, code: 'bike',      label: 'Bike Storage' },
+  { value: 396620002, code: 'capasmnt',  label: 'Capital Assessment' },
+  { value: 396620003, code: 'capasmt1',  label: 'Capital Assessment 1' },
+  { value: 396620004, code: 'capasmt2',  label: 'Capital Assessment 2' },
+  { value: 396620005, code: 'capcont',   label: 'Capital Contribution' },
+  { value: 396620006, code: 'comg',      label: 'Common Charges Garage' },
+  { value: 396620007, code: 'comst',     label: 'Common Charges Storage' },
+  { value: 396620008, code: 'electr',    label: 'Electric Income/Refund' },
+  { value: 396620009, code: 'gym',       label: 'Exercise Room Fees' },
+  { value: 396620010, code: 'garage',    label: 'Garage' },
+  { value: 396620011, code: 'locker',    label: 'Locker 1' },
+  { value: 396620012, code: 'assesmt',   label: 'Operating Assessment' },
+  { value: 396620013, code: 'parking',   label: 'Parking' },
+  { value: 396620014, code: 'secdepca',  label: 'Security Deposit' },
+  { value: 396620015, code: 'specasny',  label: 'Special Assessment' },
+  { value: 396620016, code: 'storage',   label: 'Storage Fee' },
+  { value: 396620017, code: 'sublet',    label: 'Sublet Fees' },
+  { value: 396620018, code: 'meter',     label: 'Utilities' },
+]
+
+type ManualChargeDraft = {
+  cr109_chargecode: string
+  cr109_amount: string
+  cr109_datefrom: string
+  cr109_dateto: string
+  cr109_type: string
+  cr109_epaytype: string
+  cr109_ratesqft: string
+  cr109_maxpostings: string
+  cr109_hold: boolean
+  cr109_notes: string
+}
+
+function emptyManualChargeDraft(): ManualChargeDraft {
+  return {
+    cr109_chargecode: '',
+    cr109_amount: '',
+    cr109_datefrom: '',
+    cr109_dateto: '',
+    cr109_type: '',
+    cr109_epaytype: '',
+    cr109_ratesqft: '',
+    cr109_maxpostings: '',
+    cr109_hold: false,
+    cr109_notes: '',
+  }
+}
+
+function AddScheduledChargeForm({
+  ticketId,
+  onSaved,
+}: {
+  ticketId: string
+  onSaved: () => Promise<void> | void
+}) {
+  const [open, setOpen] = useState(false)
+  const [draft, setDraft] = useState<ManualChargeDraft>(emptyManualChargeDraft)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const update = (fields: Partial<ManualChargeDraft>) =>
+    setDraft((d) => ({ ...d, ...fields }))
+
+  const reset = () => {
+    setDraft(emptyManualChargeDraft())
+    setError(null)
+  }
+
+  const handleSubmit = async () => {
+    if (!draft.cr109_chargecode) {
+      setError('Charge code is required.')
+      return
+    }
+    if (!draft.cr109_amount.trim()) {
+      setError('Amount is required.')
+      return
+    }
+
+    setSaving(true)
+    setError(null)
+
+    try {
+      const payload: ManualChargeCreateInput = {
+        crc5c_ticketid: ticketId,
+        cr109_chargecode: Number(draft.cr109_chargecode) as ManualChargeCreateInput['cr109_chargecode'],
+        cr109_amount: draft.cr109_amount.trim() || undefined,
+        cr109_datefrom: draft.cr109_datefrom || undefined,
+        cr109_dateto: draft.cr109_dateto || undefined,
+        cr109_type: draft.cr109_type
+          ? (Number(draft.cr109_type) as ManualChargeCreateInput['cr109_type'])
+          : undefined,
+        cr109_epaytype: draft.cr109_epaytype
+          ? (Number(draft.cr109_epaytype) as ManualChargeCreateInput['cr109_epaytype'])
+          : undefined,
+        cr109_ratesqft: draft.cr109_ratesqft.trim() || undefined,
+        cr109_maxpostings: draft.cr109_maxpostings.trim() || undefined,
+        cr109_hold: draft.cr109_hold,
+        cr109_notes: draft.cr109_notes.trim() || undefined,
+      }
+
+      await createManualCharge(payload)
+      reset()
+      setOpen(false)
+      await onSaved()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to save charge.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        className="secondary-action-button"
+        style={{ alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: '5px', minHeight: '32px', padding: '0 12px', fontSize: '0.78rem' }}
+        onClick={() => setOpen(true)}
+      >
+        <Plus style={{ width: '14px', height: '14px' }} />
+        Add Scheduled Charge
+      </button>
+    )
+  }
+
+  return (
+    <section className="workflow-card">
+      <div className="workflow-card-header">
+        <div>
+          <h3>Add Scheduled Charge</h3>
+          <p>Create a new manual charge linked to this closing ticket.</p>
+        </div>
+        <button
+          type="button"
+          className="secondary-action-button"
+          style={{ minHeight: '32px', padding: '0 12px', fontSize: '0.78rem' }}
+          onClick={() => { reset(); setOpen(false) }}
+          disabled={saving}
+        >
+          Cancel
+        </button>
+      </div>
+
+      {error && (
+        <div className="form-alert form-alert-error">{error}</div>
+      )}
+
+      <div className="manual-charge-fields">
+        <label className="form-field">
+          <span>Charge <strong>*</strong></span>
+          <select
+            value={draft.cr109_chargecode}
+            onChange={(e) => update({ cr109_chargecode: e.target.value })}
+          >
+            <option value="">Select charge code</option>
+            {MANUAL_CHARGE_CODE_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </label>
+
+        <label className="form-field">
+          <span>Amount <strong>*</strong></span>
+          <input
+            type="number"
+            inputMode="decimal"
+            placeholder="0.00"
+            value={draft.cr109_amount}
+            onChange={(e) => update({ cr109_amount: e.target.value })}
+          />
+        </label>
+
+        <label className="form-field">
+          <span>Date From</span>
+          <input
+            type="date"
+            value={draft.cr109_datefrom}
+            onChange={(e) => update({ cr109_datefrom: e.target.value })}
+          />
+        </label>
+
+        <label className="form-field">
+          <span>Date To</span>
+          <input
+            type="date"
+            value={draft.cr109_dateto}
+            onChange={(e) => update({ cr109_dateto: e.target.value })}
+          />
+        </label>
+
+        <label className="form-field">
+          <span>Type</span>
+          <select
+            value={draft.cr109_type}
+            onChange={(e) => update({ cr109_type: e.target.value })}
+          >
+            <option value="">Select type</option>
+            <option value="396620000">Detail</option>
+            <option value="396620001">No Charge</option>
+          </select>
+        </label>
+
+        <label className="form-field">
+          <span>E-Pay Type</span>
+          <select
+            value={draft.cr109_epaytype}
+            onChange={(e) => update({ cr109_epaytype: e.target.value })}
+          >
+            <option value="">Select e-pay type</option>
+            <option value="396620000">EFT</option>
+            <option value="396620001">Credit Card</option>
+          </select>
+        </label>
+
+        <label className="form-field">
+          <span>Rate/Sqft</span>
+          <input
+            placeholder="0"
+            value={draft.cr109_ratesqft}
+            onChange={(e) => update({ cr109_ratesqft: e.target.value })}
+          />
+        </label>
+
+        <label className="form-field">
+          <span>Max Postings</span>
+          <input
+            placeholder="0"
+            value={draft.cr109_maxpostings}
+            onChange={(e) => update({ cr109_maxpostings: e.target.value })}
+          />
+        </label>
+
+        <label className="form-field manual-charge-notes">
+          <span>Notes</span>
+          <textarea
+            rows={2}
+            placeholder="Add notes..."
+            value={draft.cr109_notes}
+            onChange={(e) => update({ cr109_notes: e.target.value })}
+          />
+        </label>
+
+        <div className="form-field manual-charge-hold">
+          <label className="invoice-edit-checkbox">
+            <input
+              type="checkbox"
+              checked={draft.cr109_hold}
+              onChange={(e) => update({ cr109_hold: e.target.checked })}
+            />
+            Hold
+          </label>
+        </div>
+      </div>
+
+      <div className="form-actions inline-actions">
+        <button
+          type="button"
+          className="primary-action-button"
+          onClick={handleSubmit}
+          disabled={saving}
+        >
+          {saving ? 'Saving...' : 'Save Charge'}
+        </button>
+      </div>
+    </section>
   )
 }
 
@@ -1114,6 +1467,7 @@ function LedgerTable({
 }
 
 export function ChargesWorkspace({
+  ticketId,
   unpaidCharges,
   scheduledCharges,
   sellerLedgers,
@@ -1184,6 +1538,13 @@ export function ChargesWorkspace({
               savingId={savingId}
               onSaved={onRefresh}
               onSavingChange={setSavingId}
+            />
+          )}
+
+          {ticketId && (
+            <AddScheduledChargeForm
+              ticketId={ticketId}
+              onSaved={onRefresh}
             />
           )}
 

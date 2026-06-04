@@ -423,6 +423,7 @@ export function ClosingTicketDetailsPage({
 
           {activeTab === 'charges' && (
             <ChargesWorkspace
+              ticketId={record.cr7de_ticketid ?? ''}
               unpaidCharges={unpaidCharges}
               scheduledCharges={scheduledCharges}
               sellerLedgers={sellerLedgers}

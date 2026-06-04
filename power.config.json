@@ -67,6 +67,10 @@
         "buyerledgers": {
           "entitySetName": "crc5c_buyerledgers",
           "logicalName": "crc5c_buyerledger"
+        },
+        "manualcharges": {
+          "entitySetName": "crc5c_manualchargeses",
+          "logicalName": "crc5c_manualcharges"
         }
       },
       "environmentVariableName": ""
