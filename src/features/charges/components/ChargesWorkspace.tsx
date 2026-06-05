@@ -780,9 +780,11 @@ function emptyManualChargeDraft(): ManualChargeDraft {
 
 function AddScheduledChargeForm({
   ticketId,
+  scheduledCharges,
   onSaved,
 }: {
   ticketId: string
+  scheduledCharges: ScheduledChargeRecord[]
   onSaved: () => Promise<void> | void
 }) {
   const [open, setOpen] = useState(false)
@@ -806,6 +808,20 @@ function AddScheduledChargeForm({
     if (!draft.cr109_amount.trim()) {
       setError('Amount is required.')
       return
+    }
+
+    // Check for duplicate charge code
+    const selectedOption = MANUAL_CHARGE_CODE_OPTIONS.find(
+      (opt) => String(opt.value) === draft.cr109_chargecode
+    )
+    if (selectedOption) {
+      const duplicate = scheduledCharges.find(
+        (record) => record.cr109_chargecode?.trim().toLowerCase() === selectedOption.code.toLowerCase()
+      )
+      if (duplicate) {
+        setError(`A scheduled charge with code "${selectedOption.label}" already exists for this ticket.`)
+        return
+      }
     }
 
     setSaving(true)
@@ -1544,6 +1560,7 @@ export function ChargesWorkspace({
           {ticketId && (
             <AddScheduledChargeForm
               ticketId={ticketId}
+              scheduledCharges={scheduledCharges}
               onSaved={onRefresh}
             />
           )}
