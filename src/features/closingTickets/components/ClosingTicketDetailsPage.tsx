@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   ArrowLeft,
   AlertTriangle,
@@ -127,7 +127,14 @@ export function ClosingTicketDetailsPage({
     }
   }, [recordId])
 
-  const handleSaved = async () => {
+  // Auto-dismiss success message after 5 seconds
+  useEffect(() => {
+    if (!successMessage) return
+    const timer = setTimeout(() => setSuccessMessage(null), 5000)
+    return () => clearTimeout(timer)
+  }, [successMessage])
+
+  const handleSaved = useCallback(async () => {
     await onSaved()
     const updatedRecord = await getClosingTicketById(
       recordId
@@ -138,17 +145,17 @@ export function ClosingTicketDetailsPage({
     setSuccessMessage(
       'Closing record updated successfully.'
     )
-  }
+  }, [onSaved, recordId, refreshInvoices, refreshCharges])
 
-  const refreshClosingRecord = async () => {
+  const refreshClosingRecord = useCallback(async () => {
     const updatedRecord = await getClosingTicketById(
       recordId
     )
     setRecord(updatedRecord)
     await onSaved()
-  }
+  }, [recordId, onSaved])
 
-  const handleGenerateInvoice = async () => {
+  const handleGenerateInvoice = useCallback(async () => {
     const currentTicketId = record?.cr7de_ticketid?.trim()
 
     if (!currentTicketId) {
@@ -197,9 +204,9 @@ export function ClosingTicketDetailsPage({
     } finally {
       setGeneratingInvoice(false)
     }
-  }
+  }, [record?.cr7de_ticketid, refreshClosingRecord, refreshInvoices])
 
-  const handleGenerateNewOwnerTicket = async () => {
+  const handleGenerateNewOwnerTicket = useCallback(async () => {
     const currentTicketId = record?.cr7de_ticketid?.trim()
 
     if (!currentTicketId) {
@@ -248,7 +255,7 @@ export function ClosingTicketDetailsPage({
     } finally {
       setGeneratingNewOwnerTicket(false)
     }
-  }
+  }, [record?.cr7de_ticketid, refreshClosingRecord])
 
   const renderPageActions = () => (
     <>

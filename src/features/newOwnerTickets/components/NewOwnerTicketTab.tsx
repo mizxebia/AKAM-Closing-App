@@ -495,6 +495,13 @@ export function NewOwnerTicketTab({
     setSelectedDocument(defaultDocument)
   }, [defaultDocument])
 
+  // Auto-dismiss success message after 5 seconds
+  useEffect(() => {
+    if (!message) return
+    const timer = setTimeout(() => setMessage(null), 5000)
+    return () => clearTimeout(timer)
+  }, [message])
+
   useEffect(() => {
     let isMounted = true
 

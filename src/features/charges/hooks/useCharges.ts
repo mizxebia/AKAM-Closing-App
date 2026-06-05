@@ -14,6 +14,30 @@ import type {
   UnpaidChargeRecord,
 } from '../types/charges'
 
+function normalizeText(value?: string) {
+  return value?.trim() ?? ''
+}
+
+function extractChargeCode(description?: string) {
+  if (!description) {
+    return ''
+  }
+  const [beforeDash] = description.split('-')
+  return normalizeText(beforeDash)
+}
+
+function getChargeStatusLabel(
+  status?: number
+): 'Active' | 'InActive' | undefined {
+  if (status === SellerLedgerChargeStatus.Active) {
+    return 'Active'
+  }
+  if (status === SellerLedgerChargeStatus.InActive) {
+    return 'InActive'
+  }
+  return undefined
+}
+
 export function useCharges(ticketId?: string) {
   const [unpaidCharges, setUnpaidCharges] = useState<
     UnpaidChargeRecord[]
@@ -31,31 +55,6 @@ export function useCharges(ticketId?: string) {
   const [refreshing, setRefreshing] = useState(false)
   const initialLoad = useRef(false)
   const [error, setError] = useState<string | null>(null)
-
-  const normalizeText = (value?: string) => value?.trim() ?? ''
-
-  const extractChargeCode = (description?: string) => {
-    if (!description) {
-      return ''
-    }
-
-    const [beforeDash] = description.split('-')
-    return normalizeText(beforeDash)
-  }
-
-  const getChargeStatusLabel = (
-    status?: number
-  ): 'Active' | 'InActive' | undefined => {
-    if (status === SellerLedgerChargeStatus.Active) {
-      return 'Active'
-    }
-
-    if (status === SellerLedgerChargeStatus.InActive) {
-      return 'InActive'
-    }
-
-    return undefined
-  }
 
   const refresh = useCallback(async () => {
     if (!ticketId?.trim()) {

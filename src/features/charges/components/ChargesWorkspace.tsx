@@ -769,7 +769,7 @@ function emptyManualChargeDraft(): ManualChargeDraft {
     cr109_amount: '',
     cr109_datefrom: '',
     cr109_dateto: '',
-    cr109_type: '',
+    cr109_type: '396620000',
     cr109_epaytype: '',
     cr109_ratesqft: '',
     cr109_maxpostings: '',

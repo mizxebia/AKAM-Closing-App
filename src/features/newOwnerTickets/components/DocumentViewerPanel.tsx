@@ -273,11 +273,6 @@ export function DocumentViewerPanel({
     )
       .then((preview) => {
 
-        console.log(
-          'PDF Preview Loaded:',
-          preview
-        )
-
         if (!isActive) {
           return
         }
@@ -294,11 +289,6 @@ export function DocumentViewerPanel({
         )
       })
       .catch((err) => {
-
-        console.error(
-          'PDF Preview Error:',
-          err
-        )
 
         if (!isActive) {
           return
