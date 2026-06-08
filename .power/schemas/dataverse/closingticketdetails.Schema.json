@@ -187,19 +187,13 @@
           "x-ms-schema-name": "cr109_PackageType",
           "enum": [
             "condo_sale",
-            "coop_sale",
-            "condo_lease",
-            "coop_transfer"
+            "coop_sale"
           ],
           "x-ms-enum-values": [
             396620000,
-            396620001,
-            396620002,
-            396620003
+            396620001
           ],
           "Color": [
-            null,
-            null,
             null,
             null
           ],

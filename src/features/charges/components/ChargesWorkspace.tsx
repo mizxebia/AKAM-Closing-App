@@ -1529,6 +1529,14 @@ export function ChargesWorkspace({
 
       {!loading && !error && (
         <div className="dataverse-charge-grid">
+          {ticketId && (
+            <AddScheduledChargeForm
+              ticketId={ticketId}
+              scheduledCharges={scheduledCharges}
+              onSaved={onRefresh}
+            />
+          )}
+
           {scheduledCharges.length === 0 ? (
             <section className="dataverse-charge-empty">
               No scheduled charge records were found for this
@@ -1554,14 +1562,6 @@ export function ChargesWorkspace({
               savingId={savingId}
               onSaved={onRefresh}
               onSavingChange={setSavingId}
-            />
-          )}
-
-          {ticketId && (
-            <AddScheduledChargeForm
-              ticketId={ticketId}
-              scheduledCharges={scheduledCharges}
-              onSaved={onRefresh}
             />
           )}
 

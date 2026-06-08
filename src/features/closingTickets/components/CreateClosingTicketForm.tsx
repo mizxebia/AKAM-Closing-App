@@ -369,6 +369,10 @@ function validateForm(
     errors.cr7de_nyccode = 'NYC code is required.'
   }
 
+  if (!formState.cr109_packagetype) {
+    errors.cr109_packagetype = 'Package type is required.'
+  }
+
   if (
     formState.cr7de_closingagentemail.trim() &&
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
@@ -834,7 +838,7 @@ function ClosingTicketEditorForm({
             />
           </FormField>
 
-          <FormField label="Package Type">
+          <FormField label="Package Type" required error={errors.cr109_packagetype}>
             <select
               value={formState.cr109_packagetype}
               onChange={(event) =>

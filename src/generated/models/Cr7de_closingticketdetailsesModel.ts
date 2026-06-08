@@ -28,9 +28,7 @@ export const Cr7de_closingticketdetailsescr109_botstatus = {
 export type Cr7de_closingticketdetailsescr109_botstatus = keyof typeof Cr7de_closingticketdetailsescr109_botstatus;
 export const Cr7de_closingticketdetailsescr109_packagetype = {
   396620000: 'condo_sale',
-  396620001: 'coop_sale',
-  396620002: 'condo_lease',
-  396620003: 'coop_transfer'
+  396620001: 'coop_sale'
 } as const;
 export type Cr7de_closingticketdetailsescr109_packagetype = keyof typeof Cr7de_closingticketdetailsescr109_packagetype;
 export const Cr7de_closingticketdetailsescr109_transactiontypedeal = {
