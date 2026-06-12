@@ -7,6 +7,7 @@ import type { ClosingTicketRecord } from '../../closingTickets/types/closingTick
 export type NewOwnerDocumentKey =
   | 'purchaseApplicationForm'
   | 'rptt'
+  | 'newOwnerTicketPdf'
 
 export type GeneratedClosingDocumentKey =
   | 'newOwnerTicketPdf'
@@ -62,6 +63,15 @@ export const NEW_OWNER_DOCUMENTS:
         'cr109_rpttdocument',
       fileNameColumn:
         'cr109_rpttdocument_name',
+    },
+
+    {
+      key: 'newOwnerTicketPdf',
+      label: 'New Owner Ticket',
+      columnName:
+        'cr109_newownerticketpdf',
+      fileNameColumn:
+        'cr109_newownerticketpdf_name',
     },
   ]
 

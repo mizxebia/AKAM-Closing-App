@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { invoiceColumns } from '../constants/invoiceColumns'
 import type {
   InvoiceChargeFormRow,
@@ -21,6 +21,7 @@ interface InvoiceTableProps {
     row: InvoiceChargeFormRow
   ) => Promise<boolean>
   onDelete: (recordId: string) => void
+  onSaveNotes?: (notes: string) => Promise<void>
   updatingId: string | null
   deletingId: string | null
 }
@@ -52,9 +53,33 @@ export function InvoiceTable({
   onRefresh,
   onSaveEdit,
   onDelete,
+  onSaveNotes,
   updatingId,
   deletingId,
 }: InvoiceTableProps) {
+  const [notes, setNotes] = useState('')
+  const [originalNotes, setOriginalNotes] = useState('')
+  const [savingNotes, setSavingNotes] = useState(false)
+
+  useEffect(() => {
+    const currentNotes = records.length > 0 && records[0].cr109_notes ? records[0].cr109_notes : ''
+    setNotes(currentNotes)
+    setOriginalNotes(currentNotes)
+  }, [records])
+
+  const notesChanged = notes !== originalNotes
+
+  const handleSaveNotes = async () => {
+    if (!onSaveNotes) return
+    setSavingNotes(true)
+    try {
+      await onSaveNotes(notes)
+      setOriginalNotes(notes) // Update original after save
+    } finally {
+      setSavingNotes(false)
+    }
+  }
+
   const sortedRecords = useMemo(() => {
     return [...records].sort((a, b) => {
       const firstCreated = a.createdon
@@ -211,6 +236,33 @@ export function InvoiceTable({
               </div>
             )
           })}
+        </div>
+      )}
+
+      {!loading && !error && records.length > 0 && (
+        <div className="invoice-notes-edit-section">
+          <label className="invoice-notes-label" htmlFor="invoice-notes">
+            Notes
+          </label>
+          <textarea
+            id="invoice-notes"
+            className="invoice-notes-textarea"
+            rows={3}
+            placeholder="Add notes for this invoice..."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
+          {notesChanged && (
+            <button
+              type="button"
+              className="primary-action-button"
+              onClick={handleSaveNotes}
+              disabled={savingNotes}
+              style={{ alignSelf: 'flex-start', marginTop: '8px', fontSize: '0.82rem', padding: '6px 14px' }}
+            >
+              {savingNotes ? 'Saving...' : 'Save Notes'}
+            </button>
+          )}
         </div>
       )}
     </section>

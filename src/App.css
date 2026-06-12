@@ -1635,6 +1635,46 @@ body {
   font-weight: 850;
 }
 
+.invoice-notes-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.invoice-notes-edit-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 18px;
+  border-top: 1px solid #E2DAD0;
+  background: #F8F6F1;
+}
+
+.invoice-notes-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1E3A47;
+}
+
+.invoice-notes-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #D1D5DB;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 0.84rem;
+  color: #1E3A47;
+  background: #ffffff;
+  resize: vertical;
+  min-height: 72px;
+}
+
+.invoice-notes-textarea:focus {
+  outline: none;
+  border-color: #1E3A47;
+}
+
 .invoice-state {
   padding: 18px;
   color: #4B5563;

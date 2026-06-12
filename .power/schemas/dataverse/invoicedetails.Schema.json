@@ -212,6 +212,14 @@
           "x-ms-schema-name": "cr109_dueatclosingName",
           "x-ms-read-only": true
         },
+        "cr109_notes": {
+          "type": "string",
+          "title": "Notes",
+          "x-ms-dataverse-attribute": "cr109_notes",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_Notes",
+          "maxLength": 100
+        },
         "cr7de_amount": {
           "type": "string",
           "title": "Amount",

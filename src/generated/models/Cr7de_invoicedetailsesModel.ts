@@ -88,6 +88,7 @@ export type Cr7de_invoicedetailsesstatuscode = keyof typeof Cr7de_invoicedetails
 
 export interface Cr7de_invoicedetailsesBase {
   cr109_dueatclosing?: Cr7de_invoicedetailsescr109_dueatclosing;
+  cr109_notes?: string;
   cr7de_amount?: string;
   cr7de_chequenumber?: string;
   cr7de_index?: string;

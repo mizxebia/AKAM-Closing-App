@@ -43,7 +43,8 @@ function normalizeText(value: string) {
 function toInvoicePayload(
   row: InvoiceChargeFormRow,
   ticketId: string,
-  index: number
+  index: number,
+  notes?: string
 ): InvoiceCreateInput {
   return {
     // Dataverse lookup/link usage: generated schema exposes cr7de_ticketid
@@ -52,6 +53,7 @@ function toInvoicePayload(
     cr7de_ticketid: ticketId,
     cr109_dueatclosing:
       row.cr109_dueatclosing || undefined,
+    cr109_notes: normalizeText(notes || ''),
     cr7de_amount: normalizeText(row.cr7de_amount),
     cr7de_chequenumber: normalizeText(
       row.cr7de_chequenumber
@@ -98,6 +100,7 @@ export function ChargesWorkspace({
   const [rows, setRows] = useState<InvoiceChargeFormRow[]>(
     [createChargeRow()]
   )
+  const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
   const [updatingId, setUpdatingId] = useState<string | null>(
     null
@@ -110,6 +113,8 @@ export function ChargesWorkspace({
     null
   )
 
+  // Don't load existing notes into the Add Charges form
+  // They will be shown in the Invoice Details section instead
   const canSave = useMemo(
     () => ticketId.trim() !== '' && rows.length > 0,
     [rows.length, ticketId]
@@ -157,11 +162,12 @@ export function ChargesWorkspace({
     try {
       for (const [index, row] of rows.entries()) {
         await createInvoiceDetail(
-          toInvoicePayload(row, ticketId, index)
+          toInvoicePayload(row, ticketId, index, notes)
         )
       }
 
       resetForm()
+      setNotes('') // Clear notes after successful save
       await onRefresh()
       setMessage('Charges saved successfully.')
     } catch (err) {
@@ -231,6 +237,30 @@ export function ChargesWorkspace({
     }
   }
 
+  const handleSaveNotes = async (updatedNotes: string) => {
+    if (records.length === 0) return
+    setMessage(null)
+    setSaveError(null)
+
+    try {
+      await Promise.all(
+        records.map((record) =>
+          updateInvoiceDetail(record.cr7de_invoicedetailsid, { cr109_notes: updatedNotes })
+        )
+      )
+      await onRefresh()
+      setMessage('Notes saved successfully.')
+    } catch (err) {
+      setSaveError(
+        err instanceof Error
+          ? err.message
+          : 'Unable to save notes.'
+      )
+    }
+  }
+
+  const hasExistingNotes = records.length > 0 && !!records[0].cr109_notes
+
   return (
     <div className="charges-workspace">
       <section className="workflow-card">
@@ -298,6 +328,22 @@ export function ChargesWorkspace({
           </table>
         </div>
 
+        {!hasExistingNotes && (
+          <div className="invoice-notes-section">
+            <label className="invoice-notes-label" htmlFor="charge-notes">
+              Notes
+            </label>
+            <textarea
+              id="charge-notes"
+              className="invoice-notes-textarea"
+              rows={3}
+              placeholder="Add notes for this invoice..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </div>
+        )}
+
         <div className="form-actions inline-actions">
           <button
             className="primary-action-button"
@@ -319,6 +365,7 @@ export function ChargesWorkspace({
         onRefresh={onRefresh}
         onSaveEdit={updateSavedCharge}
         onDelete={deleteCharge}
+        onSaveNotes={handleSaveNotes}
         updatingId={updatingId}
         deletingId={deletingId}
       />
