@@ -2,11 +2,17 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   ArrowLeft,
   AlertTriangle,
-  ReceiptText,
-  UserPlus,
+  X,
 } from 'lucide-react'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
-import { LoadingSkeleton, PageHeader } from '../../../components/enterprise'
+import { LoadingSkeleton } from '../../../components/enterprise'
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '../../../components/ui/sheet'
 import {
   ChargesWorkspace as InvoiceWorkspace,
   useInvoices,
@@ -23,9 +29,10 @@ import {
   NSC_Generate_New_Owner_TicketService,
 } from '../../../generated'
 import { EditClosingTicketForm } from './CreateClosingTicketForm'
-import { GeneratedDocumentsWorkspace } from './GeneratedDocumentsWorkspace'
+import { InvoiceDocumentViewer } from './InvoiceDocumentViewer'
 import {
   WorkflowTabs,
+  WorkflowTabBar,
   type WorkflowTabKey,
 } from './WorkflowTabs'
 
@@ -74,6 +81,8 @@ export function ClosingTicketDetailsPage({
   ] = useState(false)
   const [activeTab, setActiveTab] =
     useState<WorkflowTabKey>('details')
+  const [invoiceViewerOpen, setInvoiceViewerOpen] =
+    useState(false)
   const ticketId = record?.cr7de_ticketid
   const {
     records: invoiceRecords,
@@ -259,60 +268,6 @@ export function ClosingTicketDetailsPage({
 
   const renderPageActions = () => (
     <>
-      {activeTab !== 'newOwner' && (
-        <>
-          <button
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#1E3A47] px-4 text-xs font-semibold uppercase tracking-[0.08em] text-[#F5F2EC] shadow-sm transition hover:bg-[#152d38]"
-            type="button"
-            onClick={handleGenerateInvoice}
-            disabled={generatingInvoice}
-          >
-            <ReceiptText className="size-4" />
-            {generatingInvoice
-              ? 'Generating...'
-              : 'Generate Invoice'}
-          </button>
-          <button
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-sm font-semibold text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC]"
-            type="button"
-            onClick={handleGenerateNewOwnerTicket}
-            disabled={generatingNewOwnerTicket}
-          >
-            <UserPlus className="size-4" />
-            {generatingNewOwnerTicket
-              ? 'Generating...'
-              : 'Generate New Owner Ticket'}
-          </button>
-        </>
-      )}
-
-      {activeTab === 'newOwner' && (
-        <>
-          <button
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-sm font-semibold text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC]"
-            type="button"
-            onClick={handleGenerateNewOwnerTicket}
-            disabled={generatingNewOwnerTicket}
-          >
-            <UserPlus className="size-4" />
-            {generatingNewOwnerTicket
-              ? 'Generating...'
-              : 'Generate New Owner Ticket'}
-          </button>
-          <button
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#1E3A47] px-4 text-xs font-semibold uppercase tracking-[0.08em] text-[#F5F2EC] shadow-sm transition hover:bg-[#152d38]"
-            type="button"
-            onClick={handleGenerateInvoice}
-            disabled={generatingInvoice}
-          >
-            <ReceiptText className="size-4" />
-            {generatingInvoice
-              ? 'Generating...'
-              : 'Generate Invoice'}
-          </button>
-        </>
-      )}
-
       <button
         className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-sm font-semibold text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC]"
         type="button"
@@ -324,14 +279,37 @@ export function ClosingTicketDetailsPage({
     </>
   )
 
+  const workflowTabs = [
+    { key: 'details' as const, label: 'Closing Details' },
+    { key: 'invoice' as const, label: 'Invoice' },
+    { key: 'charges' as const, label: 'Yardi Charges' },
+    { key: 'newOwner' as const, label: 'New Owner Ticket' },
+  ]
+
   return (
-    <main className="mx-auto grid w-full max-w-[1500px] gap-5">
-      <PageHeader
-        eyebrow="Closing Workspace"
-        title={record?.cr7de_ticketid ?? 'Closing Details'}
-        description="Review the closing record, manage charges, and complete the new-owner workflow in one workspace."
-        actions={renderPageActions()}
-      />
+    <>
+      <div className="sticky top-[48px] z-20" style={{ background: '#ffffff', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+        <div className="flex items-center justify-between px-7 py-3 border-b border-[#e4e2dc]">
+          <div>
+            <p className="font-semibold uppercase" style={{ fontSize: '10px', letterSpacing: '0.14em', color: '#b89a5a' }}>
+              Closing Workspace
+            </p>
+            <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '22px', fontWeight: 700, fontStyle: 'italic', color: '#1E3A47', letterSpacing: '-0.3px' }}>
+              {record?.cr7de_ticketid ?? 'Closing Details'}
+            </h1>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            {renderPageActions()}
+          </div>
+        </div>
+        <WorkflowTabBar
+          tabs={workflowTabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
+      </div>
+
+      <main className="mx-auto grid w-full max-w-[1500px] gap-5 px-4 py-5 sm:px-6 lg:px-8">
 
       {record && getFailureReason(record) && (
         <div
@@ -381,28 +359,7 @@ export function ClosingTicketDetailsPage({
         <WorkflowTabs
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          tabs={[
-            {
-              key: 'details',
-              label: 'Closing Details',
-            },
-            {
-              key: 'invoice',
-              label: 'Invoice',
-            },
-            {
-              key: 'documents',
-              label: 'Documents',
-            },
-            {
-              key: 'charges',
-              label: 'Charges',
-            },
-            {
-              key: 'newOwner',
-              label: 'New Owner Ticket',
-            },
-          ]}
+          tabs={workflowTabs}
         >
           {activeTab === 'details' && (
             <div className="details-form-shell workflow-form-shell">
@@ -425,6 +382,13 @@ export function ClosingTicketDetailsPage({
               loading={invoicesLoading}
               error={invoicesError}
               onRefresh={refreshInvoices}
+              onGenerateInvoice={handleGenerateInvoice}
+              generatingInvoice={generatingInvoice}
+              hasInvoicePdf={Boolean(
+                record.cr109_closingticketdetailspdf ||
+                  record.cr109_closingticketdetailspdf_name
+              )}
+              onViewInvoice={() => setInvoiceViewerOpen(true)}
             />
           )}
 
@@ -443,20 +407,52 @@ export function ClosingTicketDetailsPage({
             />
           )}
 
-          {activeTab === 'documents' && (
-            <GeneratedDocumentsWorkspace
-              closingTicket={record}
-            />
-          )}
-
           {activeTab === 'newOwner' && (
             <NewOwnerTicketWorkspace
               closingTicket={record}
               onSaved={handleSaved}
+              onGenerateTicket={handleGenerateNewOwnerTicket}
+              generatingTicket={generatingNewOwnerTicket}
             />
           )}
         </WorkflowTabs>
       )}
     </main>
+
+      {record && (
+        <Sheet
+          open={invoiceViewerOpen}
+          onOpenChange={setInvoiceViewerOpen}
+        >
+          <SheetContent className="invoice-viewer-sheet">
+            <SheetHeader className="invoice-viewer-sheet-header">
+              <div>
+                <SheetDescription className="text-xs font-semibold uppercase tracking-wide text-[#4B5563]">
+                  Generated Invoice
+                </SheetDescription>
+                <SheetTitle
+                  className="mt-1 text-xl font-semibold text-[#1E3A47]"
+                  style={{ fontFamily: "'Playfair Display', Georgia, serif", fontStyle: 'italic' }}
+                >
+                  {record.cr7de_ticketid ?? 'Closing Ticket'}
+                </SheetTitle>
+              </div>
+              <button
+                type="button"
+                className="invoice-viewer-close-btn"
+                onClick={() => setInvoiceViewerOpen(false)}
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+            </SheetHeader>
+
+            <div className="invoice-viewer-sheet-body">
+              <InvoiceDocumentViewer closingTicket={record} />
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
+    </>
   )
 }

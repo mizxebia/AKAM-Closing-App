@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { ReceiptText, Eye } from 'lucide-react'
 import { invoiceColumns } from '../constants/invoiceColumns'
 import type {
   InvoiceChargeFormRow,
@@ -22,6 +23,10 @@ interface InvoiceTableProps {
   ) => Promise<boolean>
   onDelete: (recordId: string) => void
   onSaveNotes?: (notes: string) => Promise<void>
+  onGenerateInvoice?: () => Promise<void> | void
+  generatingInvoice?: boolean
+  hasInvoicePdf?: boolean
+  onViewInvoice?: () => void
   updatingId: string | null
   deletingId: string | null
 }
@@ -54,6 +59,10 @@ export function InvoiceTable({
   onSaveEdit,
   onDelete,
   onSaveNotes,
+  onGenerateInvoice,
+  generatingInvoice,
+  hasInvoicePdf,
+  onViewInvoice,
   updatingId,
   deletingId,
 }: InvoiceTableProps) {
@@ -137,9 +146,34 @@ export function InvoiceTable({
             {formatInvoiceCurrency(String(totals.total))}
           </p>
         </div>
-        <button type="button" onClick={onRefresh}>
-          Refresh
-        </button>
+        <div className="invoice-header-actions">
+          {onGenerateInvoice && (
+            <button
+              type="button"
+              className="invoice-generate-button"
+              onClick={onGenerateInvoice}
+              disabled={generatingInvoice}
+            >
+              <ReceiptText size={15} />
+              {generatingInvoice
+                ? 'Generating...'
+                : 'Generate Invoice'}
+            </button>
+          )}
+          {hasInvoicePdf && onViewInvoice && (
+            <button
+              type="button"
+              className="invoice-view-button"
+              onClick={onViewInvoice}
+            >
+              <Eye size={15} />
+              View Invoice
+            </button>
+          )}
+          <button type="button" onClick={onRefresh}>
+            Refresh
+          </button>
+        </div>
       </div>
 
       <div

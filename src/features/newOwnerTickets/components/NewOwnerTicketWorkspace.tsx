@@ -4,16 +4,22 @@ import { NewOwnerTicketTab } from './NewOwnerTicketTab'
 interface NewOwnerTicketWorkspaceProps {
   closingTicket: ClosingTicketRecord
   onSaved: () => Promise<void>
+  onGenerateTicket?: () => Promise<void>
+  generatingTicket?: boolean
 }
 
 export function NewOwnerTicketWorkspace({
   closingTicket,
   onSaved,
+  onGenerateTicket,
+  generatingTicket,
 }: NewOwnerTicketWorkspaceProps) {
   return (
     <NewOwnerTicketTab
       closingTicket={closingTicket}
       onSaved={onSaved}
+      onGenerateTicket={onGenerateTicket}
+      generatingTicket={generatingTicket}
     />
   )
 }

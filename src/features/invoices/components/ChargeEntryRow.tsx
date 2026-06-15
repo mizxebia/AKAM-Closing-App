@@ -89,15 +89,14 @@ export function ChargeEntryRow({
       </td>
       <td>
         <input
-          type="number"
-          inputMode="decimal"
+          type="text"
           value={row.cr7de_amount}
           onChange={(event) =>
             onChange(row.id, {
               cr7de_amount: event.target.value,
             })
           }
-          placeholder="0.00"
+          placeholder="0.00 or TBD"
         />
       </td>
       <td>

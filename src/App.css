@@ -432,10 +432,13 @@ body {
   position: sticky;
   top: 96px;
   z-index: 45;
+  width: 100%;
+  box-sizing: border-box;
   border-radius: 8px;
-  padding: 11px 14px;
+  padding: 13px 18px;
   margin-bottom: 14px;
   font-size: 0.88rem;
+  line-height: 1.4;
   box-shadow: 0 10px 30px rgba(30, 58, 71, 0.08);
 }
 
@@ -598,6 +601,130 @@ body {
   overflow: hidden;
   overscroll-behavior: contain;
   background: #f8fafc;
+}
+
+/* --- Invoice Viewer Sheet --- */
+.invoice-viewer-sheet {
+  top: 0 !important;
+  right: 0 !important;
+  bottom: auto !important;
+  left: auto !important;
+  z-index: 90 !important;
+  display: flex !important;
+  width: 55vw !important;
+  max-width: none !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  transform: none !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+  border: 0;
+  border-left: 1px solid #dbe5f3;
+  border-radius: 0 !important;
+  background: #f8fafc !important;
+  padding: 0 !important;
+  box-shadow: -28px 0 70px rgba(15, 23, 42, 0.24);
+}
+
+.invoice-viewer-sheet-header {
+  position: relative;
+  z-index: 3;
+  flex: 0 0 auto;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 18px 28px 20px 28px;
+  border-bottom: 1px solid rgba(213, 203, 184, 0.7);
+  background:
+    linear-gradient(135deg, rgba(220, 232, 239, 0.55), rgba(255, 255, 255, 0) 48%),
+    #ffffff;
+  box-shadow: 0 8px 18px rgba(30, 58, 71, 0.05);
+  text-align: left !important;
+  gap: 16px;
+}
+
+.invoice-viewer-sheet-header::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    #C9A96E 0%,
+    #1E3A47 34%,
+    rgba(213, 203, 184, 0.35) 100%
+  );
+  content: '';
+}
+
+/* Hide the default Radix X button inside the invoice sheet */
+.invoice-viewer-sheet > button[class*="absolute"] {
+  display: none !important;
+}
+
+.invoice-viewer-sheet-header > * {
+  margin: 0 !important;
+}
+
+.invoice-viewer-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1.5px solid #D5CBB8;
+  background: #ffffff;
+  color: #1E3A47;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
+  flex-shrink: 0;
+}
+
+.invoice-viewer-close-btn:hover {
+  background: #F5F2EC;
+  border-color: #1E3A47;
+}
+
+.invoice-viewer-sheet-body {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: #f8fafc;
+  padding: 18px;
+}
+
+/* Let the invoice document fill the sheet body */
+.invoice-viewer-sheet-body .document-panel {
+  position: static !important;
+  top: auto !important;
+  height: 100%;
+}
+
+.invoice-viewer-sheet-body .document-panel-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.invoice-viewer-sheet-body .document-panel-header {
+  display: none !important;
+}
+
+.invoice-viewer-sheet-body .document-preview-shell {
+  flex: 1 1 auto;
+  min-height: 70vh;
+}
+
+.invoice-viewer-sheet-body .document-preview-frame,
+.invoice-viewer-sheet-body .document-image-frame {
+  width: 100%;
+  height: 100%;
+  min-height: 70vh;
 }
 
 .create-closing-form {
@@ -1353,7 +1480,7 @@ body {
 
 .document-panel {
   position: sticky;
-  top: 72px;
+  top: 168px;
   align-self: start;
 }
 
@@ -1601,6 +1728,45 @@ body {
 
 .invoice-header button:hover {
   background: rgba(30, 58, 71, 0.06);
+}
+
+.invoice-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.invoice-header-actions .invoice-generate-button,
+.invoice-header-actions .invoice-view-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.invoice-header-actions .invoice-generate-button {
+  background: #1E3A47;
+  color: #F5F2EC;
+  border-color: #1E3A47;
+}
+
+.invoice-header-actions .invoice-generate-button:hover {
+  background: #152d38;
+}
+
+.invoice-header-actions .invoice-generate-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.invoice-header-actions .invoice-view-button {
+  background: #C9A96E;
+  color: #1E3A47;
+  border-color: #C9A96E;
+}
+
+.invoice-header-actions .invoice-view-button:hover {
+  background: #b8974f;
 }
 
 .invoice-total-summary {

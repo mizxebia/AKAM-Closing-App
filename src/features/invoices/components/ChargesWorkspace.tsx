@@ -19,6 +19,10 @@ interface ChargesWorkspaceProps {
   loading: boolean
   error: string | null
   onRefresh: () => Promise<void> | void
+  onGenerateInvoice?: () => Promise<void> | void
+  generatingInvoice?: boolean
+  hasInvoicePdf?: boolean
+  onViewInvoice?: () => void
 }
 
 function createChargeRow(): InvoiceChargeFormRow {
@@ -96,6 +100,10 @@ export function ChargesWorkspace({
   loading,
   error,
   onRefresh,
+  onGenerateInvoice,
+  generatingInvoice,
+  hasInvoicePdf,
+  onViewInvoice,
 }: ChargesWorkspaceProps) {
   const [rows, setRows] = useState<InvoiceChargeFormRow[]>(
     [createChargeRow()]
@@ -366,6 +374,10 @@ export function ChargesWorkspace({
         onSaveEdit={updateSavedCharge}
         onDelete={deleteCharge}
         onSaveNotes={handleSaveNotes}
+        onGenerateInvoice={onGenerateInvoice}
+        generatingInvoice={generatingInvoice}
+        hasInvoicePdf={hasInvoicePdf}
+        onViewInvoice={onViewInvoice}
         updatingId={updatingId}
         deletingId={deletingId}
       />

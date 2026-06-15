@@ -29,7 +29,7 @@ export function PageHeader({
         className
       )}
       style={{
-        borderRadius: '12px',
+        borderRadius: className?.includes('rounded-none') ? '0' : '12px',
         ...(gradient ? { background: gradient } : {}),
       }}
       initial={{ opacity: 0, y: 8 }}

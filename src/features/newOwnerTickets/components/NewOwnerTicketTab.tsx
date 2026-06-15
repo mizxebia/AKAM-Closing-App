@@ -4,7 +4,7 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { ClipboardList } from 'lucide-react'
+import { ClipboardList, UserPlus } from 'lucide-react'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import { LoadingSkeleton } from '../../../components/enterprise'
 import { updateClosingTicket } from '../../closingTickets/api/closingTicketsService'
@@ -30,6 +30,8 @@ import { NewOwnerTicketForm } from './NewOwnerTicketForm'
 interface NewOwnerTicketTabProps {
   closingTicket: ClosingTicketRecord
   onSaved: () => Promise<void>
+  onGenerateTicket?: () => Promise<void>
+  generatingTicket?: boolean
 }
 
 type ValidationErrors = Partial<
@@ -467,6 +469,8 @@ function validateForm(
 export function NewOwnerTicketTab({
   closingTicket,
   onSaved,
+  onGenerateTicket,
+  generatingTicket,
 }: NewOwnerTicketTabProps) {
   const [record, setRecord] =
     useState<NewOwnerTicketRecord | null>(null)
@@ -646,22 +650,38 @@ export function NewOwnerTicketTab({
   return (
     <section className="grid gap-4">
       <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/60">
-        <div className="flex items-start gap-3">
-          <div className="grid size-10 place-items-center rounded-lg bg-blue-50 text-blue-600 ring-1 ring-blue-100">
-            <ClipboardList className="size-5" />
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <div className="grid size-10 place-items-center rounded-lg bg-blue-50 text-blue-600 ring-1 ring-blue-100">
+              <ClipboardList className="size-5" />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Workflow Form
+              </p>
+              <h3 className="mt-1 text-lg font-semibold text-slate-950">
+                New Owner Ticket
+              </h3>
+              <span className="mt-1 block text-sm text-slate-500">
+                Linked to Closing Ticket{' '}
+                {closingTicket.cr7de_ticketid ?? 'current session'}
+              </span>
+            </div>
           </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Workflow Form
-            </p>
-            <h3 className="mt-1 text-lg font-semibold text-slate-950">
-              New Owner Ticket
-            </h3>
-            <span className="mt-1 block text-sm text-slate-500">
-              Linked to Closing Ticket{' '}
-              {closingTicket.cr7de_ticketid ?? 'current session'}
-            </span>
-          </div>
+
+          {onGenerateTicket && (
+            <button
+              className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg bg-[#1E3A47] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#152d38] disabled:cursor-not-allowed disabled:opacity-50"
+              type="button"
+              onClick={onGenerateTicket}
+              disabled={generatingTicket}
+            >
+              <UserPlus className="size-4" />
+              {generatingTicket
+                ? 'Generating...'
+                : 'Generate New Owner Ticket'}
+            </button>
+          )}
         </div>
       </div>
 

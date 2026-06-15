@@ -139,7 +139,7 @@ export function ClosingTicketPage() {
     return (
       <>
         <TopNav userName={userName} />
-        <div className="min-h-screen bg-[#F5F2EC] px-4 py-5 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-[#F5F2EC]">
           <ClosingTicketDetailsPage
             recordId={selectedRecordId}
             onBack={() => setSelectedRecordId(null)}
