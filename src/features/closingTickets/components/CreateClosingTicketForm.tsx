@@ -58,7 +58,6 @@ interface EditClosingTicketFormProps {
   record: ClosingTicketRecord
   onCancel: () => void
   onSaved: () => Promise<void>
-  onSubmitted: () => Promise<void>
 }
 
 const emptyFormState: ClosingTicketFormState = {
@@ -431,7 +430,6 @@ export function EditClosingTicketForm({
   record,
   onCancel,
   onSaved,
-  onSubmitted,
 }: EditClosingTicketFormProps) {
   return (
     <ClosingTicketEditorForm
@@ -445,7 +443,6 @@ export function EditClosingTicketForm({
       }}
       recordId={record.cr7de_closingticketdetailsid}
       submitLabel="Save"
-      submitAndCloseLabel="Submit"
       savingLabel="Saving..."
       onCancel={onCancel}
       onSubmit={async (formState, pendingFiles) => {
@@ -460,7 +457,6 @@ export function EditClosingTicketForm({
         )
       }}
       onSuccess={onSaved}
-      onSubmitAndClose={onSubmitted}
     />
   )
 }

@@ -7,36 +7,15 @@ import {
   SheetTitle,
   SheetDescription,
 } from '../../../components/ui/sheet'
-import { BuildingListService } from '../../../generated'
-import type { BuildingListRead } from '../../../generated/models/BuildingListModel'
+import {
+  getBuildings,
+  type BuildingRow,
+} from '../data/buildingListCache'
 
 interface BuildingCodeLookupProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSelect: (yardiId: string) => void
-}
-
-// SharePoint "Building List" field mapping:
-//   Title    -> Address
-//   field_0  -> Yardi ID (used as NYC Code)
-//   field_37 -> Building_Name
-//   field_3  -> Alternate_Address
-type BuildingRow = {
-  id: number
-  address: string
-  yardiId: string
-  buildingName: string
-  altAddress: string
-}
-
-function toBuildingRow(record: BuildingListRead): BuildingRow {
-  return {
-    id: record.ID ?? 0,
-    address: record.Title ?? '',
-    yardiId: record.field_0 ?? '',
-    buildingName: record.field_37 ?? '',
-    altAddress: record.field_3 ?? '',
-  }
 }
 
 export function BuildingCodeLookup({
@@ -45,9 +24,18 @@ export function BuildingCodeLookup({
   onSelect,
 }: BuildingCodeLookupProps) {
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [buildings, setBuildings] = useState<BuildingRow[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Debounce the search input so we don't filter/re-render on every keystroke.
+  useEffect(() => {
+    const handle = window.setTimeout(() => {
+      setDebouncedSearch(search)
+    }, 150)
+    return () => window.clearTimeout(handle)
+  }, [search])
 
   useEffect(() => {
     if (!open) return
@@ -56,58 +44,38 @@ export function BuildingCodeLookup({
     setLoading(true)
     setError(null)
 
-    console.log('[BuildingCodeLookup] Starting fetch from BuildingListService...')
+    console.log('[BuildingCodeLookup] Requesting cached building list...')
 
-    BuildingListService.getAll()
+    // Use the shared cache. If it resolves empty (cache never populated),
+    // force a refetch once before giving up.
+    getBuildings()
+      .then(async (cached) => {
+        if (cached.length > 0) return cached
+        console.warn(
+          '[BuildingCodeLookup] Cache empty, forcing refetch...'
+        )
+        return getBuildings({ forceRefresh: true })
+      })
       .then((result) => {
         if (!isActive) return
-        
-        console.log('[BuildingCodeLookup] Service response:', {
-          success: result.success,
-          hasData: !!result.data,
-          dataCount: result.data?.length,
-          hasError: !!result.error
+        console.log('[BuildingCodeLookup] Buildings ready:', {
+          count: result.length,
         })
-        
-        // Enhanced error handling with detailed messages
-        if (!result.success) {
-          const errorMsg = result.error?.message ?? 'Unable to load the building list. Please check SharePoint connector configuration.'
-          console.error('[BuildingCodeLookup] Service returned unsuccessful result:', result.error)
-          throw new Error(errorMsg)
-        }
-        
-        if (!result.data) {
-          console.error('[BuildingCodeLookup] No data in successful result')
-          throw new Error('No data received from building list.')
-        }
-
-        // Convert and filter out invalid entries
-        const validBuildings = result.data
-          .map(toBuildingRow)
-          .filter(b => b.address || b.yardiId || b.buildingName)
-        
-        console.log('[BuildingCodeLookup] Processed buildings:', {
-          total: result.data.length,
-          valid: validBuildings.length,
-          sample: validBuildings.slice(0, 3).map(b => ({ address: b.address, yardiId: b.yardiId }))
-        })
-        
-        setBuildings(validBuildings)
+        setBuildings(result)
       })
       .catch((err) => {
         if (!isActive) return
-        
-        // Enhanced error reporting
+
         console.error('[BuildingCodeLookup] Fetch error:', err)
-        
+
         let errorMessage = 'Unable to load the building list.'
-        
+
         if (err instanceof Error) {
           errorMessage = err.message
         } else if (typeof err === 'string') {
           errorMessage = err
         }
-        
+
         // Add helpful hints for common issues
         if (errorMessage.includes('404') || errorMessage.includes('not found')) {
           errorMessage += ' The Building List data source may not be configured in Power Apps.'
@@ -116,7 +84,7 @@ export function BuildingCodeLookup({
         } else if (errorMessage.includes('Network') || errorMessage.includes('Failed to fetch')) {
           errorMessage += ' Please check your network connection and SharePoint connector status.'
         }
-        
+
         setError(errorMessage)
       })
       .finally(() => {
@@ -132,18 +100,23 @@ export function BuildingCodeLookup({
   }, [open])
 
   const filteredBuildings = useMemo(() => {
-    const term = search.trim().toLowerCase()
+    const term = debouncedSearch.trim().toLowerCase()
     if (!term) return buildings
 
-    return buildings.filter((building) => {
-      return (
-        building.address.toLowerCase().includes(term) ||
-        building.altAddress.toLowerCase().includes(term) ||
-        building.buildingName.toLowerCase().includes(term) ||
-        building.yardiId.toLowerCase().includes(term)
-      )
-    })
-  }, [buildings, search])
+    return buildings.filter((building) =>
+      building.searchText.includes(term)
+    )
+  }, [buildings, debouncedSearch])
+
+  // Cap how many cards we render at once. Showing thousands of complex
+  // nodes is the main cause of lag; users narrow down with search anyway.
+  const MAX_VISIBLE_RESULTS = 100
+  const visibleBuildings = useMemo(
+    () => filteredBuildings.slice(0, MAX_VISIBLE_RESULTS),
+    [filteredBuildings]
+  )
+  const hiddenCount =
+    filteredBuildings.length - visibleBuildings.length
 
   const handleSelect = (yardiId: string) => {
     if (!yardiId) return
@@ -227,7 +200,8 @@ export function BuildingCodeLookup({
                     : 'No buildings available.'}
                 </div>
               ) : (
-                filteredBuildings.map((building) => (
+                <>
+                  {visibleBuildings.map((building) => (
                   <button
                     key={building.id}
                     type="button"
@@ -256,7 +230,15 @@ export function BuildingCodeLookup({
                       <strong>{building.yardiId || '—'}</strong>
                     </div>
                   </button>
-                ))
+                  ))}
+                  {hiddenCount > 0 && (
+                    <div className="building-lookup-state">
+                      Showing first {visibleBuildings.length} of{' '}
+                      {filteredBuildings.length} matches. Keep typing
+                      to narrow your search.
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}

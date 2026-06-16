@@ -1,11 +1,12 @@
 @import "tailwindcss";
+@import "./styles/tokens.css";
 
 :root {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  line-height: 1.6;
+  font-family: var(--font-sans);
+  line-height: var(--leading-relaxed);
   font-weight: 400;
-  color: #1E3A47;
-  background-color: #F5F2EC;
+  color: var(--text-primary);
+  background-color: var(--surface-page);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -16,7 +17,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #F5F2EC;
+  background-color: var(--surface-page);
 }
 
 button:focus,

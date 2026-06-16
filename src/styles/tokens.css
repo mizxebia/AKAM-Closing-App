@@ -1,0 +1,120 @@
+/* =============================================================
+   Design tokens
+   Single source of truth for color, spacing, radius, shadow,
+   typography, motion. Components must reference these.
+   ============================================================= */
+
+:root {
+  /* Brand identity (warm, kept from existing UI) */
+  --brand-primary: #1E3A47;          /* deep teal */
+  --brand-primary-strong: #152d38;
+  --brand-accent: #C9A96E;           /* gold */
+  --brand-accent-soft: rgba(201, 169, 110, 0.22);
+  --brand-rust: #8B3A2A;             /* rust highlight */
+  --brand-rust-soft: #F5EBE8;
+
+  /* Neutral surfaces (modern, cool) */
+  --surface-page: #f8fafc;           /* app background */
+  --surface-card: #ffffff;           /* card background */
+  --surface-muted: #f1f5f9;          /* table headers, disabled */
+  --surface-hover: #f8fafc;          /* hover wash */
+
+  /* Legacy parchment surfaces — used only for logged-in chrome
+     (top nav, status bar). Avoid in new components. */
+  --surface-warm: #F5F2EC;
+  --surface-warm-bone: #FBF9F4;
+
+  /* Borders */
+  --border-default: #e2e8f0;         /* subtle gray */
+  --border-strong: #cbd5e1;
+  --border-warm: #D5CBB8;            /* legacy warm border */
+
+  /* Text */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
+  --text-muted: #94a3b8;
+  --text-on-brand: #F5F2EC;
+  --text-link: var(--brand-rust);
+
+  /* Status */
+  --status-success: #166534;
+  --status-success-bg: #dcfce7;
+  --status-success-border: #bbf7d0;
+  --status-warning: #b45309;
+  --status-warning-bg: #fef3c7;
+  --status-warning-border: #fde68a;
+  --status-error: #b91c1c;
+  --status-error-bg: #fee2e2;
+  --status-error-border: #fecaca;
+  --status-info: #1d4ed8;
+  --status-info-bg: #dbeafe;
+  --status-info-border: #bfdbfe;
+
+  /* Spacing scale (8px) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;       /* inputs, buttons */
+  --radius-xl: 12px;       /* cards, popovers */
+  --radius-2xl: 16px;
+  --radius-full: 9999px;
+
+  /* Elevation (soft, modern) */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06), 0 2px 4px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.10), 0 4px 8px rgba(15, 23, 42, 0.04);
+  --shadow-xl: 0 24px 48px rgba(15, 23, 42, 0.14), 0 8px 16px rgba(15, 23, 42, 0.06);
+
+  /* Focus rings */
+  --ring-focus: 0 0 0 3px var(--brand-accent-soft);
+  --ring-focus-error: 0 0 0 3px rgba(185, 28, 28, 0.18);
+
+  /* Control sizes */
+  --control-h-sm: 32px;
+  --control-h-md: 40px;
+  --control-h-lg: 44px;
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Playfair Display', Georgia, serif;
+
+  --text-xs: 0.72rem;
+  --text-sm: 0.82rem;
+  --text-base: 0.88rem;
+  --text-md: 0.94rem;
+  --text-lg: 1.05rem;
+  --text-xl: 1.25rem;
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.7;
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 120ms;
+  --duration-base: 160ms;
+  --duration-slow: 220ms;
+  --transition-base:
+    border-color var(--duration-base) var(--ease-standard),
+    background-color var(--duration-base) var(--ease-standard),
+    box-shadow var(--duration-base) var(--ease-standard),
+    color var(--duration-base) var(--ease-standard);
+
+  /* Z-index scale */
+  --z-popover: 60;
+  --z-dropdown: 50;
+  --z-sticky: 30;
+  --z-modal: 100;
+}

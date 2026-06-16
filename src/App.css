@@ -1454,6 +1454,27 @@ body {
 
 .details-form-shell .create-closing-form {
   overflow: visible;
+  height: auto;
+  max-height: none;
+}
+
+/* In the details page the form lives in normal page flow, so let the
+   page scroll instead of trapping the wheel in the modal-style inner
+   scroll container. */
+.details-form-shell .create-closing-form-scroll {
+  overflow: visible;
+  overscroll-behavior: auto;
+}
+
+/* The form-actions footer was designed to be pinned at the bottom of
+   the modal panel. In the details page it should stick to the bottom
+   of the viewport as the user scrolls through the long form. */
+.details-form-shell .form-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 -2px 8px rgba(30, 58, 71, 0.08);
 }
 
 .workflow-shell {

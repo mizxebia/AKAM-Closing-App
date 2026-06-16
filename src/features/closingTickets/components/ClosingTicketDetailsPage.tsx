@@ -405,10 +405,6 @@ export function ClosingTicketDetailsPage({
                 record={record}
                 onCancel={onBack}
                 onSaved={handleSaved}
-                onSubmitted={async () => {
-                  await onSaved()
-                  onBack()
-                }}
               />
             </div>
           )}
