@@ -109,15 +109,16 @@ export function ClosingTicketPage() {
     refresh,
   } = useClosingTickets()
 
+  const { userName, userId } = useCurrentUser()
+
   const {
     filters,
     filteredRecords,
     setStatus,
     setSearch,
     clearFilters,
-  } = useClosingTicketFilters(records)
+  } = useClosingTicketFilters(records, { userName, userId })
 
-  const { userName } = useCurrentUser()
   const welcomeMessage = userName
     ? `Welcome, ${userName}!`
     : 'Welcome'

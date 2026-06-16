@@ -11,14 +11,15 @@ const defaultFilters: ClosingTicketFilters = {
 }
 
 export function useClosingTicketFilters(
-  records: ClosingTicketRecord[]
+  records: ClosingTicketRecord[],
+  currentUser?: { userName?: string | null; userId?: string | null }
 ) {
   const [filters, setFilters] =
     useState<ClosingTicketFilters>(defaultFilters)
 
   const filteredRecords = useMemo(
-    () => filterClosingTickets(records, filters),
-    [records, filters]
+    () => filterClosingTickets(records, filters, currentUser),
+    [records, filters, currentUser]
   )
 
   const setStatus = (

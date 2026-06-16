@@ -55,7 +55,7 @@ export function ChargeEntryRow({
             })
           }
         >
-          <option value="">Select charge</option>
+          <option value="">Select payment</option>
           {dueAtClosingOptions.map((value) => (
             <option key={value} value={value}>
               {formatDueAtClosing(

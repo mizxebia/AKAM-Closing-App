@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
-import { CalendarDays, Trash2 } from 'lucide-react'
+import { CalendarDays, Trash2, HelpCircle } from 'lucide-react'
 import { Button } from '../../../components/ui/button'
 import {
   AlertDialog,
@@ -25,6 +25,7 @@ import {
   uploadClosingTicketFile,
 } from '../api/closingTicketsService'
 import { syncNewOwnerTicketFromClosingTicket } from '../../newOwnerTickets/api/newOwnerTicketService'
+import { BuildingCodeLookup } from './BuildingCodeLookup'
 import type {
   ClosingTicketCreateInput,
   ClosingTicketFormState,
@@ -505,6 +506,8 @@ function ClosingTicketEditorForm({
     string | null
   >(null)
   const [saving, setSaving] = useState(false)
+  const [buildingLookupOpen, setBuildingLookupOpen] =
+    useState(false)
   const submitIntentRef = useRef<'save' | 'submit'>(
     'save'
   )
@@ -657,10 +660,10 @@ function ClosingTicketEditorForm({
       const shouldResetToReadyForPostClosing =
         columnName === 'cr109_rpttdocument' &&
         (ticketStatusLabel === 'PostClosing' ||
-          ticketStatusLabel === 'Validate')
+          ticketStatusLabel === 'ValidateClosings')
 
       if (shouldResetToReadyForPostClosing) {
-        const isFromValidate = ticketStatusLabel === 'Validate'
+        const isFromValidate = ticketStatusLabel === 'ValidateClosings'
         const nextFormState: ClosingTicketFormState = {
           ...formState,
           cr7de_ticketstatus: READY_FOR_POST_CLOSING_STATUS,
@@ -825,6 +828,17 @@ function ClosingTicketEditorForm({
             label="NYC Code"
             error={errors.cr7de_nyccode}
             required
+            labelAction={
+              <button
+                type="button"
+                className="nyc-code-guide-btn"
+                onClick={() => setBuildingLookupOpen(true)}
+                title="Find NYC Code by building address"
+              >
+                <HelpCircle size={14} />
+                <span>Find by address</span>
+              </button>
+            }
           >
             <input
               value={formState.cr7de_nyccode}
@@ -1274,6 +1288,14 @@ function ClosingTicketEditorForm({
           </button>
         )}
       </div>
+
+      <BuildingCodeLookup
+        open={buildingLookupOpen}
+        onOpenChange={setBuildingLookupOpen}
+        onSelect={(yardiId) =>
+          updateField('cr7de_nyccode', yardiId)
+        }
+      />
     </form>
   )
 }
@@ -1432,20 +1454,25 @@ function FormField({
   label,
   required = false,
   error,
+  labelAction,
   children,
 }: {
   label: string
   required?: boolean
   error?: string
+  labelAction?: ReactNode
   children: ReactNode
 }) {
   return (
     <label className="form-field">
-      <span>
-        {required && (
-          <strong aria-hidden="true">* </strong>
-        )}
-        {label}
+      <span className="form-field-label-row">
+        <span>
+          {required && (
+            <strong aria-hidden="true">* </strong>
+          )}
+          {label}
+        </span>
+        {labelAction}
       </span>
       {children}
       {error && (

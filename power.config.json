@@ -45,6 +45,22 @@
     "72e1301e-2b3f-46c9-9b11-35c763bdad20": {
       "id": "/providers/microsoft.powerapps/apis/shared_office365",
       "displayName": "Office 365 Outlook"
+    },
+    "9c0a4a2e-3fea-443b-82ba-f31baf6b38da": {
+      "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+      "displayName": "SharePoint",
+      "dataSources": [
+        "Building List"
+      ],
+      "dataSets": {
+        "https://akam.sharepoint.com/sites/Operations": {
+          "dataSources": {
+            "Building List": {
+              "tableName": "e598be35-f24d-493b-9066-83475cc440a5"
+            }
+          }
+        }
+      }
     }
   },
   "databaseReferences": {

@@ -160,7 +160,7 @@ export function ChargesWorkspace({
 
     if (!validateRows(rows)) {
       setSaveError(
-        'Charge, paid by, amount, and payable to are required for every row.'
+        'Payment, paid by, amount, and payable to are required for every row.'
       )
       return
     }
@@ -177,12 +177,12 @@ export function ChargesWorkspace({
       resetForm()
       setNotes('') // Clear notes after successful save
       await onRefresh()
-      setMessage('Charges saved successfully.')
+      setMessage('Payments saved successfully.')
     } catch (err) {
       setSaveError(
         err instanceof Error
           ? err.message
-          : 'Unable to save charges.'
+          : 'Unable to save payments.'
       )
     } finally {
       setSaving(false)
@@ -198,7 +198,7 @@ export function ChargesWorkspace({
 
     if (!validateRows([row])) {
       setSaveError(
-        'Charge, paid by, amount, and payable to are required for this row.'
+        'Payment, paid by, amount, and payable to are required for this row.'
       )
       return false
     }
@@ -211,13 +211,13 @@ export function ChargesWorkspace({
         toInvoiceUpdatePayload(row, 0)
       )
       await onRefresh()
-      setMessage('Charge updated successfully.')
+      setMessage('Payment updated successfully.')
       return true
     } catch (err) {
       setSaveError(
         err instanceof Error
           ? err.message
-          : 'Unable to update charge.'
+          : 'Unable to update payment.'
       )
       return false
     } finally {
@@ -233,12 +233,12 @@ export function ChargesWorkspace({
     try {
       await deleteInvoiceDetail(recordId)
       await onRefresh()
-      setMessage('Charge deleted successfully.')
+      setMessage('Payment deleted successfully.')
     } catch (err) {
       setSaveError(
         err instanceof Error
           ? err.message
-          : 'Unable to delete charge.'
+          : 'Unable to delete payment.'
       )
     } finally {
       setDeletingId(null)
@@ -274,7 +274,7 @@ export function ChargesWorkspace({
       <section className="workflow-card">
         <div className="workflow-card-header">
           <div>
-            <h3>Add Charges</h3>
+            <h3>Add Payments</h3>
             <p>
               Create invoice detail records linked to this
               closing ticket.
@@ -291,7 +291,7 @@ export function ChargesWorkspace({
                 ])
               }
             >
-              Add Charge
+              Add Payment
             </button>
           </div>
         </div>
@@ -312,7 +312,7 @@ export function ChargesWorkspace({
           <table className="charge-entry-table">
             <thead>
               <tr>
-                <th>Charge</th>
+                <th>Payment</th>
                 <th>Paid By</th>
                 <th>Amount</th>
                 <th>Payable To</th>
@@ -361,7 +361,7 @@ export function ChargesWorkspace({
           >
             {saving
               ? 'Saving...'
-              : 'Save Charges'}
+              : 'Save Payments'}
           </button>
         </div>
       </section>

@@ -50,6 +50,8 @@ export function useCurrentUser() {
     useState<string | null>(null)
   const [userEmail, setUserEmail] =
     useState<string | null>(null)
+  const [userId, setUserId] =
+    useState<string | null>(null)
 
   useEffect(() => {
     let isMounted = true
@@ -73,12 +75,17 @@ export function useCurrentUser() {
           context.user.userPrincipalName
         const currentUserEmail =
           context.user.userPrincipalName
+        const currentUserId =
+          (context.user as { userId?: string }).userId ?? null
 
         if (isMounted && currentUserName) {
           setUserName(currentUserName)
         }
         if (isMounted && currentUserEmail) {
           setUserEmail(currentUserEmail)
+        }
+        if (isMounted && currentUserId) {
+          setUserId(currentUserId)
         }
       } catch (error) {
         console.info(
@@ -98,5 +105,6 @@ export function useCurrentUser() {
   return {
     userName,
     userEmail,
+    userId,
   }
 }

@@ -689,6 +689,273 @@ body {
   border-color: #1E3A47;
 }
 
+/* --- NYC Code guide button --- */
+.form-field-label-row {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.nyc-code-guide-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid #C9A96E;
+  border-radius: 6px;
+  background: rgba(201, 169, 110, 0.1);
+  color: #8a6e2e;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.nyc-code-guide-btn:hover {
+  background: rgba(201, 169, 110, 0.2);
+  border-color: #8a6e2e;
+}
+
+/* --- Building Lookup Sheet --- */
+.building-lookup-sheet {
+  top: 0 !important;
+  right: 0 !important;
+  bottom: auto !important;
+  left: auto !important;
+  z-index: 95 !important;
+  display: flex !important;
+  width: min(100vw, 560px) !important;
+  max-width: none !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  transform: none !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+  overflow: hidden !important;
+  border: 0;
+  border-left: 1px solid #dbe5f3;
+  border-radius: 0 !important;
+  background: #f8fafc !important;
+  padding: 0 !important;
+  box-shadow: -28px 0 70px rgba(15, 23, 42, 0.24);
+}
+
+.building-lookup-header {
+  position: relative;
+  z-index: 3;
+  flex: 0 0 auto;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px;
+  padding: 18px 28px 20px 28px;
+  border-bottom: 1px solid rgba(213, 203, 184, 0.7);
+  background:
+    linear-gradient(135deg, rgba(220, 232, 239, 0.55), rgba(255, 255, 255, 0) 48%),
+    #ffffff;
+  box-shadow: 0 8px 18px rgba(30, 58, 71, 0.05);
+  text-align: left !important;
+}
+
+.building-lookup-header > * {
+  margin: 0 !important;
+}
+
+.building-lookup-header::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    #C9A96E 0%,
+    #1E3A47 34%,
+    rgba(213, 203, 184, 0.35) 100%
+  );
+  content: '';
+}
+
+/* Hide the default Radix X button inside the building lookup sheet */
+.building-lookup-sheet > button[class*="absolute"] {
+  display: none !important;
+}
+
+.building-lookup-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1.5px solid #D5CBB8;
+  background: #ffffff;
+  color: #1E3A47;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease;
+  flex-shrink: 0;
+}
+
+.building-lookup-close-btn:hover {
+  background: #F5F2EC;
+  border-color: #1E3A47;
+}
+
+.building-lookup-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  padding: 20px 24px;
+  gap: 14px;
+}
+
+.building-lookup-hint {
+  margin: 0;
+  font-size: 0.84rem;
+  color: #4B5563;
+}
+
+.building-lookup-search {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.building-lookup-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #4B5563;
+  pointer-events: none;
+}
+
+.building-lookup-search input {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  border: 1.5px solid #D5CBB8;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 0.88rem;
+  color: #1E3A47;
+  background: #ffffff;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.building-lookup-search input:focus {
+  border-color: #1E3A47;
+  box-shadow: 0 0 0 3px rgba(30, 58, 71, 0.1);
+}
+
+.building-lookup-results {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.building-lookup-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #E2DAD0;
+  border-radius: 10px;
+  background: #ffffff;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.building-lookup-card:hover:not(:disabled) {
+  border-color: #C9A96E;
+  box-shadow: 0 4px 12px rgba(30, 58, 71, 0.08);
+}
+
+.building-lookup-card:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.building-lookup-card-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #F5F2EC;
+  color: #1E3A47;
+  flex-shrink: 0;
+}
+
+.building-lookup-card-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.building-lookup-card-address {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #1E3A47;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.building-lookup-card-sub {
+  font-size: 0.76rem;
+  color: #4B5563;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.building-lookup-card-code {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.building-lookup-card-code-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9b9b9b;
+}
+
+.building-lookup-card-code strong {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #8a6e2e;
+}
+
+.building-lookup-state {
+  padding: 16px;
+  text-align: center;
+  font-size: 0.86rem;
+  color: #4B5563;
+}
+
+.building-lookup-state-error {
+  color: #b91c1c;
+}
+
 .invoice-viewer-sheet-body {
   min-height: 0;
   flex: 1 1 auto;

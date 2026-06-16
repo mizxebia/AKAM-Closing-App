@@ -35,6 +35,7 @@ import {
   WorkflowTabBar,
   type WorkflowTabKey,
 } from './WorkflowTabs'
+import { domecileLogoBase64, yardiLogoBase64 } from '../../../assets/logoData'
 
 const FAILED_TICKET_STATUS = 716070007
 
@@ -266,18 +267,55 @@ export function ClosingTicketDetailsPage({
     }
   }, [record?.cr7de_ticketid, refreshClosingRecord])
 
-  const renderPageActions = () => (
-    <>
-      <button
-        className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-sm font-semibold text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC]"
-        type="button"
-        onClick={onBack}
-      >
-        <ArrowLeft className="size-4" />
-        Back to dashboard
-      </button>
-    </>
-  )
+  const renderPageActions = () => {
+    const domecileUrl = record?.cr109_domecilepackageurl
+      ? record.cr109_domecilepackageurl
+      : 'https://akam.domecile.com/users/login'
+    const yardiUrl = 'https://096836akama.yardione.com/Account/Login'
+
+    return (
+      <>
+        <a
+          href={domecileUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex h-10 w-32 items-center justify-center rounded-lg border border-[#D5CBB8] bg-white shadow-sm transition hover:bg-[#F5F2EC] hover:border-[#C9A96E]"
+          title={record?.cr109_domecilepackageurl ? 'Open Domecile Package' : 'Open Domecile Login'}
+          aria-label={record?.cr109_domecilepackageurl ? 'Open Domecile Package' : 'Open Domecile Login'}
+        >
+          <img 
+            src={domecileLogoBase64} 
+            alt="Domecile" 
+            className="h-7 w-auto max-w-[110px] object-contain"
+          />
+        </a>
+
+        <a
+          href={yardiUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex h-10 w-32 items-center justify-center rounded-lg border border-[#D5CBB8] bg-white shadow-sm transition hover:bg-[#F5F2EC] hover:border-[#C9A96E]"
+          title="Open Yardi"
+          aria-label="Open Yardi"
+        >
+          <img 
+            src={yardiLogoBase64} 
+            alt="Yardi" 
+            className="h-6 w-auto max-w-full object-contain"
+          />
+        </a>
+
+        <button
+          className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-sm font-semibold text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC]"
+          type="button"
+          onClick={onBack}
+        >
+          <ArrowLeft className="size-4" />
+          Back to dashboard
+        </button>
+      </>
+    )
+  }
 
   const workflowTabs = [
     { key: 'details' as const, label: 'Closing Details' },

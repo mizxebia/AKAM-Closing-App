@@ -187,13 +187,16 @@
           "x-ms-schema-name": "cr109_PackageType",
           "enum": [
             "condo_sale",
-            "coop_sale"
+            "coop_sale",
+            "coop_transfer"
           ],
           "x-ms-enum-values": [
             396620000,
-            396620001
+            396620001,
+            396620002
           ],
           "Color": [
+            null,
             null,
             null
           ],
@@ -492,7 +495,7 @@
             "Processing",
             "Ready For Post Closing",
             "Post Closing",
-            "Validate",
+            "Validate Closings",
             "Transferring Building",
             "Failed",
             "Completed"

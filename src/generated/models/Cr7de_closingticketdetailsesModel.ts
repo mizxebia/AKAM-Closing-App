@@ -28,7 +28,8 @@ export const Cr7de_closingticketdetailsescr109_botstatus = {
 export type Cr7de_closingticketdetailsescr109_botstatus = keyof typeof Cr7de_closingticketdetailsescr109_botstatus;
 export const Cr7de_closingticketdetailsescr109_packagetype = {
   396620000: 'condo_sale',
-  396620001: 'coop_sale'
+  396620001: 'coop_sale',
+  396620002: 'coop_transfer'
 } as const;
 export type Cr7de_closingticketdetailsescr109_packagetype = keyof typeof Cr7de_closingticketdetailsescr109_packagetype;
 export const Cr7de_closingticketdetailsescr109_transactiontypedeal = {
@@ -43,7 +44,7 @@ export const Cr7de_closingticketdetailsescr7de_ticketstatus = {
   716070005: 'Processing',
   716070006: 'ReadyForPostClosing',
   716070004: 'PostClosing',
-  716070001: 'Validate',
+  716070001: 'ValidateClosings',
   716070002: 'TransferringBuilding',
   716070007: 'Failed',
   716070008: 'Completed'

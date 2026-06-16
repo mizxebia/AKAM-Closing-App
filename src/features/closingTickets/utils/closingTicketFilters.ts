@@ -47,9 +47,23 @@ function matchesGeneralSearch(
 
 function matchesStatus(
   record: ClosingTicketRecord,
-  filters: ClosingTicketFilters
+  filters: ClosingTicketFilters,
+  currentUser?: { userName?: string | null; userId?: string | null }
 ) {
   if (filters.status === 'All') {
+    return true
+  }
+
+  if (filters.status === 'My Tickets') {
+    if (!currentUser) return true
+    // Try matching by user ID first (most reliable)
+    if (currentUser.userId && record._createdby_value) {
+      return record._createdby_value.toLowerCase() === currentUser.userId.toLowerCase()
+    }
+    // Fallback to name comparison
+    if (currentUser.userName && record.createdbyname) {
+      return record.createdbyname.toLowerCase().includes(currentUser.userName.toLowerCase())
+    }
     return true
   }
 
@@ -62,11 +76,12 @@ function matchesStatus(
 
 export function filterClosingTickets(
   records: ClosingTicketRecord[],
-  filters: ClosingTicketFilters
+  filters: ClosingTicketFilters,
+  currentUser?: { userName?: string | null; userId?: string | null }
 ) {
   return records.filter(
     (record) =>
-      matchesStatus(record, filters) &&
+      matchesStatus(record, filters, currentUser) &&
       matchesGeneralSearch(record, filters.search)
   )
 }

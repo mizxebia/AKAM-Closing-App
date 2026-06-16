@@ -40,7 +40,7 @@ const groupOrder: InvoiceGroupKey[] = [
 const groupLabels: Record<InvoiceGroupKey, string> = {
   Seller: 'Seller Cheques',
   Buyer: 'Buyer Cheques',
-  Other: 'Charges, Fees & Adjustments',
+  Other: 'Payments, Fees & Adjustments',
 }
 
 function getInvoiceAmount(record: InvoiceRecord) {

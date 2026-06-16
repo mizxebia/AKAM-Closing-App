@@ -7,9 +7,10 @@ export const closingTicketSearchFields = [
 
 export const closingTicketTabs = [
   'All',
+  'My Tickets',
   'Draft',
   'Ready for Post Closing',
-  'Validate',
+  'Validate Closings',
   'Failed',
   'Completed',
 ] as const

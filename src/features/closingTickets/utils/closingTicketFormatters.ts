@@ -31,7 +31,11 @@ const statusDisplayByGeneratedLabel: Record<
     tone: 'postClosing',
   },
   Validate: {
-    label: 'Validate',
+    label: 'Validate Closings',
+    tone: 'validate',
+  },
+  ValidateClosings: {
+    label: 'Validate Closings',
     tone: 'validate',
   },
   TransferringBuilding: {
@@ -132,6 +136,7 @@ export function isClosingTicketStatusLabel(
 ): value is ClosingTicketStatusLabel {
   return (
     value !== 'All' &&
+    value !== 'My Tickets' &&
     closingTicketTabs.includes(
       value as (typeof closingTicketTabs)[number]
     )

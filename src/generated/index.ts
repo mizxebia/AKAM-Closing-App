@@ -4,6 +4,7 @@
  */
 
 // Models
+export * as BuildingListModel from './models/BuildingListModel';
 export * as CommonModels from './models/CommonModels';
 export * as Cr7de_closingticketdetailsesModel from './models/Cr7de_closingticketdetailsesModel';
 export * as Cr7de_invoicedetailsesModel from './models/Cr7de_invoicedetailsesModel';
@@ -17,6 +18,7 @@ export * as NSC_Generate_InvoiceModel from './models/NSC_Generate_InvoiceModel';
 export * as NSC_Generate_New_Owner_TicketModel from './models/NSC_Generate_New_Owner_TicketModel';
 
 // Services
+export * from './services/BuildingListService';
 export * from './services/Cr7de_closingticketdetailsesService';
 export * from './services/Cr7de_invoicedetailsesService';
 export * from './services/Cr7de_newownerticketdetailsesService';
