@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { X } from 'lucide-react'
 
 interface StatusBannerProps {
   type: 'loading' | 'error' | 'info' | 'success' | 'warning'
@@ -32,8 +33,22 @@ export function StatusBanner({
   }
 
   return (
-    <div className={`status-banner status-${type}`}>
-      {message}
+    <div
+      className={`status-banner status-${type}`}
+      role="status"
+      aria-live="polite"
+    >
+      <span>{message}</span>
+      {type !== 'loading' && (
+        <button
+          type="button"
+          className="status-banner-close"
+          onClick={() => setVisible(false)}
+          aria-label="Dismiss notification"
+        >
+          <X size={15} />
+        </button>
+      )}
     </div>
   )
 }

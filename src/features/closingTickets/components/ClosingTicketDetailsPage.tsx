@@ -414,6 +414,8 @@ export function ClosingTicketDetailsPage({
           {activeTab === 'invoice' && (
             <InvoiceWorkspace
               ticketId={record.cr7de_ticketid ?? ''}
+              closingTicketId={record.cr7de_closingticketdetailsid}
+              closingTicketNotes={record.cr7de_notes ?? null}
               records={invoiceRecords}
               loading={invoicesLoading}
               error={invoicesError}

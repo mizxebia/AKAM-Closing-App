@@ -16,6 +16,7 @@ interface InvoiceTableProps {
   records: InvoiceRecord[]
   loading: boolean
   error: string | null
+  closingTicketNotes?: string | null
   onRefresh: () => Promise<void> | void
   onSaveEdit: (
     recordId: string,
@@ -55,6 +56,7 @@ export function InvoiceTable({
   records,
   loading,
   error,
+  closingTicketNotes,
   onRefresh,
   onSaveEdit,
   onDelete,
@@ -71,10 +73,11 @@ export function InvoiceTable({
   const [savingNotes, setSavingNotes] = useState(false)
 
   useEffect(() => {
-    const currentNotes = records.length > 0 && records[0].cr109_notes ? records[0].cr109_notes : ''
+    // Notes are stored on the closing ticket (cr7de_notes), not on invoice rows
+    const currentNotes = closingTicketNotes ?? ''
     setNotes(currentNotes)
     setOriginalNotes(currentNotes)
-  }, [records])
+  }, [closingTicketNotes])
 
   const notesChanged = notes !== originalNotes
 
@@ -119,21 +122,39 @@ export function InvoiceTable({
   }, [sortedRecords])
 
   const totals = useMemo(() => {
-    return records.reduce((currentTotals, record) => {
+    const result = {
+      Seller: 0,
+      SellerCredits: 0,
+      Buyer: 0,
+      BuyerCredits: 0,
+      Other: 0,
+      total: 0,
+    }
+
+    for (const record of records) {
       const groupKey = getInvoiceGroupKey(record)
       const amount = getInvoiceAmount(record)
 
-      return {
-        ...currentTotals,
-        [groupKey]: currentTotals[groupKey] + amount,
-        total: currentTotals.total + amount,
+      result.total += amount
+
+      if (groupKey === 'Seller') {
+        if (amount < 0) {
+          result.SellerCredits += amount
+        } else {
+          result.Seller += amount
+        }
+      } else if (groupKey === 'Buyer') {
+        if (amount < 0) {
+          result.BuyerCredits += amount
+        } else {
+          result.Buyer += amount
+        }
+      } else {
+        result.Other += amount
       }
-    }, {
-      Seller: 0,
-      Buyer: 0,
-      Other: 0,
-      total: 0,
-    })
+    }
+
+    return result
   }, [records])
 
   return (
@@ -186,12 +207,28 @@ export function InvoiceTable({
             {formatInvoiceCurrency(String(totals.Seller))}
           </strong>
         </div>
+        {totals.SellerCredits < 0 && (
+          <div className="invoice-total-credit">
+            <span>Seller Credits</span>
+            <strong>
+              {formatInvoiceCurrency(String(totals.SellerCredits))}
+            </strong>
+          </div>
+        )}
         <div>
           <span>Buyer Total</span>
           <strong>
             {formatInvoiceCurrency(String(totals.Buyer))}
           </strong>
         </div>
+        {totals.BuyerCredits < 0 && (
+          <div className="invoice-total-credit">
+            <span>Buyer Credits</span>
+            <strong>
+              {formatInvoiceCurrency(String(totals.BuyerCredits))}
+            </strong>
+          </div>
+        )}
       </div>
 
       {loading && (

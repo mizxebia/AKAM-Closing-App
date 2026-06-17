@@ -4,6 +4,7 @@ import {
   deleteInvoiceDetail,
   updateInvoiceDetail,
 } from '../api/invoiceService'
+import { updateClosingTicket } from '../../closingTickets/api/closingTicketsService'
 import type {
   InvoiceChargeFormRow,
   InvoiceCreateInput,
@@ -15,6 +16,8 @@ import { ChargeEntryRow } from './ChargeEntryRow'
 
 interface ChargesWorkspaceProps {
   ticketId: string
+  closingTicketId: string
+  closingTicketNotes?: string | null
   records: InvoiceRecord[]
   loading: boolean
   error: string | null
@@ -96,6 +99,8 @@ function validateRows(rows: InvoiceChargeFormRow[]) {
 
 export function ChargesWorkspace({
   ticketId,
+  closingTicketId,
+  closingTicketNotes,
   records,
   loading,
   error,
@@ -246,16 +251,15 @@ export function ChargesWorkspace({
   }
 
   const handleSaveNotes = async (updatedNotes: string) => {
-    if (records.length === 0) return
     setMessage(null)
     setSaveError(null)
 
     try {
-      await Promise.all(
-        records.map((record) =>
-          updateInvoiceDetail(record.cr7de_invoicedetailsid, { cr109_notes: updatedNotes })
-        )
-      )
+      // Notes are stored on the Closing Ticket Details record (cr7de_notes),
+      // not on individual invoice rows.
+      await updateClosingTicket(closingTicketId, {
+        cr7de_notes: updatedNotes,
+      })
       await onRefresh()
       setMessage('Notes saved successfully.')
     } catch (err) {
@@ -267,7 +271,8 @@ export function ChargesWorkspace({
     }
   }
 
-  const hasExistingNotes = records.length > 0 && !!records[0].cr109_notes
+  // Notes come from the closing ticket record, not from invoice rows
+  const hasExistingNotes = !!closingTicketNotes
 
   return (
     <div className="charges-workspace">
@@ -370,6 +375,7 @@ export function ChargesWorkspace({
         records={records}
         loading={loading}
         error={error}
+        closingTicketNotes={closingTicketNotes}
         onRefresh={onRefresh}
         onSaveEdit={updateSavedCharge}
         onDelete={deleteCharge}

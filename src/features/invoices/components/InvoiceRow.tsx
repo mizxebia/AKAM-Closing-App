@@ -267,11 +267,28 @@ export function InvoiceRow({
 
   return (
     <tr>
-      {columns.map((column) => (
-        <td key={column.key}>
-          {formatInvoiceValue(record, column.key)}
-        </td>
-      ))}
+      {columns.map((column) => {
+        if (column.key === 'cr7de_amount') {
+          const raw = record.cr7de_amount
+          const num = Number(raw?.replace(/[$,]/g, '') ?? 0)
+          const isCredit = !Number.isNaN(num) && num < 0
+          return (
+            <td key={column.key} className={isCredit ? 'invoice-amount-credit' : undefined}>
+              {formatInvoiceValue(record, column.key)}
+              {isCredit && (
+                <span className="invoice-credit-badge" aria-label="Credit">
+                  Credit
+                </span>
+              )}
+            </td>
+          )
+        }
+        return (
+          <td key={column.key}>
+            {formatInvoiceValue(record, column.key)}
+          </td>
+        )
+      })}
       <td>
         <div className="invoice-row-actions">
           <button
