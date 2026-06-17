@@ -6,6 +6,7 @@ interface NewOwnerTicketWorkspaceProps {
   onSaved: () => Promise<void>
   onGenerateTicket?: () => Promise<void>
   generatingTicket?: boolean
+  readOnly?: boolean
 }
 
 export function NewOwnerTicketWorkspace({
@@ -13,6 +14,7 @@ export function NewOwnerTicketWorkspace({
   onSaved,
   onGenerateTicket,
   generatingTicket,
+  readOnly = false,
 }: NewOwnerTicketWorkspaceProps) {
   return (
     <NewOwnerTicketTab
@@ -20,6 +22,7 @@ export function NewOwnerTicketWorkspace({
       onSaved={onSaved}
       onGenerateTicket={onGenerateTicket}
       generatingTicket={generatingTicket}
+      readOnly={readOnly}
     />
   )
 }

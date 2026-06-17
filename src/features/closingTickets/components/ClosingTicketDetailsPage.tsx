@@ -38,6 +38,7 @@ import {
 import { domecileLogoBase64, yardiLogoBase64 } from '../../../assets/logoData'
 
 const FAILED_TICKET_STATUS = 716070007
+const PROCESSING_TICKET_STATUS = 716070005
 
 const BOT_STATUS_FAILURE_REASONS: Record<number, string> = {
   396620005: 'Seller information could not be retrieved from the source system.',
@@ -405,6 +406,7 @@ export function ClosingTicketDetailsPage({
                 record={record}
                 onCancel={onBack}
                 onSaved={handleSaved}
+                readOnly={Number(record.cr7de_ticketstatus) === PROCESSING_TICKET_STATUS}
               />
             </div>
           )}
@@ -447,6 +449,7 @@ export function ClosingTicketDetailsPage({
               onSaved={handleSaved}
               onGenerateTicket={handleGenerateNewOwnerTicket}
               generatingTicket={generatingNewOwnerTicket}
+              readOnly={Number(record.cr7de_ticketstatus) === PROCESSING_TICKET_STATUS}
             />
           )}
         </WorkflowTabs>

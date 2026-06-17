@@ -57,40 +57,43 @@ export function useCurrentUser() {
     let isMounted = true
 
     async function loadCurrentUser() {
-      const hostUser = getWindowCurrentUser()
-
-      if (
-        isMounted &&
-        (hostUser.userName || hostUser.userEmail)
-      ) {
-        setUserName(hostUser.userName ?? null)
-        setUserEmail(hostUser.userEmail ?? null)
-        return
-      }
-
+      // Always call getContext() so we get objectId (the reliable ID
+      // that matches _createdby_value in Dataverse). The window context
+      // only provides name/email, not the GUID.
       try {
         const context = await getContext()
+
+        // fullName matches the "Created By" display name in Dataverse
+        // (createdbyname). Prefer it over userPrincipalName.
         const currentUserName =
           context.user.fullName ??
-          context.user.userPrincipalName
-        const currentUserEmail =
-          context.user.userPrincipalName
-        const currentUserId =
-          (context.user as { userId?: string }).userId ?? null
+          context.user.userPrincipalName ??
+          null
 
-        if (isMounted && currentUserName) {
-          setUserName(currentUserName)
+        const currentUserEmail =
+          context.user.userPrincipalName ?? null
+
+        // objectId is the AAD user GUID — matches _createdby_value
+        const currentUserId =
+          context.user.objectId ?? null
+
+        if (isMounted) {
+          if (currentUserName) setUserName(currentUserName)
+          if (currentUserEmail) setUserEmail(currentUserEmail)
+          if (currentUserId) setUserId(currentUserId)
         }
-        if (isMounted && currentUserEmail) {
-          setUserEmail(currentUserEmail)
+      } catch {
+        // getContext() unavailable (e.g. dev mode) — fall back to
+        // the window context for name/email only.
+        const hostUser = getWindowCurrentUser()
+        if (isMounted) {
+          if (hostUser.userName) setUserName(hostUser.userName)
+          if (hostUser.userEmail) setUserEmail(hostUser.userEmail)
         }
-        if (isMounted && currentUserId) {
-          setUserId(currentUserId)
-        }
-      } catch (error) {
-        console.info(
-          'Power Apps user context is unavailable',
-          error
+        console.warn(
+          '[useCurrentUser] getContext() failed — fell back to window context.',
+          '\nuserName from window:', hostUser.userName,
+          '\nuserEmail from window:', hostUser.userEmail
         )
       }
     }

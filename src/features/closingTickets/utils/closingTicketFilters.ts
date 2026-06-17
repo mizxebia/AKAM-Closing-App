@@ -55,16 +55,26 @@ function matchesStatus(
   }
 
   if (filters.status === 'My Tickets') {
-    if (!currentUser) return true
-    // Try matching by user ID first (most reliable)
-    if (currentUser.userId && record._createdby_value) {
-      return record._createdby_value.toLowerCase() === currentUser.userId.toLowerCase()
+    if (!currentUser) return false
+
+    const userId   = currentUser.userId?.toLowerCase() ?? ''
+    const userName = currentUser.userName?.trim().toLowerCase() ?? ''
+    const raw      = record as unknown as Record<string, unknown>
+
+    // Primary: OData display name annotation — confirmed working in debug.
+    // FormattedValue is "AkamBotDev1 #" — strip trailing " #" before comparing.
+    const formattedValue = raw['_createdby_value@OData.Community.Display.V1.FormattedValue']
+    if (userName && typeof formattedValue === 'string' && formattedValue) {
+      const stored = formattedValue.replace(/\s*#\s*$/, '').trim().toLowerCase()
+      return stored === userName
     }
-    // Fallback to name comparison
-    if (currentUser.userName && record.createdbyname) {
-      return record.createdbyname.toLowerCase().includes(currentUser.userName.toLowerCase())
+
+    // Secondary: GUID match — objectId vs _createdby_value
+    if (userId && record._createdby_value) {
+      return record._createdby_value.toLowerCase() === userId
     }
-    return true
+
+    return false
   }
 
   return (

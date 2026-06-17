@@ -360,6 +360,7 @@ interface NewOwnerTicketFormProps {
   ) => void
   onSubmit: () => void
   onValidate: () => void
+  readOnly?: boolean
 }
 
 function getInputMode(
@@ -385,6 +386,7 @@ export function NewOwnerTicketForm({
   onFieldChange,
   onSubmit,
   onValidate,
+  readOnly = false,
 }: NewOwnerTicketFormProps) {
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault()
@@ -474,6 +476,7 @@ export function NewOwnerTicketForm({
 
   return (
     <form className="new-owner-form" onSubmit={handleSubmit}>
+      <fieldset disabled={readOnly} style={{ border: 'none', padding: 0, margin: 0 }}>
       {SECTION_ORDER.map((section) => {
         const sectionFields = FIELD_CONFIGS.filter(
           (field) => field.section === section
@@ -493,7 +496,9 @@ export function NewOwnerTicketForm({
           </section>
         )
       })}
+      </fieldset>
 
+      {!readOnly && (
       <div className="form-actions new-owner-actions">
         {showValidateButton && (
           <button
@@ -513,6 +518,7 @@ export function NewOwnerTicketForm({
           {saving ? 'Saving...' : 'Save'}
         </button>
       </div>
+      )}
     </form>
   )
 }

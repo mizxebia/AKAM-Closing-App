@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 interface StatusBannerProps {
-  type: 'loading' | 'error' | 'info' | 'success'
+  type: 'loading' | 'error' | 'info' | 'success' | 'warning'
   message: string
   autoDismissMs?: number
 }

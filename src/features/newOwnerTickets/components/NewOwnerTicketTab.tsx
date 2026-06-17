@@ -26,12 +26,14 @@ import {
 import { buildClosingPayloadFromNewOwnerTicket } from '../utils/sharedTicketFields'
 import { DocumentViewerPanel } from './DocumentViewerPanel'
 import { NewOwnerTicketForm } from './NewOwnerTicketForm'
+import { ProcessingDots } from '../../../components/feedback/ProcessingDots'
 
 interface NewOwnerTicketTabProps {
   closingTicket: ClosingTicketRecord
   onSaved: () => Promise<void>
   onGenerateTicket?: () => Promise<void>
   generatingTicket?: boolean
+  readOnly?: boolean
 }
 
 type ValidationErrors = Partial<
@@ -471,6 +473,7 @@ export function NewOwnerTicketTab({
   onSaved,
   onGenerateTicket,
   generatingTicket,
+  readOnly = false,
 }: NewOwnerTicketTabProps) {
   const [record, setRecord] =
     useState<NewOwnerTicketRecord | null>(null)
@@ -690,6 +693,11 @@ export function NewOwnerTicketTab({
       )}
 
       {error && <StatusBanner type="error" message={error} />}
+      {readOnly && (
+        <div className="form-alert form-alert-readonly">
+          <ProcessingDots />
+        </div>
+      )}
       {message && (
         <StatusBanner type="success" message={message} />
       )}
@@ -706,6 +714,7 @@ export function NewOwnerTicketTab({
               onFieldChange={updateField}
               onSubmit={saveRecord}
               onValidate={validateClosingTicket}
+              readOnly={readOnly}
             />
           </div>
 

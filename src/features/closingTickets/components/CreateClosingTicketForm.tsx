@@ -32,6 +32,7 @@ import type {
   ClosingTicketRecord,
 } from '../types/closingTicket'
 import { useCurrentUser } from '../hooks/useCurrentUser'
+import { ProcessingDots } from '../../../components/feedback/ProcessingDots'
 
 type FormErrors = Partial<
   Record<keyof ClosingTicketFormState, string>
@@ -58,6 +59,7 @@ interface EditClosingTicketFormProps {
   record: ClosingTicketRecord
   onCancel: () => void
   onSaved: () => Promise<void>
+  readOnly?: boolean
 }
 
 const emptyFormState: ClosingTicketFormState = {
@@ -430,10 +432,12 @@ export function EditClosingTicketForm({
   record,
   onCancel,
   onSaved,
+  readOnly = false,
 }: EditClosingTicketFormProps) {
   return (
     <ClosingTicketEditorForm
       mode="edit"
+      readOnly={readOnly}
       initialFormState={getRecordFormState(record)}
       initialFileNames={{
         cr109_purchaseapplicationform:
@@ -473,6 +477,7 @@ function ClosingTicketEditorForm({
   onSubmit,
   onSuccess,
   onSubmitAndClose,
+  readOnly = false,
 }: {
   mode: 'create' | 'edit'
   initialFormState: ClosingTicketFormState
@@ -490,6 +495,7 @@ function ClosingTicketEditorForm({
   ) => Promise<void>
   onSuccess: () => Promise<void>
   onSubmitAndClose?: () => Promise<void>
+  readOnly?: boolean
 }) {
   const [formState, setFormState] =
     useState<ClosingTicketFormState>(initialFormState)
@@ -753,12 +759,18 @@ function ClosingTicketEditorForm({
       className="create-closing-form"
       onSubmit={handleSubmit}
     >
+      {readOnly && (
+        <div className="form-alert form-alert-readonly">
+          <ProcessingDots />
+        </div>
+      )}
       {saveError && (
         <div className="form-alert form-alert-error">
           {saveError}
         </div>
       )}
 
+      <fieldset disabled={readOnly} style={{ border: 'none', padding: 0, margin: 0 }}>
       <div className="create-closing-form-scroll">
         <section className="form-section">
           <h3>Closing Details</h3>
@@ -1234,7 +1246,9 @@ function ClosingTicketEditorForm({
           </section>
         )}
       </div>
+      </fieldset>
 
+      {!readOnly && (
       <div className="form-actions">
         <button
           className="secondary-action-button"
@@ -1284,6 +1298,7 @@ function ClosingTicketEditorForm({
           </button>
         )}
       </div>
+      )}
 
       <BuildingCodeLookup
         open={buildingLookupOpen}
