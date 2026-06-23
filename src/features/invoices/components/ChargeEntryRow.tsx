@@ -4,7 +4,10 @@ import {
   Cr7de_invoicedetailsescr7de_payableto,
 } from '../../../generated/models/Cr7de_invoicedetailsesModel'
 import type { InvoiceChargeFormRow } from '../types/invoice'
-import { formatDueAtClosing } from '../utils/invoiceFormatters'
+import {
+  formatDueAtClosing,
+  formatPayableToLabel,
+} from '../utils/invoiceFormatters'
 
 type DueAtClosingValue = Exclude<
   InvoiceChargeFormRow['cr109_dueatclosing'],
@@ -110,16 +113,33 @@ export function ChargeEntryRow({
                   : Number(
                       event.target.value
                     ) as InvoiceChargeFormRow['cr7de_payableto'],
+              // Clear other payable to when changing away from Other
+              cr109_otherpayableto:
+                Number(event.target.value) !== 716070002
+                  ? ''
+                  : row.cr109_otherpayableto,
             })
           }
         >
           <option value="">Payable to</option>
           {payableToOptions.map(([value, label]) => (
             <option key={value} value={value}>
-              {label}
+              {formatPayableToLabel(label)}
             </option>
           ))}
         </select>
+        {Number(row.cr7de_payableto) === 716070002 && (
+          <input
+            style={{ marginTop: '4px' }}
+            value={row.cr109_otherpayableto}
+            onChange={(event) =>
+              onChange(row.id, {
+                cr109_otherpayableto: event.target.value,
+              })
+            }
+            placeholder="Specify payable to..."
+          />
+        )}
       </td>
       <td>
         <input
@@ -130,17 +150,6 @@ export function ChargeEntryRow({
             })
           }
           placeholder="Cheque #"
-        />
-      </td>
-      <td>
-        <input
-          value={row.cr7de_remarks}
-          onChange={(event) =>
-            onChange(row.id, {
-              cr7de_remarks: event.target.value,
-            })
-          }
-          placeholder="Description"
         />
       </td>
       <td>

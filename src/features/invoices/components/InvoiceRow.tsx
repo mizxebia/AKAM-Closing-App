@@ -22,6 +22,7 @@ import type {
 } from '../types/invoice'
 import {
   formatDueAtClosing,
+  formatPayableToLabel,
   formatInvoiceDate,
   formatInvoiceValue,
 } from '../utils/invoiceFormatters'
@@ -68,7 +69,7 @@ function createEditRowFromRecord(
       record.cr7de_notapplicabletoledger ?? false,
     cr7de_paidby: record.cr7de_paidby ?? '',
     cr7de_payableto: record.cr7de_payableto ?? '',
-    cr7de_remarks: record.cr7de_remarks ?? '',
+    cr109_otherpayableto: record.cr109_otherpayableto ?? '',
   }
 }
 
@@ -170,8 +171,9 @@ export function InvoiceRow({
         <td>
           <input
             className="invoice-edit-control"
-            type="number"
+            type="text"
             inputMode="decimal"
+            placeholder="Amount or TBD"
             value={editRow.cr7de_amount}
             onChange={(event) =>
               updateEditRow({
@@ -192,16 +194,33 @@ export function InvoiceRow({
                     : Number(
                         event.target.value
                       ) as InvoiceChargeFormRow['cr7de_payableto'],
+                cr109_otherpayableto:
+                  Number(event.target.value) !== 716070002
+                    ? ''
+                    : editRow.cr109_otherpayableto,
               })
             }
           >
             <option value="">Payable to</option>
             {payableToOptions.map(([value, label]) => (
               <option key={value} value={value}>
-                {label}
+                {formatPayableToLabel(label)}
               </option>
             ))}
           </select>
+          {Number(editRow.cr7de_payableto) === 716070002 && (
+            <input
+              className="invoice-edit-control"
+              style={{ marginTop: '4px' }}
+              value={editRow.cr109_otherpayableto}
+              onChange={(event) =>
+                updateEditRow({
+                  cr109_otherpayableto: event.target.value,
+                })
+              }
+              placeholder="Specify payable to..."
+            />
+          )}
         </td>
         <td>
           <input
@@ -210,17 +229,6 @@ export function InvoiceRow({
             onChange={(event) =>
               updateEditRow({
                 cr7de_chequenumber: event.target.value,
-              })
-            }
-          />
-        </td>
-        <td>
-          <input
-            className="invoice-edit-control"
-            value={editRow.cr7de_remarks}
-            onChange={(event) =>
-              updateEditRow({
-                cr7de_remarks: event.target.value,
               })
             }
           />
@@ -285,7 +293,9 @@ export function InvoiceRow({
         }
         return (
           <td key={column.key}>
-            {formatInvoiceValue(record, column.key)}
+            {column.key === 'cr7de_payableto' && Number(record.cr7de_payableto) === 716070002 && record.cr109_otherpayableto
+              ? record.cr109_otherpayableto
+              : formatInvoiceValue(record, column.key)}
           </td>
         )
       })}

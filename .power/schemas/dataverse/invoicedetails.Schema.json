@@ -220,6 +220,14 @@
           "x-ms-schema-name": "cr109_Notes",
           "maxLength": 100
         },
+        "cr109_otherpayableto": {
+          "type": "string",
+          "title": "Other Payable To",
+          "x-ms-dataverse-attribute": "cr109_otherpayableto",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_OtherPayableTo",
+          "maxLength": 100
+        },
         "cr7de_amount": {
           "type": "string",
           "title": "Amount",
@@ -324,7 +332,7 @@
           "x-ms-schema-name": "cr7de_PayableTo",
           "enum": [
             "Building",
-            "AKAM",
+            "AKAM Associates, Inc",
             "Other"
           ],
           "x-ms-enum-values": [
@@ -349,14 +357,6 @@
           "x-ms-dataverse-type": "VirtualType",
           "x-ms-schema-name": "cr7de_payabletoName",
           "x-ms-read-only": true
-        },
-        "cr7de_remarks": {
-          "type": "string",
-          "title": "Remarks",
-          "x-ms-dataverse-attribute": "cr7de_remarks",
-          "x-ms-dataverse-type": "StringType",
-          "x-ms-schema-name": "cr7de_Remarks",
-          "maxLength": 100
         },
         "cr7de_ticketid": {
           "type": "string",

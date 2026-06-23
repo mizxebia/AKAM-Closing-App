@@ -662,7 +662,8 @@ body {
 .create-closing-sheet-body {
   min-height: 0;
   flex: 1 1 auto;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   overscroll-behavior: contain;
   background: #f8fafc;
 }
@@ -1523,11 +1524,31 @@ body {
 }
 
 /* In the details page the form lives in normal page flow, so let the
-   page scroll instead of trapping the wheel in the modal-style inner
-   scroll container. */
+   page scroll instead of trapping the wheel in the inner scroll container. */
 .details-form-shell .create-closing-form-scroll {
   overflow: visible;
   overscroll-behavior: auto;
+}
+
+/* In the create sheet the body now scrolls, so let the form
+   expand naturally and remove the inner scroll container. */
+.create-closing-sheet-body .create-closing-form {
+  height: auto;
+  max-height: none;
+}
+
+.create-closing-sheet-body .create-closing-form-scroll {
+  overflow: visible;
+  overscroll-behavior: auto;
+}
+
+/* Keep the Save/Cancel footer pinned at the bottom of the sheet
+   as the user scrolls through the create form. */
+.create-closing-sheet-body .form-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  box-shadow: 0 -2px 8px rgba(30, 58, 71, 0.08);
 }
 
 /* The form-actions footer was designed to be pinned at the bottom of
@@ -2290,7 +2311,7 @@ body {
 .invoice-table th,
 .invoice-table td {
   overflow: hidden;
-  padding: 9px 7px;
+  padding: 9px 8px;
   border-top: 1px solid #E2DAD0;
   text-align: left;
   text-overflow: ellipsis;
@@ -2316,46 +2337,58 @@ body {
   font-weight: 600;
 }
 
+/* 7 columns + actions = 8 cells total, 100% width used */
 .invoice-table th:nth-child(1),
 .invoice-table td:nth-child(1) {
-  width: 20%;
+  /* Charge Title */
+  width: 22%;
 }
 
 .invoice-table th:nth-child(2),
-.invoice-table td:nth-child(2),
-.invoice-table th:nth-child(4),
-.invoice-table td:nth-child(4) {
-  width: 10%;
+.invoice-table td:nth-child(2) {
+  /* Party Type */
+  width: 9%;
 }
 
 .invoice-table th:nth-child(3),
-.invoice-table td:nth-child(3),
+.invoice-table td:nth-child(3) {
+  /* Amount */
+  width: 9%;
+}
+
+.invoice-table th:nth-child(4),
+.invoice-table td:nth-child(4) {
+  /* Payable To — wide enough for "AKAM Associates, Inc" */
+  width: 16%;
+  overflow: visible;
+  white-space: normal;
+  word-break: break-word;
+}
+
 .invoice-table th:nth-child(5),
 .invoice-table td:nth-child(5) {
-  width: 8%;
+  /* Cheque # */
+  width: 9%;
 }
 
 .invoice-table th:nth-child(6),
 .invoice-table td:nth-child(6) {
-  width: 16%;
+  /* Ledger */
+  width: 8%;
 }
 
 .invoice-table th:nth-child(7),
 .invoice-table td:nth-child(7) {
-  width: 7%;
+  /* Created On */
+  width: 10%;
 }
 
 .invoice-table th:nth-child(8),
 .invoice-table td:nth-child(8) {
-  width: 8%;
-}
-
-.invoice-table th:nth-child(9),
-.invoice-table td:nth-child(9) {
-  width: 11%;
-  min-width: 0;
+  /* Actions */
+  width: 17%;
   overflow: visible;
-  text-overflow: clip;
+  white-space: normal;
 }
 
 .invoice-row-actions {
@@ -2595,131 +2628,146 @@ body {
   padding: 10px 14px;
 }
 
-.dataverse-charge-table {
+/* ─────────────────────────────────────────────────────────────────
+   CSS Grid charge tables
+   Header row and every data row share the SAME grid-template-columns
+   via --cg-cols custom property set on the wrapper.
+   ───────────────────────────────────────────────────────────────── */
+
+/* Scheduled Charges grid — proportional, fits container with no overflow */
+.dataverse-scheduled-cg {
+  --cg-cols: 0.8fr 1.1fr 1.1fr 0.9fr 1fr 0.8fr 0.7fr;
+}
+
+/* Unpaid Charges grid — proportional, fits container with no overflow */
+.dataverse-unpaid-cg {
+  --cg-cols: 0.8fr 1fr 0.9fr 1.1fr 1fr 2fr;
+}
+
+/* ── Shared grid table styles ── */
+.cg-table {
   width: 100%;
-  min-width: 1080px;
-  table-layout: fixed;
-  border-collapse: collapse;
+  overflow: hidden; /* no horizontal scroll */
 }
 
-.dataverse-charge-table th,
-.dataverse-charge-table td {
-  border-bottom: 1px solid #E8E0D7;
-  padding: 14px 18px;
-  text-align: left;
-  vertical-align: middle;
+.cg-header-row,
+.cg-data-row {
+  display: grid;
+  grid-template-columns: var(--cg-cols);
+  column-gap: 8px;
+  align-items: center;
+  width: 100%;
+  /* never let rows exceed the container */
+  min-width: 0;
+  max-width: 100%;
 }
 
-.dataverse-charge-table th {
+.cg-header-row {
   background: #FBFAF7;
-  color: #4B5563;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    'Liberation Mono', 'Courier New', monospace;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  white-space: nowrap;
+  border-bottom: 1px solid #E8E0D7;
+  min-height: 44px;
 }
 
-.dataverse-unpaid-charge-table th:nth-child(1),
-.dataverse-unpaid-charge-table td:nth-child(1) {
-  width: 17%;
+.cg-data-row {
+  border-bottom: 1px solid #E8E0D7;
+  min-height: 72px;
+  transition: background 140ms ease;
 }
 
-.dataverse-unpaid-charge-table th:nth-child(2),
-.dataverse-unpaid-charge-table td:nth-child(2) {
-  width: 14%;
+.cg-data-row:last-child {
+  border-bottom: none;
 }
 
-.dataverse-unpaid-charge-table th:nth-child(3),
-.dataverse-unpaid-charge-table td:nth-child(3) {
-  width: 14%;
-}
-
-.dataverse-unpaid-charge-table th:nth-child(4),
-.dataverse-unpaid-charge-table td:nth-child(4) {
-  width: 13%;
-}
-
-.dataverse-unpaid-charge-table th:nth-child(5),
-.dataverse-unpaid-charge-table td:nth-child(5) {
-  width: 11%;
-}
-
-.dataverse-unpaid-charge-table th:nth-child(6),
-.dataverse-unpaid-charge-table td:nth-child(6) {
-  width: 21%;
-}
-
-.dataverse-unpaid-charge-table th:nth-child(7),
-.dataverse-unpaid-charge-table td:nth-child(7) {
-  width: 10%;
-}
-
-.dataverse-scheduled-charge-table {
-  min-width: 0 !important;
-}
-
-.dataverse-scheduled-charge-table th:nth-child(1),
-.dataverse-scheduled-charge-table td:nth-child(1) {
-  width: 14%;
-}
-
-.dataverse-scheduled-charge-table th:nth-child(2),
-.dataverse-scheduled-charge-table td:nth-child(2),
-.dataverse-scheduled-charge-table th:nth-child(3),
-.dataverse-scheduled-charge-table td:nth-child(3) {
-  width: 13%;
-}
-
-.dataverse-scheduled-charge-table th:nth-child(4),
-.dataverse-scheduled-charge-table td:nth-child(4) {
-  width: 12%;
-}
-
-.dataverse-scheduled-charge-table th:nth-child(5),
-.dataverse-scheduled-charge-table td:nth-child(5) {
-  width: 12%;
-}
-
-.dataverse-scheduled-charge-table th:nth-child(6),
-.dataverse-scheduled-charge-table td:nth-child(6) {
-  width: 10%;
-}
-
-.dataverse-scheduled-charge-table th:nth-child(7),
-.dataverse-scheduled-charge-table td:nth-child(7) {
-  width: 10%;
-}
-
-.dataverse-scheduled-charge-table th:nth-child(8),
-.dataverse-scheduled-charge-table td:nth-child(8) {
-  width: 8%;
-}
-
-.dataverse-charge-table th::after {
-  content: ' \2195';
-  color: #9ca3af;
-  font-family: inherit;
-  font-weight: 700;
-  letter-spacing: 0;
-}
-
-.dataverse-charge-table tbody tr {
-  transition: background 160ms ease;
-}
-
-.dataverse-charge-table tbody tr:nth-child(even) {
+.cg-data-row:nth-child(even) {
   background: #FFFCF6;
 }
 
-.dataverse-charge-table tbody tr:hover {
+.cg-data-row:hover {
   background: #F5F2EC;
 }
 
-.dataverse-charge-table tbody tr:last-child td {
-  border-bottom: 0;
+.cg-cell {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Header label typography */
+.cg-header-row .cg-cell {
+  color: #4B5563;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.cg-cell--right {
+  justify-content: flex-end;
+  padding-right: 16px;
+}
+
+.cg-cell--center {
+  justify-content: center;
+}
+
+.cg-cell--notes {
+  /* Notes expands and wraps */
+  overflow: visible;
+  align-items: flex-start;
+}
+
+/* Date columns: date input + calendar icon sit as a flex row
+   with space-between so the icon stays at the right edge */
+.cg-cell--date {
+  justify-content: space-between;
+  gap: 0;
+  padding-right: 8px;
+}
+
+.cg-cell--date .cg-input--date {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Inputs inside grid cells ── */
+.cg-input {
+  width: 100%;
+  min-height: 36px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #1E3A47;
+  font: inherit;
+  font-size: 0.86rem;
+  padding: 7px 10px;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.cg-input:hover,
+.cg-input:focus {
+  border-color: #D5CBB8;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(30, 58, 71, 0.08);
+  outline: none;
+}
+
+.cg-input--date {
+  /* Override browser's default min-width for date inputs */
+  min-width: 0;
+  width: 100%;
+  padding-right: 4px;
+}
+
+.cg-input--amount {
+  text-align: right;
 }
 
 .dataverse-ledger-table {
@@ -2796,42 +2844,6 @@ body {
   overflow: hidden;
 }
 
-.dataverse-charge-table input {
-  width: 100%;
-  min-height: 36px;
-  box-sizing: border-box;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background: transparent;
-  color: #1E3A47;
-  font: inherit;
-  font-size: 0.86rem;
-  padding: 7px 8px;
-  transition:
-    background 160ms ease,
-    border-color 160ms ease,
-    box-shadow 160ms ease;
-}
-
-.dataverse-charge-table input:hover,
-.dataverse-charge-table input:focus {
-  border-color: #D5CBB8;
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(30, 58, 71, 0.08);
-  outline: none;
-}
-
-.dataverse-charge-table input[type='date'] {
-  min-width: 132px;
-  padding-right: 6px;
-  font-variant-numeric: tabular-nums;
-}
-
-.charge-amount-input {
-  max-width: 130px;
-  font-variant-numeric: tabular-nums;
-}
-
 .charge-boolean-pill {
   display: inline-flex;
   min-width: 90px;
@@ -2860,6 +2872,29 @@ body {
   border-color: #BFE1CA;
   background: #EAF7EE;
   color: #20814A;
+}
+
+/* Badge shown in Manual column of Scheduled Charges */
+.charge-manual-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.charge-manual-badge--yes {
+  background: #DBEAFE;
+  color: #1E40AF;
+}
+
+.charge-manual-badge--no {
+  background: transparent;
+  color: #94a3b8;
 }
 
 .charge-save-button {

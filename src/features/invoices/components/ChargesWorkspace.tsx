@@ -5,6 +5,7 @@ import {
   updateInvoiceDetail,
 } from '../api/invoiceService'
 import { updateClosingTicket } from '../../closingTickets/api/closingTicketsService'
+import { formatDueAtClosing } from '../utils/invoiceFormatters'
 import type {
   InvoiceChargeFormRow,
   InvoiceCreateInput,
@@ -13,6 +14,7 @@ import type {
 } from '../types/invoice'
 import { InvoiceTable } from './InvoiceTable'
 import { ChargeEntryRow } from './ChargeEntryRow'
+import { useAutoClear } from '../../../hooks/useAutoClear'
 
 interface ChargesWorkspaceProps {
   ticketId: string
@@ -38,7 +40,7 @@ function createChargeRow(): InvoiceChargeFormRow {
     cr7de_notapplicabletoledger: false,
     cr7de_paidby: '',
     cr7de_payableto: '',
-    cr7de_remarks: '',
+    cr109_otherpayableto: '',
   }
 }
 
@@ -70,7 +72,7 @@ function toInvoicePayload(
       row.cr7de_notapplicabletoledger,
     cr7de_paidby: row.cr7de_paidby || undefined,
     cr7de_payableto: row.cr7de_payableto || undefined,
-    cr7de_remarks: normalizeText(row.cr7de_remarks),
+    cr109_otherpayableto: normalizeText(row.cr109_otherpayableto),
   }
 }
 
@@ -126,6 +128,10 @@ export function ChargesWorkspace({
     null
   )
 
+  // Auto-clear success message after 5s, errors after 8s
+  useAutoClear(message, setMessage)
+  useAutoClear(saveError, setSaveError, 8000)
+
   // Don't load existing notes into the Add Charges form
   // They will be shown in the Invoice Details section instead
   const canSave = useMemo(
@@ -168,6 +174,44 @@ export function ChargesWorkspace({
         'Payment, paid by, amount, and payable to are required for every row.'
       )
       return
+    }
+
+    // Duplicate check: same charge title + same party is not allowed.
+    // Seller can't have two Cable Charges, Buyer can't either,
+    // but Seller + Buyer can each have one.
+    for (const row of rows) {
+      if (!row.cr109_dueatclosing || !row.cr7de_paidby) continue
+
+      // Check against already-saved records
+      const conflictInSaved = records.find(
+        (r) =>
+          Number(r.cr109_dueatclosing) === Number(row.cr109_dueatclosing) &&
+          Number(r.cr7de_paidby) === Number(row.cr7de_paidby)
+      )
+      if (conflictInSaved) {
+        const chargeLabel = formatDueAtClosing(row.cr109_dueatclosing)
+        const partyLabel = Number(row.cr7de_paidby) === 716070000 ? 'Seller' : 'Buyer'
+        setSaveError(
+          `"${chargeLabel}" already exists for ${partyLabel}. Duplicate charge titles are not allowed for the same party.`
+        )
+        return
+      }
+
+      // Check for duplicates within the rows being added right now
+      const conflictInRows = rows.filter(
+        (r) =>
+          r.id !== row.id &&
+          r.cr109_dueatclosing === row.cr109_dueatclosing &&
+          r.cr7de_paidby === row.cr7de_paidby
+      )
+      if (conflictInRows.length > 0) {
+        const chargeLabel = formatDueAtClosing(row.cr109_dueatclosing)
+        const partyLabel = Number(row.cr7de_paidby) === 716070000 ? 'Seller' : 'Buyer'
+        setSaveError(
+          `"${chargeLabel}" appears more than once for ${partyLabel} in this form. Remove the duplicate row.`
+        )
+        return
+      }
     }
 
     setSaving(true)

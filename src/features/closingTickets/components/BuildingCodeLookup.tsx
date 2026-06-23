@@ -15,7 +15,7 @@ import {
 interface BuildingCodeLookupProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSelect: (yardiId: string) => void
+  onSelect: (yardiId: string, legalName: string) => void
 }
 
 export function BuildingCodeLookup({
@@ -118,9 +118,9 @@ export function BuildingCodeLookup({
   const hiddenCount =
     filteredBuildings.length - visibleBuildings.length
 
-  const handleSelect = (yardiId: string) => {
+  const handleSelect = (yardiId: string, legalName: string) => {
     if (!yardiId) return
-    onSelect(yardiId)
+    onSelect(yardiId, legalName)
     onOpenChange(false)
   }
 
@@ -206,7 +206,7 @@ export function BuildingCodeLookup({
                     key={building.id}
                     type="button"
                     className="building-lookup-card"
-                    onClick={() => handleSelect(building.yardiId)}
+                    onClick={() => handleSelect(building.yardiId, building.legalName)}
                     disabled={!building.yardiId}
                   >
                     <div className="building-lookup-card-icon">

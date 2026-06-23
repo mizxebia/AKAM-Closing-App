@@ -18,7 +18,7 @@ const currencyFormatter = new Intl.NumberFormat(
   }
 )
 
-function formatGeneratedLabel(value: string) {
+export function formatGeneratedLabel(value: string) {
   return value
     .replace(/_/g, ' ')
     .replace(/([a-z])([A-Z])/g, '$1 $2')
@@ -26,6 +26,17 @@ function formatGeneratedLabel(value: string) {
     .trim()
 }
 
+/** Explicit display labels for Payable To enum values. */
+const PAYABLE_TO_LABELS: Record<string, string> = {
+  Building: 'Building',
+  AKAMAssociates_Inc: 'AKAM Associates, Inc',
+  Other: 'Other',
+}
+
+/** Formats a raw Payable To enum key into a human-readable label. */
+export function formatPayableToLabel(raw: string): string {
+  return PAYABLE_TO_LABELS[raw] ?? formatGeneratedLabel(raw)
+}
 export function formatInvoiceDate(value?: string) {
   if (!value) {
     return '-'
@@ -97,12 +108,11 @@ export function formatPayableTo(
     return '-'
   }
 
-  // Choice display follows the generated enum object pattern:
-  // Cr7de_invoicedetailsescr7de_payableto[value].
-  return (
+  const raw =
     Cr7de_invoicedetailsescr7de_payableto[value] ??
     String(value)
-  )
+
+  return formatPayableToLabel(raw)
 }
 
 export function formatInvoiceValue(

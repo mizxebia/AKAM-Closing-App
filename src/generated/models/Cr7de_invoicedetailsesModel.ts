@@ -71,7 +71,7 @@ export const Cr7de_invoicedetailsescr7de_paidby = {
 export type Cr7de_invoicedetailsescr7de_paidby = keyof typeof Cr7de_invoicedetailsescr7de_paidby;
 export const Cr7de_invoicedetailsescr7de_payableto = {
   716070000: 'Building',
-  716070001: 'AKAM',
+  716070001: 'AKAMAssociates_Inc',
   716070002: 'Other'
 } as const;
 export type Cr7de_invoicedetailsescr7de_payableto = keyof typeof Cr7de_invoicedetailsescr7de_payableto;
@@ -89,6 +89,7 @@ export type Cr7de_invoicedetailsesstatuscode = keyof typeof Cr7de_invoicedetails
 export interface Cr7de_invoicedetailsesBase {
   cr109_dueatclosing?: Cr7de_invoicedetailsescr109_dueatclosing;
   cr109_notes?: string;
+  cr109_otherpayableto?: string;
   cr7de_amount?: string;
   cr7de_chequenumber?: string;
   cr7de_index?: string;
@@ -96,7 +97,6 @@ export interface Cr7de_invoicedetailsesBase {
   cr7de_notapplicabletoledger?: boolean;
   cr7de_paidby?: Cr7de_invoicedetailsescr7de_paidby;
   cr7de_payableto?: Cr7de_invoicedetailsescr7de_payableto;
-  cr7de_remarks?: string;
   cr7de_ticketid?: string;
   importsequencenumber?: number;
   overriddencreatedon?: string;

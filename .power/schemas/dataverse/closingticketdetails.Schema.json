@@ -162,6 +162,22 @@
           "x-ms-schema-name": "cr109_DomecilePackageUrl",
           "maxLength": 100
         },
+        "cr109_legalname": {
+          "type": "string",
+          "title": "Legal Name",
+          "x-ms-dataverse-attribute": "cr109_legalname",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_LegalName",
+          "maxLength": 100
+        },
+        "cr109_locationofclosing": {
+          "type": "string",
+          "title": "Location of Closing",
+          "x-ms-dataverse-attribute": "cr109_locationofclosing",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_LocationofClosing",
+          "maxLength": 100
+        },
         "cr109_newownerticketpdf": {
           "type": "string",
           "title": "New Owner Ticket PDF",

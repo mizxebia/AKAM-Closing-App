@@ -66,6 +66,8 @@ export interface Cr7de_closingticketdetailsesBase {
   cr109_buyer2name?: string;
   cr109_domecilechargesextracted?: boolean;
   cr109_domecilepackageurl?: string;
+  cr109_legalname?: string;
+  cr109_locationofclosing?: string;
   cr109_packagetype?: Cr7de_closingticketdetailsescr109_packagetype;
   cr109_saleprice?: string;
   cr109_seller2name?: string;

@@ -33,6 +33,7 @@ import type {
 } from '../types/closingTicket'
 import { useCurrentUser } from '../hooks/useCurrentUser'
 import { ProcessingDots } from '../../../components/feedback/ProcessingDots'
+import { getBuildings } from '../data/buildingListCache'
 
 type FormErrors = Partial<
   Record<keyof ClosingTicketFormState, string>
@@ -66,6 +67,8 @@ const emptyFormState: ClosingTicketFormState = {
   cr109_botstatus: '',
   cr109_buyer2name: '',
   cr109_domecilepackageurl: '',
+  cr109_legalname: '',
+  cr109_locationofclosing: '99 Park Avenue, 14th Floor, New York, NY 10014',
   cr109_packagetype: '',
   cr109_saleprice: '',
   cr109_seller2name: '',
@@ -126,6 +129,10 @@ function getRecordFormState(
     cr109_buyer2name: record.cr109_buyer2name ?? '',
     cr109_domecilepackageurl:
       record.cr109_domecilepackageurl ?? '',
+    cr109_legalname: record.cr109_legalname ?? '',
+    cr109_locationofclosing:
+      record.cr109_locationofclosing ??
+      '99 Park Avenue, 14th Floor, New York, NY 10014',
     cr109_packagetype: record.cr109_packagetype ?? '',
     cr109_saleprice: record.cr109_saleprice ?? '',
     cr109_seller2name: record.cr109_seller2name ?? '',
@@ -284,6 +291,12 @@ function buildPayload(
     ),
     cr109_domecilepackageurl: normalizeText(
       formState.cr109_domecilepackageurl
+    ),
+    cr109_legalname: normalizeText(
+      formState.cr109_legalname
+    ),
+    cr109_locationofclosing: normalizeText(
+      formState.cr109_locationofclosing
     ),
     cr109_packagetype:
       formState.cr109_packagetype || undefined,
@@ -596,6 +609,26 @@ function ClosingTicketEditorForm({
     setPendingFiles({})
   }, [formState.cr7de_buildingnotondomicile, isCreateMode])
 
+  // When the NYC Code is typed manually, look it up in the cached building
+  // list and auto-populate the Legal Name if a match is found.
+  useEffect(() => {
+    const code = formState.cr7de_nyccode.trim()
+    if (!code) return
+
+    void getBuildings().then((buildings) => {
+      const match = buildings.find(
+        (b) => b.yardiId.toLowerCase() === code.toLowerCase()
+      )
+      if (match && match.legalName) {
+        setFormState((prev) => ({
+          ...prev,
+          cr109_legalname: match.legalName,
+        }))
+      }
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formState.cr7de_nyccode])
+
   const updateTicketStatus = async (
     nextStatus: number,
     nextBotStatus?: number
@@ -902,16 +935,16 @@ function ClosingTicketEditorForm({
           )}
 
           {isCreateMode ? (
-            <FormField label="Seller Name">
+            <FormField label="Legal Name">
               <input
-                value={formState.cr7de_sellername}
+                value={formState.cr109_legalname}
                 onChange={(event) =>
                   updateField(
-                    'cr7de_sellername',
+                    'cr109_legalname',
                     event.target.value
                   )
                 }
-                placeholder="Seller's full name"
+                placeholder="Auto-filled from NYC Code lookup"
               />
             </FormField>
           ) : (
@@ -929,20 +962,66 @@ function ClosingTicketEditorForm({
           )}
 
           {!isCreateMode && (
+            <FormField label="Legal Name">
+              <input
+                value={formState.cr109_legalname}
+                onChange={(event) =>
+                  updateField(
+                    'cr109_legalname',
+                    event.target.value
+                  )
+                }
+                placeholder="Auto-filled from NYC Code lookup"
+              />
+            </FormField>
+          )}
+
+          {/* Location of Closing — shown in both modes */}
+          {isCreateMode && (
             <div className="form-grid-wide">
-              <FormField label="Building Address">
+              <FormField label="Location of Closing">
                 <input
-                  value={formState.cr7de_buildingaddress}
+                  value={formState.cr109_locationofclosing}
                   onChange={(event) =>
                     updateField(
-                      'cr7de_buildingaddress',
+                      'cr109_locationofclosing',
                       event.target.value
                     )
                   }
-                  placeholder="e.g. 10 Park Avenue"
+                  placeholder="99 Park Avenue, 14th Floor, New York, NY 10014"
                 />
               </FormField>
             </div>
+          )}
+
+          {!isCreateMode && (
+            <FormField label="Building Address">
+              <input
+                value={formState.cr7de_buildingaddress}
+                onChange={(event) =>
+                  updateField(
+                    'cr7de_buildingaddress',
+                    event.target.value
+                  )
+                }
+                placeholder="e.g. 10 Park Avenue"
+              />
+            </FormField>
+          )}
+
+          {!isCreateMode && (
+            <FormField label="Location of Closing">
+              <input
+                value={formState.cr109_locationofclosing}
+                onChange={(event) =>
+                  updateField(
+                    'cr109_locationofclosing',
+                    event.target.value
+                  )
+                }
+                placeholder="99 Park Avenue, 14th Floor, New York, NY 10014"
+              />
+            </FormField>
           )}
 
           {!isCreateMode && (
@@ -1303,9 +1382,10 @@ function ClosingTicketEditorForm({
       <BuildingCodeLookup
         open={buildingLookupOpen}
         onOpenChange={setBuildingLookupOpen}
-        onSelect={(yardiId) =>
+        onSelect={(yardiId, legalName) => {
           updateField('cr7de_nyccode', yardiId)
-        }
+          updateField('cr109_legalname', legalName)
+        }}
       />
     </form>
   )

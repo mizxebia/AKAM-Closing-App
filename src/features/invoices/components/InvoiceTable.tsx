@@ -178,7 +178,9 @@ export function InvoiceTable({
               <ReceiptText size={15} />
               {generatingInvoice
                 ? 'Generating...'
-                : 'Generate Invoice'}
+                : hasInvoicePdf
+                  ? 'Regenerate Invoice'
+                  : 'Generate Invoice'}
             </button>
           )}
           {hasInvoicePdf && onViewInvoice && (

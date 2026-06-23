@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Plus, RotateCw, Save } from 'lucide-react'
+import { useAutoClear } from '../../../hooks/useAutoClear'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -222,6 +223,7 @@ function UnpaidChargesTable({
   const [saveError, setSaveError] = useState<string | null>(
     null
   )
+  useAutoClear(saveError, setSaveError, 8000)
 
   useEffect(() => {
     setDrafts(initialDrafts)
@@ -329,109 +331,41 @@ function UnpaidChargesTable({
           {saveError}
         </div>
       )}
-      <table className="dataverse-charge-table dataverse-unpaid-charge-table">
-        <thead>
-          <tr>
-            <th>Charge Code</th>
-            <th>Date</th>
-            <th>Amount</th>
-            <th>Partially Paid</th>
-            <th>Move</th>
-            <th>Notes</th>
-          </tr>
-        </thead>
-        <tbody>
-          {records.map((record) => {
-            const draft =
-              drafts[record.crc5c_unpaidchargesid] ??
-              createUnpaidDraft(record)
-
-            return (
-              <tr key={record.crc5c_unpaidchargesid}>
-                <td>
-                  <input
-                    value={draft.cr109_chargecode}
-                    onChange={(event) =>
-                      updateDraft(
-                        record.crc5c_unpaidchargesid,
-                        {
-                          cr109_chargecode:
-                            event.target.value,
-                        }
-                      )
-                    }
-                  />
-                </td>
-                <td>
-                  <input
-                    type="date"
-                    value={draft.cr109_date}
-                    onChange={(event) =>
-                      updateDraft(
-                        record.crc5c_unpaidchargesid,
-                        { cr109_date: event.target.value }
-                      )
-                    }
-                  />
-                </td>
-                <td>
-                  <input
-                    className="charge-amount-input"
-                    inputMode="decimal"
-                    value={draft.cr109_amount}
-                    onChange={(event) =>
-                      updateDraft(
-                        record.crc5c_unpaidchargesid,
-                        { cr109_amount: event.target.value }
-                      )
-                    }
-                  />
-                </td>
-                <td>
-                  <BooleanPill
-                    checked={Boolean(
-                      draft.cr109_partiallypaid
-                    )}
-                    label="Partial"
-                    onChange={(checked) =>
-                      updateDraft(
-                        record.crc5c_unpaidchargesid,
-                        {
-                          cr109_partiallypaid: checked,
-                        }
-                      )
-                    }
-                  />
-                </td>
-                <td>
-                  <BooleanPill
-                    checked={Boolean(draft.cr109_move)}
-                    label="Move"
-                    onChange={(checked) =>
-                      updateDraft(
-                        record.crc5c_unpaidchargesid,
-                        { cr109_move: checked }
-                      )
-                    }
-                  />
-                </td>
-                <td>
-                  <input
-                    value={draft.cr109_notes}
-                    onChange={(event) =>
-                      updateDraft(
-                        record.crc5c_unpaidchargesid,
-                        { cr109_notes: event.target.value }
-                      )
-                    }
-                  />
-                </td>
-                
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
+      <div className="cg-table dataverse-unpaid-cg">
+        <div className="cg-header-row">
+          <div className="cg-cell">Charge Code</div>
+          <div className="cg-cell">Date</div>
+          <div className="cg-cell cg-cell--right">Amount</div>
+          <div className="cg-cell cg-cell--center">Partially Paid</div>
+          <div className="cg-cell cg-cell--center">Move</div>
+          <div className="cg-cell">Notes</div>
+        </div>
+        {records.map((record) => {
+          const draft = drafts[record.crc5c_unpaidchargesid] ?? createUnpaidDraft(record)
+          return (
+            <div className="cg-data-row" key={record.crc5c_unpaidchargesid}>
+              <div className="cg-cell">
+                <input className="cg-input" value={draft.cr109_chargecode} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_chargecode: e.target.value })} />
+              </div>
+              <div className="cg-cell">
+                <input className="cg-input cg-input--date" type="date" value={draft.cr109_date} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_date: e.target.value })} />
+              </div>
+              <div className="cg-cell cg-cell--right">
+                <input className="cg-input cg-input--amount" inputMode="decimal" value={draft.cr109_amount} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_amount: e.target.value })} />
+              </div>
+              <div className="cg-cell cg-cell--center">
+                <BooleanPill checked={Boolean(draft.cr109_partiallypaid)} label="Partial" onChange={(checked) => updateDraft(record.crc5c_unpaidchargesid, { cr109_partiallypaid: checked })} />
+              </div>
+              <div className="cg-cell cg-cell--center">
+                <BooleanPill checked={Boolean(draft.cr109_move)} label="Move" onChange={(checked) => updateDraft(record.crc5c_unpaidchargesid, { cr109_move: checked })} />
+              </div>
+              <div className="cg-cell cg-cell--notes">
+                <input className="cg-input" value={draft.cr109_notes} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_notes: e.target.value })} />
+              </div>
+            </div>
+          )
+        })}
+      </div>
     </ChargeTableShell>
   )
 }
@@ -461,6 +395,7 @@ function ScheduledChargesTable({
   const [saveError, setSaveError] = useState<string | null>(
     null
   )
+  useAutoClear(saveError, setSaveError, 8000)
 
   useEffect(() => {
     setDrafts(initialDrafts)
@@ -540,189 +475,65 @@ function ScheduledChargesTable({
           {saveError}
         </div>
       )}
-      <table className="dataverse-charge-table dataverse-scheduled-charge-table">
-        <thead>
-          <tr>
-            <th>Charge Code</th>
-            <th>Charge From</th>
-            <th>Charge To</th>
-            <th>Amount</th>
-            <th>Partially Paid</th>
-            <th>Move</th>
-            <th>Manual</th>
-            <th />
-          </tr>
-        </thead>
-        <tbody>
-          {records.map((record) => {
-            const draft =
-              drafts[
-                record.crc5c_copyscheduledchargesid
-              ] ?? createScheduledDraft(record)
-
-            return (
-              <tr
-                key={record.crc5c_copyscheduledchargesid}
-              >
-                <td>
-                  <input
-                    value={draft.cr109_chargecode}
-                    onChange={(event) =>
-                      updateDraft(
-                        record.crc5c_copyscheduledchargesid,
-                        {
-                          cr109_chargecode:
-                            event.target.value,
-                        }
-                      )
-                    }
-                  />
-                </td>
-                <td>
-                  <input
-                    type="date"
-                    value={draft.cr109_chargefrom}
-                    onChange={(event) =>
-                      updateDraft(
-                        record.crc5c_copyscheduledchargesid,
-                        {
-                          cr109_chargefrom:
-                            event.target.value,
-                        }
-                      )
-                    }
-                  />
-                </td>
-                <td>
-                  <input
-                    type="date"
-                    value={draft.cr109_chargeto}
-                    onChange={(event) =>
-                      updateDraft(
-                        record.crc5c_copyscheduledchargesid,
-                        {
-                          cr109_chargeto:
-                            event.target.value,
-                        }
-                      )
-                    }
-                  />
-                </td>
-                <td>
-                  <input
-                    className="charge-amount-input"
-                    inputMode="decimal"
-                    value={draft.cr109_chargeamount}
-                    onChange={(event) =>
-                      updateDraft(
-                        record.crc5c_copyscheduledchargesid,
-                        {
-                          cr109_chargeamount:
-                            event.target.value,
-                        }
-                      )
-                    }
-                  />
-                </td>
-                <td>
-                  <BooleanPill
-                    checked={Boolean(
-                      draft.cr109_partiallypaid
-                    )}
-                    label="Partial"
-                    onChange={(checked) =>
-                      updateDraft(
-                        record.crc5c_copyscheduledchargesid,
-                        {
-                          cr109_partiallypaid: checked,
-                        }
-                      )
-                    }
-                  />
-                </td>
-                <td>
-                  <BooleanPill
-                    checked={Boolean(draft.cr109_move)}
-                    label="Move"
-                    onChange={(checked) =>
-                      updateDraft(
-                        record.crc5c_copyscheduledchargesid,
-                        { cr109_move: checked }
-                      )
-                    }
-                  />
-                </td>
-                <td>
-                  {record.cr109_manual ? (
-                    <span
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        padding: '2px 8px',
-                        borderRadius: '9999px',
-                        fontSize: '0.68rem',
-                        fontWeight: 700,
-                        backgroundColor: '#DBEAFE',
-                        color: '#1E40AF',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em',
-                      }}
-                    >
-                      Yes
-                    </span>
-                  ) : (
-                    <span style={{ color: '#94a3b8', fontSize: '0.78rem' }}>No</span>
-                  )}
-                </td>
-                <td>
-                  {record.cr109_manual && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <button
-                          type="button"
-                          className="invoice-row-action-button invoice-row-delete-button"
-                          style={{ fontSize: '0.72rem', padding: '3px 8px', minHeight: '26px' }}
-                          disabled={savingId === 'deleting-' + record.crc5c_copyscheduledchargesid}
-                        >
-                          {savingId === 'deleting-' + record.crc5c_copyscheduledchargesid ? 'Deleting...' : 'Delete'}
-                        </button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Scheduled Charge</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will permanently remove this manual charge record. This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            className="invoice-confirm-delete-button"
-                            onClick={async () => {
-                              onSavingChange('deleting-' + record.crc5c_copyscheduledchargesid)
-                              try {
-                                await deleteScheduledCharge(record.crc5c_copyscheduledchargesid)
-                                await onSaved()
-                              } catch {
-                                // refresh will show current state
-                              } finally {
-                                onSavingChange(null)
-                              }
-                            }}
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
-                </td>
-                
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
+      <div className="cg-table dataverse-scheduled-cg">
+        <div className="cg-header-row">
+          <div className="cg-cell">Charge Code</div>
+          <div className="cg-cell">Charge From</div>
+          <div className="cg-cell">Charge To</div>
+          <div className="cg-cell cg-cell--right">Amount</div>
+          <div className="cg-cell cg-cell--center">Move</div>
+          <div className="cg-cell cg-cell--center">Manual</div>
+          <div className="cg-cell cg-cell--center" />
+        </div>
+        {records.map((record) => {
+          const draft = drafts[record.crc5c_copyscheduledchargesid] ?? createScheduledDraft(record)
+          return (
+            <div className="cg-data-row" key={record.crc5c_copyscheduledchargesid}>
+              <div className="cg-cell">
+                <input className="cg-input" value={draft.cr109_chargecode} onChange={(e) => updateDraft(record.crc5c_copyscheduledchargesid, { cr109_chargecode: e.target.value })} />
+              </div>
+              <div className="cg-cell cg-cell--date">
+                <input className="cg-input cg-input--date" type="date" value={draft.cr109_chargefrom} onChange={(e) => updateDraft(record.crc5c_copyscheduledchargesid, { cr109_chargefrom: e.target.value })} />
+              </div>
+              <div className="cg-cell cg-cell--date">
+                <input className="cg-input cg-input--date" type="date" value={draft.cr109_chargeto} onChange={(e) => updateDraft(record.crc5c_copyscheduledchargesid, { cr109_chargeto: e.target.value })} />
+              </div>
+              <div className="cg-cell cg-cell--right">
+                <input className="cg-input cg-input--amount" inputMode="decimal" value={draft.cr109_chargeamount} onChange={(e) => updateDraft(record.crc5c_copyscheduledchargesid, { cr109_chargeamount: e.target.value })} />
+              </div>
+              <div className="cg-cell cg-cell--center">
+                <BooleanPill checked={Boolean(draft.cr109_move)} label="Move" onChange={(checked) => updateDraft(record.crc5c_copyscheduledchargesid, { cr109_move: checked })} />
+              </div>
+              <div className="cg-cell cg-cell--center">
+                <span className={`charge-manual-badge ${record.cr109_manual ? 'charge-manual-badge--yes' : 'charge-manual-badge--no'}`}>
+                  {record.cr109_manual ? 'Yes' : 'No'}
+                </span>
+              </div>
+              <div className="cg-cell cg-cell--right">
+                {record.cr109_manual && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <button type="button" className="invoice-row-action-button invoice-row-delete-button" disabled={savingId === 'deleting-' + record.crc5c_copyscheduledchargesid}>
+                        {savingId === 'deleting-' + record.crc5c_copyscheduledchargesid ? 'Deleting…' : 'Delete'}
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Scheduled Charge</AlertDialogTitle>
+                        <AlertDialogDescription>This will permanently remove this manual charge record. This action cannot be undone.</AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction className="invoice-confirm-delete-button" onClick={async () => { onSavingChange('deleting-' + record.crc5c_copyscheduledchargesid); try { await deleteScheduledCharge(record.crc5c_copyscheduledchargesid); await onSaved() } catch {} finally { onSavingChange(null) } }}>Delete</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
     </ChargeTableShell>
   )
 }

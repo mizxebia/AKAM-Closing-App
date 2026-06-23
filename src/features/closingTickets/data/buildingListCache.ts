@@ -12,6 +12,7 @@ export type BuildingRow = {
   yardiId: string
   buildingName: string
   altAddress: string
+  legalName: string
   // Precomputed lowercase haystack for fast searching.
   searchText: string
 }
@@ -23,6 +24,7 @@ export function toBuildingRow(
   const yardiId = record.field_0 ?? ''
   const buildingName = record.field_37 ?? ''
   const altAddress = record.field_3 ?? ''
+  const legalName = record.field_6 ?? ''
 
   return {
     id: record.ID ?? 0,
@@ -30,8 +32,9 @@ export function toBuildingRow(
     yardiId,
     buildingName,
     altAddress,
+    legalName,
     searchText:
-      `${address}\u0001${altAddress}\u0001${buildingName}\u0001${yardiId}`.toLowerCase(),
+      `${address}\u0001${altAddress}\u0001${buildingName}\u0001${yardiId}\u0001${legalName}`.toLowerCase(),
   }
 }
 

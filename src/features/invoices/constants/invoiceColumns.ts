@@ -22,10 +22,6 @@ export const invoiceColumns: InvoiceColumn[] = [
     label: 'Cheque #',
   },
   {
-    key: 'cr7de_remarks',
-    label: 'Description',
-  },
-  {
     key: 'cr7de_notapplicabletoledger',
     label: 'Ledger',
   },

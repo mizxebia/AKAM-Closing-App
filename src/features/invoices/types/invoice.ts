@@ -13,7 +13,6 @@ export type InvoiceColumnKey =
   | 'cr7de_amount'
   | 'cr7de_payableto'
   | 'cr7de_chequenumber'
-  | 'cr7de_remarks'
   | 'cr7de_notapplicabletoledger'
   | 'createdon'
 
@@ -32,13 +31,13 @@ export type InvoiceCreateInput = Partial<
     Cr7de_invoicedetailses,
     | 'cr109_dueatclosing'
     | 'cr109_notes'
+    | 'cr109_otherpayableto'
     | 'cr7de_amount'
     | 'cr7de_chequenumber'
     | 'cr7de_index'
     | 'cr7de_notapplicabletoledger'
     | 'cr7de_paidby'
     | 'cr7de_payableto'
-    | 'cr7de_remarks'
     | 'cr7de_ticketid'
   >
 >
@@ -52,6 +51,7 @@ export type InvoiceChargeFormRow = {
   cr109_dueatclosing:
     | ''
     | Cr7de_invoicedetailsescr109_dueatclosing
+  cr109_otherpayableto: string
   cr7de_amount: string
   cr7de_chequenumber: string
   cr7de_index: string
@@ -60,5 +60,4 @@ export type InvoiceChargeFormRow = {
   cr7de_payableto:
     | ''
     | Cr7de_invoicedetailsescr7de_payableto
-  cr7de_remarks: string
 }

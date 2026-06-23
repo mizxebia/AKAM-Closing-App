@@ -318,11 +318,15 @@ export function ClosingTicketDetailsPage({
     )
   }
 
+  const isDraft = Number(record?.cr7de_ticketstatus) === 716070000
+
   const workflowTabs = [
     { key: 'details' as const, label: 'Closing Details' },
     { key: 'invoice' as const, label: 'Invoice' },
-    { key: 'charges' as const, label: 'Yardi Charges' },
-    { key: 'newOwner' as const, label: 'New Owner Ticket' },
+    ...(!isDraft ? [
+      { key: 'charges' as const, label: 'Yardi Charges' },
+      { key: 'newOwner' as const, label: 'New Owner Ticket' },
+    ] : []),
   ]
 
   return (
