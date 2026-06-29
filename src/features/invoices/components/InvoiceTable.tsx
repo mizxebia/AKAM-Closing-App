@@ -20,9 +20,10 @@ interface InvoiceTableProps {
   onRefresh: () => Promise<void> | void
   onSaveEdit: (
     recordId: string,
-    row: InvoiceChargeFormRow
+    row: InvoiceChargeFormRow,
+    oldRecord: InvoiceRecord
   ) => Promise<boolean>
-  onDelete: (recordId: string) => void
+  onDelete: (recordId: string, oldRecord: InvoiceRecord) => void
   onSaveNotes?: (notes: string) => Promise<void>
   onGenerateInvoice?: () => Promise<void> | void
   generatingInvoice?: boolean

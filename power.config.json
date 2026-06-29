@@ -97,6 +97,10 @@
         "manualcharges": {
           "entitySetName": "crc5c_manualchargeses",
           "logicalName": "crc5c_manualcharges"
+        },
+        "appchangelogs": {
+          "entitySetName": "cr7de_appchangelogs",
+          "logicalName": "cr7de_appchangelog"
         }
       },
       "environmentVariableName": ""

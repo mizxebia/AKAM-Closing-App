@@ -5,7 +5,6 @@ import {
   updateInvoiceDetail,
 } from '../api/invoiceService'
 import { updateClosingTicket } from '../../closingTickets/api/closingTicketsService'
-import { formatDueAtClosing } from '../utils/invoiceFormatters'
 import type {
   InvoiceChargeFormRow,
   InvoiceCreateInput,
@@ -176,44 +175,6 @@ export function ChargesWorkspace({
       return
     }
 
-    // Duplicate check: same charge title + same party is not allowed.
-    // Seller can't have two Cable Charges, Buyer can't either,
-    // but Seller + Buyer can each have one.
-    for (const row of rows) {
-      if (!row.cr109_dueatclosing || !row.cr7de_paidby) continue
-
-      // Check against already-saved records
-      const conflictInSaved = records.find(
-        (r) =>
-          Number(r.cr109_dueatclosing) === Number(row.cr109_dueatclosing) &&
-          Number(r.cr7de_paidby) === Number(row.cr7de_paidby)
-      )
-      if (conflictInSaved) {
-        const chargeLabel = formatDueAtClosing(row.cr109_dueatclosing)
-        const partyLabel = Number(row.cr7de_paidby) === 716070000 ? 'Seller' : 'Buyer'
-        setSaveError(
-          `"${chargeLabel}" already exists for ${partyLabel}. Duplicate charge titles are not allowed for the same party.`
-        )
-        return
-      }
-
-      // Check for duplicates within the rows being added right now
-      const conflictInRows = rows.filter(
-        (r) =>
-          r.id !== row.id &&
-          r.cr109_dueatclosing === row.cr109_dueatclosing &&
-          r.cr7de_paidby === row.cr7de_paidby
-      )
-      if (conflictInRows.length > 0) {
-        const chargeLabel = formatDueAtClosing(row.cr109_dueatclosing)
-        const partyLabel = Number(row.cr7de_paidby) === 716070000 ? 'Seller' : 'Buyer'
-        setSaveError(
-          `"${chargeLabel}" appears more than once for ${partyLabel} in this form. Remove the duplicate row.`
-        )
-        return
-      }
-    }
-
     setSaving(true)
 
     try {
@@ -240,7 +201,8 @@ export function ChargesWorkspace({
 
   const updateSavedCharge = async (
     recordId: string,
-    row: InvoiceChargeFormRow
+    row: InvoiceChargeFormRow,
+    oldRecord: InvoiceRecord
   ) => {
     setMessage(null)
     setSaveError(null)
@@ -257,7 +219,8 @@ export function ChargesWorkspace({
     try {
       await updateInvoiceDetail(
         recordId,
-        toInvoiceUpdatePayload(row, 0)
+        toInvoiceUpdatePayload(row, 0),
+        { ticketId, oldRecord }
       )
       await onRefresh()
       setMessage('Payment updated successfully.')
@@ -274,13 +237,13 @@ export function ChargesWorkspace({
     }
   }
 
-  const deleteCharge = async (recordId: string) => {
+  const deleteCharge = async (recordId: string, oldRecord: InvoiceRecord) => {
     setMessage(null)
     setSaveError(null)
     setDeletingId(recordId)
 
     try {
-      await deleteInvoiceDetail(recordId)
+      await deleteInvoiceDetail(recordId, { ticketId, oldRecord })
       await onRefresh()
       setMessage('Payment deleted successfully.')
     } catch (err) {

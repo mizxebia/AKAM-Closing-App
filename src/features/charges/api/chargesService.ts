@@ -17,6 +17,18 @@ import type {
   UnpaidChargeRecord,
   UnpaidChargeUpdateInput,
 } from '../types/charges'
+import {
+  writeChangeLog,
+  extractOldValues,
+} from '../../auditLog/api/auditLogService'
+
+const TABLE = {
+  unpaidCharges: 'crc5c_unpaidchargeses',
+  scheduledCharges: 'crc5c_copyscheduledchargeses',
+  manualCharges: 'crc5c_manualchargeses',
+  sellerLedgers: 'crc5c_sellerledgers',
+  buyerLedgers: 'crc5c_buyerledgers',
+} as const
 
 function escapeODataString(value: string) {
   return value.replace(/'/g, "''")
@@ -36,14 +48,16 @@ export type SellerLedgerChargeStatus = keyof typeof SellerLedgerChargeStatus
 
 export async function updateSellerLedgerChargeStatus(
   sellerLedgerId: string,
-  status: SellerLedgerChargeStatus
+  status: SellerLedgerChargeStatus,
+  context: { ticketId: string; oldRecord: SellerLedgerRecord }
 ): Promise<void> {
+  const changedFields = {
+    cr109_chargestatus: SellerLedgerChargeStatus[status],
+  }
+
   const result = await Crc5c_sellerledgersService.update(
     sellerLedgerId,
-    {
-      cr109_chargestatus:
-        SellerLedgerChargeStatus[status],
-    }
+    changedFields
   )
 
   if (!result.success) {
@@ -52,19 +66,33 @@ export async function updateSellerLedgerChargeStatus(
         'Failed to update seller ledger charge status'
     )
   }
+
+  writeChangeLog({
+    ticketId: context.ticketId,
+    tableName: TABLE.sellerLedgers,
+    operation: 'update',
+    oldData: extractOldValues(
+      context.oldRecord,
+      changedFields as Partial<SellerLedgerRecord>
+    ),
+    newData: changedFields as Record<string, unknown>,
+  })
 }
 
 export async function updateSellerLedgerPaymentsAndBalance(
   sellerLedgerId: string,
   payments: string,
-  balance: string
+  balance: string,
+  context: { ticketId: string; oldRecord: SellerLedgerRecord }
 ): Promise<void> {
+  const changedFields = {
+    cr109_payments: payments,
+    cr109_balance: balance,
+  }
+
   const result = await Crc5c_sellerledgersService.update(
     sellerLedgerId,
-    {
-      cr109_payments: payments,
-      cr109_balance: balance,
-    }
+    changedFields
   )
 
   if (!result.success) {
@@ -73,19 +101,33 @@ export async function updateSellerLedgerPaymentsAndBalance(
         'Failed to update seller ledger payments and balance'
     )
   }
+
+  writeChangeLog({
+    ticketId: context.ticketId,
+    tableName: TABLE.sellerLedgers,
+    operation: 'update',
+    oldData: extractOldValues(
+      context.oldRecord,
+      changedFields as Partial<SellerLedgerRecord>
+    ),
+    newData: changedFields as Record<string, unknown>,
+  })
 }
 
 export async function updateBuyerLedgerPaymentsAndBalance(
   buyerLedgerId: string,
   payments: string,
-  balance: string
+  balance: string,
+  context: { ticketId: string; oldRecord: BuyerLedgerRecord }
 ): Promise<void> {
+  const changedFields = {
+    cr109_payments: payments,
+    cr109_balance: balance,
+  }
+
   const result = await Crc5c_buyerledgersService.update(
     buyerLedgerId,
-    {
-      cr109_payments: payments,
-      cr109_balance: balance,
-    }
+    changedFields
   )
 
   if (!result.success) {
@@ -94,6 +136,17 @@ export async function updateBuyerLedgerPaymentsAndBalance(
         'Failed to update buyer ledger payments and balance'
     )
   }
+
+  writeChangeLog({
+    ticketId: context.ticketId,
+    tableName: TABLE.buyerLedgers,
+    operation: 'update',
+    oldData: extractOldValues(
+      context.oldRecord,
+      changedFields as Partial<BuyerLedgerRecord>
+    ),
+    newData: changedFields as Record<string, unknown>,
+  })
 }
 
 function parseLedgerNumber(value?: string) {
@@ -314,10 +367,11 @@ export async function syncBuyerLedgerWithUnpaidCharge(
 }
 
 async function recalculateBuyerLedgerBalances(
-  ticketId: string
+  ticketId: string,
+  existingRecords?: BuyerLedgerRecord[]
 ) {
   const records = sortByIndexAscending(
-    await getBuyerLedgersByTicketId(ticketId)
+    existingRecords ?? await getBuyerLedgersByTicketId(ticketId)
   )
 
   let runningBalance = 0
@@ -345,7 +399,8 @@ async function recalculateBuyerLedgerBalances(
 
 export async function updateUnpaidCharge(
   chargeId: string,
-  changedFields: UnpaidChargeUpdateInput
+  changedFields: UnpaidChargeUpdateInput,
+  context: { ticketId: string; oldRecord: UnpaidChargeRecord }
 ): Promise<UnpaidChargeRecord> {
   const result =
     await Crc5c_unpaidchargesesService.update(
@@ -360,12 +415,24 @@ export async function updateUnpaidCharge(
     )
   }
 
+  writeChangeLog({
+    ticketId: context.ticketId,
+    tableName: TABLE.unpaidCharges,
+    operation: 'update',
+    oldData: extractOldValues(
+      context.oldRecord,
+      changedFields as Partial<UnpaidChargeRecord>
+    ),
+    newData: changedFields as Record<string, unknown>,
+  })
+
   return result.data as UnpaidChargeRecord
 }
 
 export async function updateScheduledCharge(
   chargeId: string,
-  changedFields: ScheduledChargeUpdateInput
+  changedFields: ScheduledChargeUpdateInput,
+  context: { ticketId: string; oldRecord: ScheduledChargeRecord }
 ): Promise<ScheduledChargeRecord> {
   const result =
     await Crc5c_copyscheduledchargesesService.update(
@@ -380,13 +447,33 @@ export async function updateScheduledCharge(
     )
   }
 
+  writeChangeLog({
+    ticketId: context.ticketId,
+    tableName: TABLE.scheduledCharges,
+    operation: 'update',
+    oldData: extractOldValues(
+      context.oldRecord,
+      changedFields as Partial<ScheduledChargeRecord>
+    ),
+    newData: changedFields as Record<string, unknown>,
+  })
+
   return result.data as ScheduledChargeRecord
 }
 
 export async function deleteScheduledCharge(
-  chargeId: string
+  chargeId: string,
+  context: { ticketId: string; oldRecord: ScheduledChargeRecord }
 ): Promise<void> {
   await Crc5c_copyscheduledchargesesService.delete(chargeId)
+
+  writeChangeLog({
+    ticketId: context.ticketId,
+    tableName: TABLE.scheduledCharges,
+    operation: 'delete',
+    oldData: context.oldRecord as unknown as Record<string, unknown>,
+    newData: null,
+  })
 }
 
 export async function createManualCharge(
@@ -407,7 +494,7 @@ export async function createManualCharge(
     ? Crc5c_manualchargesescr109_chargecode[input.cr109_chargecode]
     : undefined
 
-  const scheduledResult = await Crc5c_copyscheduledchargesesService.create({
+  const scheduledPayload = {
     crc5c_ticketid: input.crc5c_ticketid,
     cr109_chargecode: chargeCodeName,
     cr109_chargeamount: input.cr109_amount,
@@ -416,11 +503,33 @@ export async function createManualCharge(
     cr109_move: true,
     cr109_manual: true,
     cr109_partiallypaid: false,
-  } as unknown as Parameters<typeof Crc5c_copyscheduledchargesesService.create>[0])
+  }
+
+  const scheduledResult = await Crc5c_copyscheduledchargesesService.create(
+    scheduledPayload as unknown as Parameters<typeof Crc5c_copyscheduledchargesesService.create>[0]
+  )
 
   if (!scheduledResult.success) {
     throw new Error(
       scheduledResult.error?.message || 'Failed to create scheduled charge record'
     )
   }
+
+  const ticketId = input.crc5c_ticketid ?? ''
+
+  writeChangeLog({
+    ticketId,
+    tableName: TABLE.manualCharges,
+    operation: 'create',
+    oldData: null,
+    newData: input as Record<string, unknown>,
+  })
+
+  writeChangeLog({
+    ticketId,
+    tableName: TABLE.scheduledCharges,
+    operation: 'create',
+    oldData: null,
+    newData: scheduledPayload as Record<string, unknown>,
+  })
 }

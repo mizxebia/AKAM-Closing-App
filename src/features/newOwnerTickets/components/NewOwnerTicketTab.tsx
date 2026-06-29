@@ -594,7 +594,8 @@ export function NewOwnerTicketTab({
       const payload = toPayload(formState, Boolean(record))
       const savedRecord = await saveNewOwnerTicket(
         record?.cr7de_newownerticketdetailsid ?? null,
-        payload
+        payload,
+        record ?? undefined
       )
       await updateClosingTicket(
         closingTicket.cr7de_closingticketdetailsid,
@@ -703,7 +704,7 @@ export function NewOwnerTicketTab({
       )}
 
       {!loading && (
-        <div className="grid items-start gap-4 xl:grid-cols-2">
+        <div className="grid items-start gap-4 lg:grid-cols-[1fr_minmax(0,1fr)] xl:grid-cols-2">
           <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/60">
             <NewOwnerTicketForm
               formState={formState}

@@ -5,6 +5,12 @@ import type {
   InvoiceRecord,
   InvoiceUpdateInput,
 } from '../types/invoice'
+import {
+  writeChangeLog,
+  extractOldValues,
+} from '../../auditLog/api/auditLogService'
+
+const TABLE_NAME = 'cr7de_invoicedetailses'
 
 function escapeODataString(value: string) {
   return value.replace(/'/g, "''")
@@ -17,9 +23,6 @@ export async function getInvoicesByClosingTicketId(
     return []
   }
 
-  // Parent-child relationship handling:
-  // this generated invoice model exposes cr7de_ticketid as the linking field,
-  // so child records are loaded by matching it to the parent closing Ticket ID.
   const response =
     await Cr7de_invoicedetailsesService.getAll({
       filter: `cr7de_ticketid eq '${escapeODataString(
@@ -56,12 +59,29 @@ export async function createInvoiceDetail(
     )
   }
 
-  return result.data as InvoiceRecord
+  const created = result.data as InvoiceRecord
+
+  writeChangeLog({
+    ticketId: newRecord.cr7de_ticketid ?? '',
+    tableName: TABLE_NAME,
+    operation: 'create',
+    oldData: null,
+    newData: newRecord as Record<string, unknown>,
+  })
+
+  return created
 }
 
+/**
+ * @param oldRecord - The record as it existed before the update.
+ *   Pass this when the caller already has it in memory (e.g. from the
+ *   InvoiceTable edit flow) to avoid an extra Dataverse round-trip.
+ *   When omitted, only `changedFields` are recorded as newData with no oldData diff.
+ */
 export async function updateInvoiceDetail(
   invoiceId: string,
-  changedFields: InvoiceUpdateInput
+  changedFields: InvoiceUpdateInput,
+  context: { ticketId: string; oldRecord?: InvoiceRecord }
 ): Promise<InvoiceRecord> {
   const result =
     await Cr7de_invoicedetailsesService.update(
@@ -81,11 +101,33 @@ export async function updateInvoiceDetail(
     )
   }
 
+  writeChangeLog({
+    ticketId: context.ticketId,
+    tableName: TABLE_NAME,
+    operation: 'update',
+    oldData: context.oldRecord
+      ? extractOldValues(
+          context.oldRecord,
+          changedFields as Partial<InvoiceRecord>
+        )
+      : null,
+    newData: changedFields as Record<string, unknown>,
+  })
+
   return result.data as InvoiceRecord
 }
 
 export async function deleteInvoiceDetail(
-  invoiceId: string
+  invoiceId: string,
+  context: { ticketId: string; oldRecord: InvoiceRecord }
 ): Promise<void> {
   await Cr7de_invoicedetailsesService.delete(invoiceId)
+
+  writeChangeLog({
+    ticketId: context.ticketId,
+    tableName: TABLE_NAME,
+    operation: 'delete',
+    oldData: context.oldRecord as unknown as Record<string, unknown>,
+    newData: null,
+  })
 }

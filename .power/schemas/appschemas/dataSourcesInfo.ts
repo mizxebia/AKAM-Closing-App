@@ -5,6 +5,13 @@
  */
 
 export const dataSourcesInfo = {
+  "cr7de_appchangelogs": {
+    "tableId": "",
+    "version": "",
+    "primaryKey": "cr7de_appchangelogid",
+    "dataSourceType": "Dataverse",
+    "apis": {}
+  },
   "crc5c_buyerledgers": {
     "tableId": "",
     "version": "",

@@ -36,6 +36,7 @@ import {
   type WorkflowTabKey,
 } from './WorkflowTabs'
 import { domecileLogoBase64, yardiLogoBase64 } from '../../../assets/logoData'
+import { useAutoClear } from '../../../hooks/useAutoClear'
 
 const FAILED_TICKET_STATUS = 716070007
 const PROCESSING_TICKET_STATUS = 716070005
@@ -75,6 +76,10 @@ export function ClosingTicketDetailsPage({
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] =
     useState<string | null>(null)
+
+  // Auto-dismiss success message after 5 seconds
+  useAutoClear(successMessage, setSuccessMessage)
+
   const [generatingInvoice, setGeneratingInvoice] =
     useState(false)
   const [
@@ -138,21 +143,14 @@ export function ClosingTicketDetailsPage({
     }
   }, [recordId])
 
-  // Auto-dismiss success message after 5 seconds
-  useEffect(() => {
-    if (!successMessage) return
-    const timer = setTimeout(() => setSuccessMessage(null), 5000)
-    return () => clearTimeout(timer)
-  }, [successMessage])
-
   const handleSaved = useCallback(async () => {
-    await onSaved()
-    const updatedRecord = await getClosingTicketById(
-      recordId
-    )
+    const [updatedRecord] = await Promise.all([
+      getClosingTicketById(recordId),
+      onSaved(),
+      refreshInvoices(),
+      refreshCharges(),
+    ])
     setRecord(updatedRecord)
-    await refreshInvoices()
-    await refreshCharges()
     setSuccessMessage(
       'Closing record updated successfully.'
     )

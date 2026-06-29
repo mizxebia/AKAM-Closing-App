@@ -7,12 +7,17 @@ import type {
   ClosingTicketRecord,
   ClosingTicketUpdateInput,
 } from '../types/closingTicket'
+import {
+  writeChangeLog,
+  extractOldValues,
+} from '../../auditLog/api/auditLogService'
 
 type ClosingTicketUploadColumnName =
   | 'cr109_purchaseapplicationform'
   | 'cr109_rpttdocument'
 
-const closingTicketTableName = 'cr7de_closingticketdetailses'
+const TABLE_NAME = 'cr7de_closingticketdetailses'
+const closingTicketTableName = TABLE_NAME
 const dataverseClient = getClient(dataSourcesInfo)
 
 export async function getClosingTickets(): Promise<
@@ -49,7 +54,19 @@ export async function createClosingTicket(
     )
   }
 
-  return result.data as ClosingTicketRecord
+  const created = result.data as ClosingTicketRecord
+
+  writeChangeLog({
+    // Use the human-readable CL- ticket reference, consistent with all
+    // other writeChangeLog callers across the codebase.
+    ticketId: created.cr7de_ticketid ?? created.cr7de_closingticketdetailsid,
+    tableName: TABLE_NAME,
+    operation: 'create',
+    oldData: null,
+    newData: newRecord as Record<string, unknown>,
+  })
+
+  return created
 }
 
 export async function getClosingTicketById(
@@ -68,10 +85,21 @@ export async function getClosingTicketById(
   return response.data as ClosingTicketRecord
 }
 
+/**
+ * @param oldRecord - Pass the record as it was before the update when
+ *   available in the caller's scope. This enables a clean field-level diff
+ *   in the audit log without an extra round-trip. When omitted, the service
+ *   fetches the current record before updating so old values are always captured.
+ */
 export async function updateClosingTicket(
   id: string,
-  changedFields: ClosingTicketUpdateInput
+  changedFields: ClosingTicketUpdateInput,
+  oldRecord?: ClosingTicketRecord
 ): Promise<ClosingTicketRecord> {
+  // Fetch the current record before mutating so we always have old values
+  // for the audit diff, even when callers don't provide it.
+  const recordBefore = oldRecord ?? await getClosingTicketById(id)
+
   const result =
     await Cr7de_closingticketdetailsesService.update(
       id,
@@ -84,6 +112,24 @@ export async function updateClosingTicket(
         'Failed to update closing ticket record'
     )
   }
+
+  // Use the human-readable CL- ticket reference from the record itself,
+  // not the GUID (id) which is the Dataverse primary key.
+  const ticketRef =
+    recordBefore.cr7de_ticketid ??
+    (result.data as ClosingTicketRecord)?.cr7de_ticketid ??
+    id
+
+  writeChangeLog({
+    ticketId: ticketRef,
+    tableName: TABLE_NAME,
+    operation: 'update',
+    oldData: extractOldValues(
+      recordBefore,
+      changedFields
+    ),
+    newData: changedFields as Record<string, unknown>,
+  })
 
   return result.data as ClosingTicketRecord
 }

@@ -199,11 +199,13 @@ function BooleanPill({
 }
 
 function UnpaidChargesTable({
+  ticketId,
   records,
   savingId,
   onSaved,
   onSavingChange,
 }: {
+  ticketId?: string
   records: UnpaidChargeRecord[]
   savingId: string | null
   onSaved: () => Promise<void> | void
@@ -264,10 +266,9 @@ function UnpaidChargesTable({
         try {
           const updated = await updateUnpaidCharge(
             id,
-            buildUnpaidPayload(drafts[id])
+            buildUnpaidPayload(drafts[id]),
+            { ticketId: ticketId ?? '', oldRecord: prev as UnpaidChargeRecord }
           )
-
-          // sync buyer ledger: if move was unticked we delete matching buyer ledger records
           try {
             await syncBuyerLedgerWithUnpaidCharge(
               prev as UnpaidChargeRecord,
@@ -371,11 +372,13 @@ function UnpaidChargesTable({
 }
 
 function ScheduledChargesTable({
+  ticketId,
   records,
   savingId,
   onSaved,
   onSavingChange,
 }: {
+  ticketId?: string
   records: ScheduledChargeRecord[]
   savingId: string | null
   onSaved: () => Promise<void> | void
@@ -435,12 +438,16 @@ function ScheduledChargesTable({
             onSavingChange('all-scheduled')
             setSaveError(null)
             try {
-              const promises = changedIds.map((id) =>
-                updateScheduledCharge(
-                  id,
-                  buildScheduledPayload(drafts[id])
+              const promises = changedIds.map((id) => {
+                const prev = records.find(
+                  (r) => r.crc5c_copyscheduledchargesid === id
                 )
-              )
+                return updateScheduledCharge(
+                  id,
+                  buildScheduledPayload(drafts[id]),
+                  { ticketId: ticketId ?? '', oldRecord: prev as ScheduledChargeRecord }
+                )
+              })
               const results = await Promise.allSettled(promises)
               const failed = results
                 .map((r, idx) => ({ r, id: changedIds[idx] }))
@@ -524,7 +531,7 @@ function ScheduledChargesTable({
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction className="invoice-confirm-delete-button" onClick={async () => { onSavingChange('deleting-' + record.crc5c_copyscheduledchargesid); try { await deleteScheduledCharge(record.crc5c_copyscheduledchargesid); await onSaved() } catch {} finally { onSavingChange(null) } }}>Delete</AlertDialogAction>
+                        <AlertDialogAction className="invoice-confirm-delete-button" onClick={async () => { onSavingChange('deleting-' + record.crc5c_copyscheduledchargesid); try { await deleteScheduledCharge(record.crc5c_copyscheduledchargesid, { ticketId: ticketId ?? '', oldRecord: record }); await onSaved() } catch {} finally { onSavingChange(null) } }}>Delete</AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
@@ -1319,14 +1326,26 @@ export function ChargesWorkspace({
             this closing.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={onRefresh}
-          disabled={refreshing || loading}
-        >
-          <RotateCw className="size-4" />
-          {refreshing ? 'Refreshing...' : 'Refresh'}
-        </button>
+        <div className="charges-toolbar-right">
+          {refreshing && !loading && (
+            <span
+              className="charges-sync-indicator"
+              aria-label="Syncing data"
+              title="Syncing..."
+            >
+              <span className="charges-sync-dot" aria-hidden="true" />
+              Syncing
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={onRefresh}
+            disabled={refreshing || loading}
+          >
+            <RotateCw className="size-4" />
+            {refreshing ? 'Refreshing...' : 'Refresh'}
+          </button>
+        </div>
       </div>
 
       {loading && !refreshing && (
@@ -1355,6 +1374,7 @@ export function ChargesWorkspace({
             </section>
           ) : (
             <ScheduledChargesTable
+              ticketId={ticketId}
               records={scheduledCharges}
               savingId={savingId}
               onSaved={onRefresh}
@@ -1369,6 +1389,7 @@ export function ChargesWorkspace({
             </section>
           ) : (
             <UnpaidChargesTable
+              ticketId={ticketId}
               records={unpaidCharges}
               savingId={savingId}
               onSaved={onRefresh}

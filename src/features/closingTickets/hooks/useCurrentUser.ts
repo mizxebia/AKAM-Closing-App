@@ -91,9 +91,7 @@ export function useCurrentUser() {
           if (hostUser.userEmail) setUserEmail(hostUser.userEmail)
         }
         console.warn(
-          '[useCurrentUser] getContext() failed — fell back to window context.',
-          '\nuserName from window:', hostUser.userName,
-          '\nuserEmail from window:', hostUser.userEmail
+          '[useCurrentUser] getContext() failed — fell back to window context.'
         )
       }
     }

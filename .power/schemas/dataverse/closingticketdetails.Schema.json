@@ -465,7 +465,7 @@
           "x-ms-dataverse-attribute": "cr7de_notes",
           "x-ms-dataverse-type": "StringType",
           "x-ms-schema-name": "cr7de_notes",
-          "maxLength": 100
+          "maxLength": 4000
         },
         "cr7de_nyccode": {
           "type": "string",

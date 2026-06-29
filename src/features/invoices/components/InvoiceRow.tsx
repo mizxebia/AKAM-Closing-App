@@ -32,9 +32,10 @@ interface InvoiceRowProps {
   columns: InvoiceColumn[]
   onSaveEdit: (
     recordId: string,
-    row: InvoiceChargeFormRow
+    row: InvoiceChargeFormRow,
+    oldRecord: InvoiceRecord
   ) => Promise<boolean>
-  onDelete: (recordId: string) => void
+  onDelete: (recordId: string, oldRecord: InvoiceRecord) => void
   isUpdating: boolean
   isDeleting: boolean
 }
@@ -109,7 +110,8 @@ export function InvoiceRow({
   const saveEdit = async () => {
     const saved = await onSaveEdit(
       record.cr7de_invoicedetailsid,
-      editRow
+      editRow,
+      record
     )
 
     if (saved) {
@@ -333,7 +335,7 @@ export function InvoiceRow({
                 <AlertDialogAction
                   className="invoice-confirm-delete-button"
                   onClick={() =>
-                    onDelete(record.cr7de_invoicedetailsid)
+                    onDelete(record.cr7de_invoicedetailsid, record)
                   }
                 >
                   Delete

@@ -99,11 +99,6 @@ async function loadBuildings(): Promise<BuildingRow[]> {
         (b.address || b.buildingName)
     )
 
-  console.log('[buildingListCache] Loaded buildings:', {
-    total: records.length,
-    valid: buildings.length,
-  })
-
   return buildings
 }
 
