@@ -23,7 +23,7 @@ export const invoiceColumns: InvoiceColumn[] = [
   },
   {
     key: 'cr7de_notapplicabletoledger',
-    label: 'Ledger',
+    label: 'Applicable to Ledger',
   },
   {
     key: 'createdon',

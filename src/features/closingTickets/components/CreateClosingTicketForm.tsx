@@ -1240,7 +1240,7 @@ function ClosingTicketEditorForm({
         </section>
 
         <section className="form-section">
-          <h3>Flags & Notes</h3>
+          <h3>Flags</h3>
           <div className="form-grid">
           <CheckboxField
             label="Building not on domicile"
@@ -1264,21 +1264,6 @@ function ClosingTicketEditorForm({
               )
             }
           />
-          <div className="form-grid-wide">
-            <FormField label="Notes">
-              <textarea
-                rows={4}
-                value={formState.cr7de_notes}
-                onChange={(event) =>
-                  updateField(
-                    'cr7de_notes',
-                    event.target.value
-                  )
-                }
-                placeholder="Add notes about this closing..."
-              />
-            </FormField>
-          </div>
           </div>
         </section>
 

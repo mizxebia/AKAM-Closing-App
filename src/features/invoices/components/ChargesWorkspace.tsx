@@ -329,8 +329,8 @@ export function ChargesWorkspace({
                 <th>Amount</th>
                 <th>Payable To</th>
                 <th>Cheque #</th>
-                <th>Description</th>
-                <th>Ledger</th>
+                <th>Applicable to Ledger</th>
+                <th></th>
                 <th />
               </tr>
             </thead>
