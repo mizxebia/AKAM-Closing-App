@@ -137,6 +137,9 @@ function renderDocumentViewer(
   ) {
     if (
       !filePreview.url.startsWith(
+        'blob:'
+      ) &&
+      !filePreview.url.startsWith(
         'data:application/pdf;base64,JVBER'
       )
     ) {
@@ -153,9 +156,18 @@ function renderDocumentViewer(
       )
     }
 
+    // Append #toolbar=0 to suppress the browser PDF viewer's toolbar.
+    // This prevents the embedded PDF /Title metadata (e.g. the original
+    // scanner filename like "SKM_C650i26061813460") from being displayed
+    // inside the viewer. The correct Dataverse filename is shown in the
+    // panel header above instead.
+    const pdfSrc = filePreview.url.startsWith('blob:')
+      ? `${filePreview.url}#toolbar=0`
+      : filePreview.url
+
     return (
       <iframe
-        src={filePreview.url}
+        src={pdfSrc}
         title={fileName}
         className="document-preview-frame"
       />
@@ -259,7 +271,13 @@ export function DocumentViewerPanel({
 
     let isActive = true
 
-    setFilePreview(null)
+    // Revoke any previous blob URL to free memory before loading next document
+    setFilePreview((prev) => {
+      if (prev?.url.startsWith('blob:')) {
+        URL.revokeObjectURL(prev.url)
+      }
+      return null
+    })
 
     setErrorMessage(null)
 
@@ -274,6 +292,10 @@ export function DocumentViewerPanel({
       .then((preview) => {
 
         if (!isActive) {
+          // Revoke blob URL if we navigated away before it was used
+          if (preview.url.startsWith('blob:')) {
+            URL.revokeObjectURL(preview.url)
+          }
           return
         }
 

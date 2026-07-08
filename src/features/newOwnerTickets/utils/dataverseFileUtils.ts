@@ -29,7 +29,14 @@ export interface NewOwnerDocumentDefinition {
 }
 
 export interface DataverseFilePreview {
+  /** Blob URL (for PDFs) or data: URL (for images). Use this in src/href. */
   url: string
+  /**
+   * The raw data: URL. Only present as a fallback; prefer `url` for rendering.
+   * For PDFs, using `url` (blob URL) avoids the browser showing the embedded
+   * PDF /Title metadata instead of the Dataverse filename.
+   */
+  dataUrl: string
   contentType: string
   base64Content: string
   previewType:
@@ -298,11 +305,30 @@ function normalizeFileContentToBase64(
   return null
 }
 
-function getDataUrl(
-  contentType: string,
-  base64Content: string
-) {
-  return `data:${contentType};base64,${base64Content}`
+/**
+ * Converts a base64 string to a Blob object URL.
+ * Using a blob: URL instead of a data: URL prevents the browser's built-in
+ * PDF viewer from showing the embedded PDF /Title metadata (e.g. the original
+ * scanner filename) in its toolbar. The app's own DocumentViewerPanel header
+ * already displays the correct Dataverse filename, so the viewer toolbar title
+ * is unnecessary and confusing when it differs from the stored filename.
+ *
+ * Appending #toolbar=0 further suppresses the browser PDF toolbar so the
+ * filename is never shown at all inside the iframe.
+ */
+export function base64ToBlobUrl(
+  base64Content: string,
+  contentType: string
+): string {
+  const binaryString = window.atob(base64Content)
+  const bytes = new Uint8Array(binaryString.length)
+
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i)
+  }
+
+  const blob = new Blob([bytes], { type: contentType })
+  return URL.createObjectURL(blob)
 }
 
 function isPdfBase64(base64Content: string) {
@@ -418,10 +444,11 @@ export async function getDataverseFileUrl(
   }
 
   const fileUrl =
-    getDataUrl(
-      resolvedContentType,
-      base64Content
-    )
+    previewType === 'pdf'
+      ? base64ToBlobUrl(base64Content, resolvedContentType)
+      : `data:${resolvedContentType};base64,${base64Content}`
+
+  const dataUrl = `data:${resolvedContentType};base64,${base64Content}`
 
   console.log(
     'Generated PDF URL:',
@@ -430,6 +457,7 @@ export async function getDataverseFileUrl(
 
   return {
     url: fileUrl,
+    dataUrl,
     contentType: resolvedContentType,
     base64Content,
     previewType,
