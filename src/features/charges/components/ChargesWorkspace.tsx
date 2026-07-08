@@ -42,6 +42,7 @@ interface ChargesWorkspaceProps {
   error: string | null
   onRefresh: () => Promise<void> | void
   invoices?: InvoiceRecord[]
+  readOnly?: boolean
 }
 
 type UnpaidChargeDraft = {
@@ -204,12 +205,14 @@ function UnpaidChargesTable({
   savingId,
   onSaved,
   onSavingChange,
+  readOnly = false,
 }: {
   ticketId?: string
   records: UnpaidChargeRecord[]
   savingId: string | null
   onSaved: () => Promise<void> | void
   onSavingChange: (id: string | null) => void
+  readOnly?: boolean
 }) {
   const initialDrafts = useMemo(
     () =>
@@ -316,6 +319,7 @@ function UnpaidChargesTable({
       title="Unpaid Charges"
       subtitle={`${records.length} records`}
       headerActions={
+        !readOnly && (
         <button
           className="charge-save-button"
           type="button"
@@ -325,6 +329,7 @@ function UnpaidChargesTable({
           <Save className="size-4" />
           {savingId === 'all-unpaid' ? 'Saving' : 'Save All'}
         </button>
+        )
       }
     >
       {saveError && (
@@ -346,22 +351,22 @@ function UnpaidChargesTable({
           return (
             <div className="cg-data-row" key={record.crc5c_unpaidchargesid}>
               <div className="cg-cell">
-                <input className="cg-input" value={draft.cr109_chargecode} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_chargecode: e.target.value })} />
+                <input className="cg-input" value={draft.cr109_chargecode} disabled={readOnly} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_chargecode: e.target.value })} />
               </div>
               <div className="cg-cell">
-                <input className="cg-input cg-input--date" type="date" value={draft.cr109_date} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_date: e.target.value })} />
+                <input className="cg-input cg-input--date" type="date" value={draft.cr109_date} disabled={readOnly} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_date: e.target.value })} />
               </div>
               <div className="cg-cell cg-cell--right">
-                <input className="cg-input cg-input--amount" inputMode="decimal" value={draft.cr109_amount} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_amount: e.target.value })} />
+                <input className="cg-input cg-input--amount" inputMode="decimal" value={draft.cr109_amount} disabled={readOnly} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_amount: e.target.value })} />
               </div>
               <div className="cg-cell cg-cell--center">
-                <BooleanPill checked={Boolean(draft.cr109_partiallypaid)} label="Partial" onChange={(checked) => updateDraft(record.crc5c_unpaidchargesid, { cr109_partiallypaid: checked })} />
+                <BooleanPill checked={Boolean(draft.cr109_partiallypaid)} label="Partial" onChange={(checked) => !readOnly && updateDraft(record.crc5c_unpaidchargesid, { cr109_partiallypaid: checked })} />
               </div>
               <div className="cg-cell cg-cell--center">
-                <BooleanPill checked={Boolean(draft.cr109_move)} label="Move" onChange={(checked) => updateDraft(record.crc5c_unpaidchargesid, { cr109_move: checked })} />
+                <BooleanPill checked={Boolean(draft.cr109_move)} label="Move" onChange={(checked) => !readOnly && updateDraft(record.crc5c_unpaidchargesid, { cr109_move: checked })} />
               </div>
               <div className="cg-cell cg-cell--notes">
-                <input className="cg-input" value={draft.cr109_notes} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_notes: e.target.value })} />
+                <input className="cg-input" value={draft.cr109_notes} disabled={readOnly} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_notes: e.target.value })} />
               </div>
             </div>
           )
@@ -377,12 +382,14 @@ function ScheduledChargesTable({
   savingId,
   onSaved,
   onSavingChange,
+  readOnly = false,
 }: {
   ticketId?: string
   records: ScheduledChargeRecord[]
   savingId: string | null
   onSaved: () => Promise<void> | void
   onSavingChange: (id: string | null) => void
+  readOnly?: boolean
 }) {
   const initialDrafts = useMemo(
     () =>
@@ -424,57 +431,59 @@ function ScheduledChargesTable({
       title="Scheduled Charges"
       subtitle={`${records.length} records`}
       headerActions={
-        <button
-          className="charge-save-button"
-          type="button"
-          onClick={async () => {
-            const changedIds = Object.keys(drafts).filter(
-              (id) =>
-                JSON.stringify(drafts[id]) !==
-                JSON.stringify(initialDrafts[id])
-            )
-            if (changedIds.length === 0) return
-
-            onSavingChange('all-scheduled')
-            setSaveError(null)
-            try {
-              const promises = changedIds.map((id) => {
-                const prev = records.find(
-                  (r) => r.crc5c_copyscheduledchargesid === id
-                )
-                return updateScheduledCharge(
-                  id,
-                  buildScheduledPayload(drafts[id]),
-                  { ticketId: ticketId ?? '', oldRecord: prev as ScheduledChargeRecord }
-                )
-              })
-              const results = await Promise.allSettled(promises)
-              const failed = results
-                .map((r, idx) => ({ r, id: changedIds[idx] }))
-                .filter((x) => x.r.status === 'rejected')
-
-              if (failed.length > 0) {
-                setSaveError(
-                  `Failed to save ${failed.length} scheduled charge(s).`
-                )
-              } else {
-                await onSaved()
-              }
-            } catch (err) {
-              setSaveError(
-                err instanceof Error
-                  ? err.message
-                  : 'Unable to save scheduled charges.'
+        !readOnly && (
+          <button
+            className="charge-save-button"
+            type="button"
+            onClick={async () => {
+              const changedIds = Object.keys(drafts).filter(
+                (id) =>
+                  JSON.stringify(drafts[id]) !==
+                  JSON.stringify(initialDrafts[id])
               )
-            } finally {
-              onSavingChange(null)
-            }
-          }}
-          disabled={savingId === 'all-scheduled'}
-        >
-          <Save className="size-4" />
-          {savingId === 'all-scheduled' ? 'Saving' : 'Save All'}
-        </button>
+              if (changedIds.length === 0) return
+
+              onSavingChange('all-scheduled')
+              setSaveError(null)
+              try {
+                const promises = changedIds.map((id) => {
+                  const prev = records.find(
+                    (r) => r.crc5c_copyscheduledchargesid === id
+                  )
+                  return updateScheduledCharge(
+                    id,
+                    buildScheduledPayload(drafts[id]),
+                    { ticketId: ticketId ?? '', oldRecord: prev as ScheduledChargeRecord }
+                  )
+                })
+                const results = await Promise.allSettled(promises)
+                const failed = results
+                  .map((r, idx) => ({ r, id: changedIds[idx] }))
+                  .filter((x) => x.r.status === 'rejected')
+
+                if (failed.length > 0) {
+                  setSaveError(
+                    `Failed to save ${failed.length} scheduled charge(s).`
+                  )
+                } else {
+                  await onSaved()
+                }
+              } catch (err) {
+                setSaveError(
+                  err instanceof Error
+                    ? err.message
+                    : 'Unable to save scheduled charges.'
+                )
+              } finally {
+                onSavingChange(null)
+              }
+            }}
+            disabled={savingId === 'all-scheduled'}
+          >
+            <Save className="size-4" />
+            {savingId === 'all-scheduled' ? 'Saving' : 'Save All'}
+          </button>
+        )
       }
     >
       {saveError && (
@@ -497,19 +506,19 @@ function ScheduledChargesTable({
           return (
             <div className="cg-data-row" key={record.crc5c_copyscheduledchargesid}>
               <div className="cg-cell">
-                <input className="cg-input" value={draft.cr109_chargecode} onChange={(e) => updateDraft(record.crc5c_copyscheduledchargesid, { cr109_chargecode: e.target.value })} />
+                <input className="cg-input" value={draft.cr109_chargecode} disabled={readOnly} onChange={(e) => updateDraft(record.crc5c_copyscheduledchargesid, { cr109_chargecode: e.target.value })} />
               </div>
               <div className="cg-cell cg-cell--date">
-                <input className="cg-input cg-input--date" type="date" value={draft.cr109_chargefrom} onChange={(e) => updateDraft(record.crc5c_copyscheduledchargesid, { cr109_chargefrom: e.target.value })} />
+                <input className="cg-input cg-input--date" type="date" value={draft.cr109_chargefrom} disabled={readOnly} onChange={(e) => updateDraft(record.crc5c_copyscheduledchargesid, { cr109_chargefrom: e.target.value })} />
               </div>
               <div className="cg-cell cg-cell--date">
-                <input className="cg-input cg-input--date" type="date" value={draft.cr109_chargeto} onChange={(e) => updateDraft(record.crc5c_copyscheduledchargesid, { cr109_chargeto: e.target.value })} />
+                <input className="cg-input cg-input--date" type="date" value={draft.cr109_chargeto} disabled={readOnly} onChange={(e) => updateDraft(record.crc5c_copyscheduledchargesid, { cr109_chargeto: e.target.value })} />
               </div>
               <div className="cg-cell cg-cell--right">
-                <input className="cg-input cg-input--amount" inputMode="decimal" value={draft.cr109_chargeamount} onChange={(e) => updateDraft(record.crc5c_copyscheduledchargesid, { cr109_chargeamount: e.target.value })} />
+                <input className="cg-input cg-input--amount" inputMode="decimal" value={draft.cr109_chargeamount} disabled={readOnly} onChange={(e) => updateDraft(record.crc5c_copyscheduledchargesid, { cr109_chargeamount: e.target.value })} />
               </div>
               <div className="cg-cell cg-cell--center">
-                <BooleanPill checked={Boolean(draft.cr109_move)} label="Move" onChange={(checked) => updateDraft(record.crc5c_copyscheduledchargesid, { cr109_move: checked })} />
+                <BooleanPill checked={Boolean(draft.cr109_move)} label="Move" onChange={(checked) => !readOnly && updateDraft(record.crc5c_copyscheduledchargesid, { cr109_move: checked })} />
               </div>
               <div className="cg-cell cg-cell--center">
                 <span className={`charge-manual-badge ${record.cr109_manual ? 'charge-manual-badge--yes' : 'charge-manual-badge--no'}`}>
@@ -517,7 +526,7 @@ function ScheduledChargesTable({
                 </span>
               </div>
               <div className="cg-cell cg-cell--right">
-                {record.cr109_manual && (
+                {record.cr109_manual && !readOnly && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <button type="button" className="invoice-row-action-button invoice-row-delete-button" disabled={savingId === 'deleting-' + record.crc5c_copyscheduledchargesid}>
@@ -1311,6 +1320,7 @@ export function ChargesWorkspace({
   error,
   onRefresh,
   invoices = [],
+  readOnly = false,
 }: ChargesWorkspaceProps) {
   const [savingId, setSavingId] = useState<string | null>(
     null
@@ -1359,7 +1369,7 @@ export function ChargesWorkspace({
 
       {!loading && !error && (
         <div className="dataverse-charge-grid">
-          {ticketId && (
+          {ticketId && !readOnly && (
             <AddScheduledChargeForm
               ticketId={ticketId}
               scheduledCharges={scheduledCharges}
@@ -1379,6 +1389,7 @@ export function ChargesWorkspace({
               savingId={savingId}
               onSaved={onRefresh}
               onSavingChange={setSavingId}
+              readOnly={readOnly}
             />
           )}
 
@@ -1394,6 +1405,7 @@ export function ChargesWorkspace({
               savingId={savingId}
               onSaved={onRefresh}
               onSavingChange={setSavingId}
+              readOnly={readOnly}
             />
           )}
 

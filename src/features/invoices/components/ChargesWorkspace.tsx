@@ -27,6 +27,7 @@ interface ChargesWorkspaceProps {
   generatingInvoice?: boolean
   hasInvoicePdf?: boolean
   onViewInvoice?: () => void
+  readOnly?: boolean
 }
 
 function createChargeRow(): InvoiceChargeFormRow {
@@ -48,6 +49,29 @@ function normalizeText(value: string) {
   return trimmedValue === '' ? undefined : trimmedValue
 }
 
+/**
+ * Strips any currency formatting ($, commas, spaces) from a user-typed
+ * amount string and returns a plain decimal string ready for Dataverse.
+ * Returns undefined when the value is empty or not a valid number.
+ * Examples: "$1,340.70" → "1340.70", "TBD" → "TBD", "" → undefined
+ */
+function normalizeAmount(value: string): string | undefined {
+  const trimmed = value.trim()
+  if (trimmed === '') return undefined
+
+  // Strip $ and commas, then check if it parses as a finite number
+  const stripped = trimmed.replace(/[$,\s]/g, '')
+  const parsed = Number(stripped)
+
+  if (Number.isFinite(parsed)) {
+    // Always store with exactly 2 decimal places to keep Dataverse values uniform
+    return parsed.toFixed(2)
+  }
+
+  // Non-numeric values (e.g. "TBD") are kept as-is after trimming
+  return trimmed
+}
+
 function toInvoicePayload(
   row: InvoiceChargeFormRow,
   ticketId: string,
@@ -62,7 +86,7 @@ function toInvoicePayload(
     cr109_dueatclosing:
       row.cr109_dueatclosing || undefined,
     cr109_notes: normalizeText(notes || ''),
-    cr7de_amount: normalizeText(row.cr7de_amount),
+    cr7de_amount: normalizeAmount(row.cr7de_amount),
     cr7de_chequenumber: normalizeText(
       row.cr7de_chequenumber
     ),
@@ -110,6 +134,7 @@ export function ChargesWorkspace({
   generatingInvoice,
   hasInvoicePdf,
   onViewInvoice,
+  readOnly = false,
 }: ChargesWorkspaceProps) {
   const [rows, setRows] = useState<InvoiceChargeFormRow[]>(
     [createChargeRow()]
@@ -283,6 +308,7 @@ export function ChargesWorkspace({
 
   return (
     <div className="charges-workspace">
+      {!readOnly && (
       <section className="workflow-card">
         <div className="workflow-card-header">
           <div>
@@ -377,6 +403,7 @@ export function ChargesWorkspace({
           </button>
         </div>
       </section>
+      )}
 
       <InvoiceTable
         records={records}
@@ -393,6 +420,7 @@ export function ChargesWorkspace({
         onViewInvoice={onViewInvoice}
         updatingId={updatingId}
         deletingId={deletingId}
+        readOnly={readOnly}
       />
     </div>
   )

@@ -38,6 +38,7 @@ interface InvoiceRowProps {
   onDelete: (recordId: string, oldRecord: InvoiceRecord) => void
   isUpdating: boolean
   isDeleting: boolean
+  readOnly?: boolean
 }
 
 type DueAtClosingValue = Exclude<
@@ -81,6 +82,7 @@ export function InvoiceRow({
   onDelete,
   isUpdating,
   isDeleting,
+  readOnly = false,
 }: InvoiceRowProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editRow, setEditRow] = useState(
@@ -301,50 +303,52 @@ export function InvoiceRow({
           </td>
         )
       })}
-      <td>
-        <div className="invoice-row-actions">
-          <button
-            className="invoice-row-action-button"
-            type="button"
-            onClick={() => setIsEditing(true)}
-          >
-            Edit
-          </button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <button
-                className="invoice-row-action-button invoice-row-delete-button"
-                type="button"
-                disabled={isDeleting}
-              >
-                {isDeleting ? 'Deleting...' : 'Delete'}
-              </button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>
-                  Delete Charge
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will remove the selected charge from
-                  this closing ticket.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  className="invoice-confirm-delete-button"
-                  onClick={() =>
-                    onDelete(record.cr7de_invoicedetailsid, record)
-                  }
+      {!readOnly && (
+        <td>
+          <div className="invoice-row-actions">
+            <button
+              className="invoice-row-action-button"
+              type="button"
+              onClick={() => setIsEditing(true)}
+            >
+              Edit
+            </button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button
+                  className="invoice-row-action-button invoice-row-delete-button"
+                  type="button"
+                  disabled={isDeleting}
                 >
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      </td>
+                  {isDeleting ? 'Deleting...' : 'Delete'}
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Delete Charge
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will remove the selected charge from
+                    this closing ticket.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="invoice-confirm-delete-button"
+                    onClick={() =>
+                      onDelete(record.cr7de_invoicedetailsid, record)
+                    }
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </td>
+      )}
     </tr>
   )
 }

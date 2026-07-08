@@ -31,6 +31,7 @@ interface InvoiceTableProps {
   onViewInvoice?: () => void
   updatingId: string | null
   deletingId: string | null
+  readOnly?: boolean
 }
 
 const groupOrder: InvoiceGroupKey[] = [
@@ -68,6 +69,7 @@ export function InvoiceTable({
   onViewInvoice,
   updatingId,
   deletingId,
+  readOnly = false,
 }: InvoiceTableProps) {
   const [notes, setNotes] = useState('')
   const [originalNotes, setOriginalNotes] = useState('')
@@ -281,7 +283,7 @@ export function InvoiceTable({
                             {column.label}
                           </th>
                         ))}
-                        <th>Actions</th>
+                        {!readOnly && <th>Actions</th>}
                       </tr>
                     </thead>
                     <tbody>
@@ -302,6 +304,7 @@ export function InvoiceTable({
                             deletingId ===
                             record.cr7de_invoicedetailsid
                           }
+                          readOnly={readOnly}
                         />
                       ))}
                     </tbody>
@@ -325,8 +328,9 @@ export function InvoiceTable({
             placeholder="Add notes for this invoice..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
+            disabled={readOnly}
           />
-          {notesChanged && (
+          {notesChanged && !readOnly && (
             <button
               type="button"
               className="primary-action-button"

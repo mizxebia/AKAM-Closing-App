@@ -49,6 +49,7 @@ type UploadedFileNames = Partial<Record<UploadColumnName, string>>
 const READY_FOR_POST_CLOSING_STATUS = 716070006
 const POST_CLOSING_STATUS = 716070004
 const PURCHASE_FORM_DATA_EXTRACTED_BOT_STATUS = 396620013
+const RPTT_UPLOADED_BOT_STATUS = 396620010
 const emptyUploadedFileNames: UploadedFileNames = {}
 
 interface CreateClosingTicketFormProps {
@@ -472,6 +473,14 @@ export function EditClosingTicketForm({
           record.cr7de_closingticketdetailsid,
           pendingFiles
         )
+        // After the RPTT file is uploaded, mark the bot status as RPTTUploaded
+        // so the bot picks up the document for extraction.
+        if (pendingFiles.cr109_rpttdocument instanceof File) {
+          await updateClosingTicket(
+            record.cr7de_closingticketdetailsid,
+            { cr109_botstatus: RPTT_UPLOADED_BOT_STATUS }
+          )
+        }
       }}
       onSuccess={onSaved}
     />
@@ -1027,11 +1036,23 @@ function ClosingTicketEditorForm({
           {!isCreateMode && (
             <div className="form-grid-wide">
               <FormField label="Domecile Package Url">
-                <input
-                  value={formState.cr109_domecilepackageurl}
-                  readOnly
-                  aria-readonly="true"
-                />
+                {formState.cr109_domecilepackageurl ? (
+                  <a
+                    href={formState.cr109_domecilepackageurl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="domecile-package-link"
+                  >
+                    {formState.cr109_domecilepackageurl}
+                  </a>
+                ) : (
+                  <input
+                    value=""
+                    readOnly
+                    aria-readonly="true"
+                    placeholder="Not yet generated"
+                  />
+                )}
               </FormField>
             </div>
           )}

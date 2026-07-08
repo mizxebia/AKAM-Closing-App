@@ -40,6 +40,8 @@ import { useAutoClear } from '../../../hooks/useAutoClear'
 
 const FAILED_TICKET_STATUS = 716070007
 const PROCESSING_TICKET_STATUS = 716070005
+const TRANSFERRING_BUILDING_STATUS = 716070002
+const COMPLETED_STATUS = 716070008
 
 const BOT_STATUS_FAILURE_REASONS: Record<number, string> = {
   396620005: 'Seller information could not be retrieved from the source system.',
@@ -317,6 +319,9 @@ export function ClosingTicketDetailsPage({
   }
 
   const isDraft = Number(record?.cr7de_ticketstatus) === 716070000
+  const isReadOnly =
+    Number(record?.cr7de_ticketstatus) === TRANSFERRING_BUILDING_STATUS ||
+    Number(record?.cr7de_ticketstatus) === COMPLETED_STATUS
 
   const workflowTabs = [
     { key: 'details' as const, label: 'Closing Details' },
@@ -408,7 +413,10 @@ export function ClosingTicketDetailsPage({
                 record={record}
                 onCancel={onBack}
                 onSaved={handleSaved}
-                readOnly={Number(record.cr7de_ticketstatus) === PROCESSING_TICKET_STATUS}
+                readOnly={
+                  Number(record.cr7de_ticketstatus) === PROCESSING_TICKET_STATUS ||
+                  isReadOnly
+                }
               />
             </div>
           )}
@@ -429,6 +437,7 @@ export function ClosingTicketDetailsPage({
                   record.cr109_closingticketdetailspdf_name
               )}
               onViewInvoice={() => setInvoiceViewerOpen(true)}
+              readOnly={isReadOnly}
             />
           )}
 
@@ -444,6 +453,7 @@ export function ClosingTicketDetailsPage({
               error={chargesError}
               onRefresh={refreshCharges}
               invoices={invoiceRecords}
+              readOnly={isReadOnly}
             />
           )}
 
@@ -453,7 +463,10 @@ export function ClosingTicketDetailsPage({
               onSaved={handleSaved}
               onGenerateTicket={handleGenerateNewOwnerTicket}
               generatingTicket={generatingNewOwnerTicket}
-              readOnly={Number(record.cr7de_ticketstatus) === PROCESSING_TICKET_STATUS}
+              readOnly={
+                Number(record.cr7de_ticketstatus) === PROCESSING_TICKET_STATUS ||
+                isReadOnly
+              }
             />
           )}
         </WorkflowTabs>
