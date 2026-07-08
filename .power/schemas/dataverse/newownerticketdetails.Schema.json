@@ -132,7 +132,7 @@
         },
         "cr109_primaryhomephonenumber": {
           "type": "string",
-          "title": "Primary Owner Home Phone Number",
+          "title": "Buyer 1 Owner Home Phone Number",
           "x-ms-dataverse-attribute": "cr109_primaryhomephonenumber",
           "x-ms-dataverse-type": "StringType",
           "x-ms-schema-name": "cr109_PrimaryHomePhoneNumber",
@@ -148,7 +148,7 @@
         },
         "cr109_primaryworkphonenumber": {
           "type": "string",
-          "title": "Primary Owner Work Phone Number",
+          "title": "Buyer 1 Work Phone Number",
           "x-ms-dataverse-attribute": "cr109_primaryworkphonenumber",
           "x-ms-dataverse-type": "StringType",
           "x-ms-schema-name": "cr109_PrimaryWorkPhoneNumber",
@@ -172,7 +172,7 @@
         },
         "cr109_purchaser1purchasedate": {
           "type": "string",
-          "title": "Purchaser 1 Purchase Date",
+          "title": "Buyer 1 Purchase Date",
           "x-ms-dataverse-attribute": "cr109_purchaser1purchasedate",
           "x-ms-dataverse-type": "StringType",
           "x-ms-schema-name": "cr109_Purchaser1PurchaseDate",
@@ -357,7 +357,7 @@
         },
         "cr7de_primaryowneremail": {
           "type": "string",
-          "title": "Primary Owner Email",
+          "title": "Buyer 1 Owner Email",
           "x-ms-dataverse-attribute": "cr7de_primaryowneremail",
           "x-ms-dataverse-type": "StringType",
           "x-ms-schema-name": "cr7de_PrimaryOwnerEmail",
@@ -365,7 +365,7 @@
         },
         "cr7de_primaryownerssnein": {
           "type": "string",
-          "title": "Primary Owner SSN/EIN",
+          "title": "Buyer 1 SSN/EIN",
           "x-ms-dataverse-attribute": "cr7de_primaryownerssnein",
           "x-ms-dataverse-type": "StringType",
           "x-ms-schema-name": "cr7de_PrimaryOwnerSSNEIN",
@@ -373,7 +373,7 @@
         },
         "cr7de_primaryphonenumber": {
           "type": "string",
-          "title": "Primary Owner Cell Phone Number",
+          "title": "Buyer 1 Cell Phone Number",
           "x-ms-dataverse-attribute": "cr7de_primaryphonenumber",
           "x-ms-dataverse-type": "StringType",
           "x-ms-schema-name": "cr7de_PrimaryPhoneNumber",

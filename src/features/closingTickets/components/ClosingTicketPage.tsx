@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, RefreshCw } from 'lucide-react'
+import { Plus, RefreshCw, BookOpen } from 'lucide-react'
 import akamLogo from '../../../assets/akam_logo.png'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import {
@@ -23,6 +23,7 @@ import { ClosingTicketTable } from './ClosingTicketTable'
 import { useCurrentUser } from '../hooks/useCurrentUser'
 import { CreateClosingTicketForm } from './CreateClosingTicketForm'
 import { ClosingTicketDetailsPage } from './ClosingTicketDetailsPage'
+import { HelpCentreModal } from './HelpCentreModal'
 
 function getInitials(name: string | null): string {
   if (!name) return '?'
@@ -33,7 +34,7 @@ function getInitials(name: string | null): string {
   return name.slice(0, 2).toUpperCase()
 }
 
-function TopNav({ userName }: { userName: string | null }) {
+function TopNav({ userName, onHelp }: { userName: string | null; onHelp: () => void }) {
   const initials = getInitials(userName)
   return (
     <nav
@@ -64,16 +65,26 @@ function TopNav({ userName }: { userName: string | null }) {
 
       {/* Right: Help Center + avatar */}
       <div className="flex items-center gap-4">
-        <span
+        <button
+          type="button"
+          onClick={onHelp}
+          className="flex items-center gap-1.5 transition"
           style={{
+            background: 'none',
+            border: 'none',
+            padding: 0,
             color: 'rgba(245,242,236,0.7)',
             fontSize: '13px',
             fontWeight: 500,
-            cursor: 'default',
+            cursor: 'pointer',
           }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#C9A96E')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(245,242,236,0.7)')}
+          title="Open Process Lifecycle Guide"
         >
+          <BookOpen size={14} />
           Help Center
-        </span>
+        </button>
         <div
           className="grid shrink-0 place-items-center font-semibold"
           style={{
@@ -101,6 +112,7 @@ export function ClosingTicketPage() {
     useState<string | null>(null)
   const [selectedRecordId, setSelectedRecordId] =
     useState<string | null>(null)
+  const [helpOpen, setHelpOpen] = useState(false)
 
   const {
     records,
@@ -139,7 +151,8 @@ export function ClosingTicketPage() {
   if (selectedRecordId) {
     return (
       <>
-        <TopNav userName={userName} />
+        <TopNav userName={userName} onHelp={() => setHelpOpen(true)} />
+        <HelpCentreModal open={helpOpen} onClose={() => setHelpOpen(false)} />
         <div className="min-h-screen bg-[#F5F2EC]">
           <ClosingTicketDetailsPage
             recordId={selectedRecordId}
@@ -153,7 +166,8 @@ export function ClosingTicketPage() {
 
   return (
     <>
-      <TopNav userName={userName} />
+      <TopNav userName={userName} onHelp={() => setHelpOpen(true)} />
+      <HelpCentreModal open={helpOpen} onClose={() => setHelpOpen(false)} />
       <div className="min-h-screen bg-[#F5F2EC] px-4 py-2 sm:px-6 lg:px-8">
         <main className="mx-auto grid w-full max-w-[1500px] gap-2">
           <PageHeader

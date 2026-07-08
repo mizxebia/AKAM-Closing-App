@@ -24,8 +24,8 @@ interface FieldConfig {
   wide?: boolean
   section:
     | 'Ticket'
-    | 'Primary Owner'
-    | 'Secondary Owner'
+    | 'Buyer 1'
+    | 'Buyer 2'
     | 'Seller'
     | 'Financial'
     | 'Occupants'
@@ -69,133 +69,133 @@ const FIELD_CONFIGS = [
     wide: true,
   },
   {
-    section: 'Primary Owner',
+    section: 'Buyer 1',
     name: 'cr7de_newprimaryownername',
-    label: 'Primary Owner',
+    label: 'Buyer 1 Name',
     required: true,
   },
   {
-    section: 'Primary Owner',
+    section: 'Buyer 1',
     name: 'cr7de_primaryowneremail',
-    label: 'Primary Owner Email',
+    label: 'Buyer 1 Email',
     kind: 'email',
   },
   {
-    section: 'Primary Owner',
+    section: 'Buyer 1',
     name: 'cr7de_primaryphonenumber',
-    label: 'Primary Cell Phone',
+    label: 'Buyer 1 Cell Phone',
     kind: 'tel',
   },
   {
-    section: 'Primary Owner',
+    section: 'Buyer 1',
     name: 'cr109_primaryhomephonenumber',
-    label: 'Primary Home Phone',
+    label: 'Buyer 1 Home Phone',
     kind: 'tel',
   },
   {
-    section: 'Primary Owner',
+    section: 'Buyer 1',
     name: 'cr109_primaryworkphonenumber',
-    label: 'Primary Work Phone',
+    label: 'Buyer 1 Work Phone',
     kind: 'tel',
   },
   {
-    section: 'Primary Owner',
+    section: 'Buyer 1',
     name: 'cr7de_primaryownerssnein',
-    label: 'Primary Owner SSN/EIN',
+    label: 'Buyer 1 SSN/EIN',
   },
   {
-    section: 'Primary Owner',
+    section: 'Buyer 1',
     name: 'cr109_primaryownertcode',
-    label: 'Primary Owner T-Code',
+    label: 'Buyer 1 T-Code',
   },
   {
-    section: 'Primary Owner',
+    section: 'Buyer 1',
     name: 'cr109_buyer1address',
     label: 'Buyer 1 Address',
   },
   {
-    section: 'Primary Owner',
+    section: 'Buyer 1',
     name: 'cr109_buyer1city',
     label: 'Buyer 1 City',
   },
   {
-    section: 'Primary Owner',
+    section: 'Buyer 1',
     name: 'cr109_buyer1state',
     label: 'Buyer 1 State',
   },
   {
-    section: 'Primary Owner',
+    section: 'Buyer 1',
     name: 'cr109_buyer1zip',
     label: 'Buyer 1 ZIP',
   },
   {
-    section: 'Primary Owner',
+    section: 'Buyer 1',
     name: 'cr109_purchaser1occupancy',
-    label: 'Purchaser 1 Occupancy',
+    label: 'Buyer 1 Occupancy',
   },
   {
-    section: 'Primary Owner',
+    section: 'Buyer 1',
     name: 'cr109_purchaser1purchasedate',
-    label: 'Purchaser 1 Purchase Date',
+    label: 'Buyer 1 Purchase Date',
   },
   {
-    section: 'Secondary Owner',
+    section: 'Buyer 2',
     name: 'cr7de_newsecondaryownername',
-    label: 'Secondary Owner',
+    label: 'Buyer 2 Name',
   },
   {
-    section: 'Secondary Owner',
+    section: 'Buyer 2',
     name: 'cr7de_secondaryowneremail',
-    label: 'Secondary Owner Email',
+    label: 'Buyer 2 Email',
     kind: 'email',
   },
   {
-    section: 'Secondary Owner',
+    section: 'Buyer 2',
     name: 'cr7de_secondaryphonenumber',
-    label: 'Secondary Cell Phone',
+    label: 'Buyer 2 Cell Phone',
     kind: 'tel',
   },
   {
-    section: 'Secondary Owner',
+    section: 'Buyer 2',
     name: 'cr109_secondaryownerhomephonenumber',
-    label: 'Secondary Home Phone',
+    label: 'Buyer 2 Home Phone',
     kind: 'tel',
   },
   {
-    section: 'Secondary Owner',
+    section: 'Buyer 2',
     name: 'cr109_secondaryownerworkphonenumber',
-    label: 'Secondary Work Phone',
+    label: 'Buyer 2 Work Phone',
     kind: 'tel',
   },
   {
-    section: 'Secondary Owner',
+    section: 'Buyer 2',
     name: 'cr7de_secondaryownerssnein',
-    label: 'Secondary Owner SSN/EIN',
+    label: 'Buyer 2 SSN/EIN',
   },
   {
-    section: 'Secondary Owner',
+    section: 'Buyer 2',
     name: 'cr109_buyer2address',
     label: 'Buyer 2 Address',
   },
   {
-    section: 'Secondary Owner',
+    section: 'Buyer 2',
     name: 'cr109_buyer2city',
     label: 'Buyer 2 City',
   },
   {
-    section: 'Secondary Owner',
+    section: 'Buyer 2',
     name: 'cr109_buyer2state',
     label: 'Buyer 2 State',
   },
   {
-    section: 'Secondary Owner',
+    section: 'Buyer 2',
     name: 'cr109_buyer2zip',
     label: 'Buyer 2 ZIP',
   },
   {
-    section: 'Secondary Owner',
+    section: 'Buyer 2',
     name: 'cr109_purchaser2occupancy',
-    label: 'Purchaser 2 Occupancy',
+    label: 'Buyer 2 Occupancy',
   },
   {
     section: 'Seller',
@@ -339,8 +339,8 @@ const FIELD_CONFIGS = [
 
 const SECTION_ORDER: FieldConfig['section'][] = [
   'Ticket',
-  'Primary Owner',
-  'Secondary Owner',
+  'Buyer 1',
+  'Buyer 2',
   'Seller',
   'Financial',
   'Occupants',

@@ -21,6 +21,8 @@ import type {
 } from '../types/newOwnerTicket'
 import {
   getDefaultDocument,
+  hasDocument,
+  NEW_OWNER_DOCUMENTS,
   type ClosingTicketDocumentKey,
 } from '../utils/dataverseFileUtils'
 import { buildClosingPayloadFromNewOwnerTicket } from '../utils/sharedTicketFields'
@@ -619,7 +621,8 @@ export function NewOwnerTicketTab({
   }, [closingTicket, formState, onSaved, record])
 
   const showValidateButton =
-    closingTicket.cr7de_ticketstatus === VALIDATED_TICKET_STATUS
+    closingTicket.cr7de_ticketstatus === VALIDATED_TICKET_STATUS &&
+    NEW_OWNER_DOCUMENTS.every((doc) => hasDocument(closingTicket, doc))
 
   const validateClosingTicket = useCallback(async () => {
     const recordId = closingTicket.cr7de_closingticketdetailsid
