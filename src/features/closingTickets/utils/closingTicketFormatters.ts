@@ -10,6 +10,12 @@ import type {
 } from '../types/closingTicket'
 import { closingTicketTabs } from '../constants/closingTicketMetadata'
 
+// The Power Apps SDK does not populate `createdbyname` on fetched records.
+// The display name is available at runtime via this OData annotation instead.
+// Same annotation is used by the "My Tickets" filter logic.
+export const CREATED_BY_DISPLAY_ANNOTATION =
+  '_createdby_value@OData.Community.Display.V1.FormattedValue'
+
 const statusDisplayByGeneratedLabel: Record<
   string,
   ClosingTicketStatusDisplay
@@ -97,6 +103,18 @@ export function formatClosingTicketValue(
   record: ClosingTicketRecord,
   key: ClosingTicketColumnKey
 ) {
+  // Handle createdbyname first — record[key] is always empty/undefined
+  // for this field because the SDK doesn't populate createdbyname.
+  // The value lives in the OData annotation on _createdby_value instead.
+  if (key === 'createdbyname') {
+    const raw = record as unknown as Record<string, unknown>
+    const annotated = raw[CREATED_BY_DISPLAY_ANNOTATION]
+    if (typeof annotated === 'string' && annotated.trim()) {
+      return annotated.replace(/\s*#\s*$/, '').trim()
+    }
+    return '-'
+  }
+
   const rawValue = record[key]
 
   if (

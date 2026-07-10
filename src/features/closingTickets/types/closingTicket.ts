@@ -19,6 +19,7 @@ export type ClosingTicketColumnKey =
   | 'cr7de_ticketstatus'
   | 'createdon'
   | 'modifiedon'
+  | 'createdbyname'
 
 export type ClosingTicketColumn = {
   key: ClosingTicketColumnKey

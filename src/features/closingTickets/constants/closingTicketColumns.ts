@@ -22,6 +22,10 @@ export const closingTicketColumns: ClosingTicketColumn[] = [
     label: 'Status',
   },
   {
+    key: 'createdbyname',
+    label: 'Created By',
+  },
+  {
     key: 'createdon',
     label: 'Created Date',
   },

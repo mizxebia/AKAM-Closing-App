@@ -101,7 +101,7 @@ export function ClosingTicketTable({
       className="overflow-hidden"
     >
       <div className="-m-3 overflow-x-auto">
-        <table className="min-w-[980px] w-full border-collapse">
+        <table className="min-w-[1100px] w-full border-collapse">
           <thead className="sticky top-0 z-[1] bg-[#EDE8E0]">
             <tr>
               {columns.map((column) => (

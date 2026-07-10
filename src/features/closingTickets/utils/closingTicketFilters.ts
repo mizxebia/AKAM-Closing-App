@@ -1,4 +1,4 @@
-import { formatClosingTicketStatus } from './closingTicketFormatters'
+import { formatClosingTicketStatus, CREATED_BY_DISPLAY_ANNOTATION } from './closingTicketFormatters'
 import type {
   ClosingTicketFilters,
   ClosingTicketRecord,
@@ -63,7 +63,7 @@ function matchesStatus(
 
     // Primary: OData display name annotation — confirmed working in debug.
     // FormattedValue is "AkamBotDev1 #" — strip trailing " #" before comparing.
-    const formattedValue = raw['_createdby_value@OData.Community.Display.V1.FormattedValue']
+    const formattedValue = raw[CREATED_BY_DISPLAY_ANNOTATION]
     if (userName && typeof formattedValue === 'string' && formattedValue) {
       const stored = formattedValue.replace(/\s*#\s*$/, '').trim().toLowerCase()
       return stored === userName
