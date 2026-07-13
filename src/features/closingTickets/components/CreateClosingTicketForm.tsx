@@ -363,7 +363,9 @@ function buildPayload(
 }
 
 function validateForm(
-  formState: ClosingTicketFormState
+  formState: ClosingTicketFormState,
+  pendingFiles?: PendingFiles,
+  uploadedFileNames?: UploadedFileNames
 ): FormErrors {
   const errors: FormErrors = {}
 
@@ -399,6 +401,19 @@ function validateForm(
       'Enter a valid email address.'
   }
 
+  // When building is not on Domecile, a purchase application form is required.
+  if (formState.cr7de_buildingnotondomicile) {
+    const hasPendingForm =
+      pendingFiles?.cr109_purchaseapplicationform instanceof File
+    const hasUploadedForm = Boolean(
+      uploadedFileNames?.cr109_purchaseapplicationform
+    )
+    if (!hasPendingForm && !hasUploadedForm) {
+      errors.cr7de_buildingnotondomicile =
+        'Purchase Application Form is required when building is not on Domecile.'
+    }
+  }
+
   return errors
 }
 
@@ -416,6 +431,9 @@ async function uploadPendingFiles(
   }
 }
 
+const PROCESSING_TICKET_STATUS_VALUE = 716070005
+const FORM_DOWNLOADED_BOT_STATUS_VALUE = 396620001
+
 export function CreateClosingTicketForm({
   onCancel,
   onCreated,
@@ -428,9 +446,20 @@ export function CreateClosingTicketForm({
       savingLabel="Saving..."
       onCancel={onCancel}
       onSubmit={async (formState, pendingFiles) => {
-        const record = await createClosingTicket(
-          buildPayload(formState)
-        )
+        // When the building is not on Domecile, the ticket skips the automated
+        // Domecile/Seller retrieval stages and goes straight to Processing with
+        // bot status FormDownloaded — the user has manually provided the form.
+        const isNotOnDomecile = formState.cr7de_buildingnotondomicile
+        const payload = buildPayload({
+          ...formState,
+          ...(isNotOnDomecile
+            ? {
+                cr7de_ticketstatus: PROCESSING_TICKET_STATUS_VALUE as ClosingTicketFormState['cr7de_ticketstatus'],
+                cr109_botstatus: FORM_DOWNLOADED_BOT_STATUS_VALUE as ClosingTicketFormState['cr109_botstatus'],
+              }
+            : {}),
+        })
+        const record = await createClosingTicket(payload)
         await syncNewOwnerTicketFromClosingTicket(record)
         await uploadPendingFiles(
           record.cr7de_closingticketdetailsid,
@@ -761,7 +790,7 @@ function ClosingTicketEditorForm({
   ) => {
     event.preventDefault()
 
-    const validationErrors = validateForm(formState)
+    const validationErrors = validateForm(formState, pendingFiles, uploadedFileNames)
     setErrors(validationErrors)
     setSaveError(null)
 
@@ -1291,9 +1320,34 @@ function ClosingTicketEditorForm({
         {showDocumentsSection && (
           <section className="form-section">
             <h3>Documents</h3>
+            {formState.cr7de_buildingnotondomicile && (
+              <div className="documents-not-on-domecile-banner">
+                <svg
+                  className="documents-not-on-domecile-icon"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <p>
+                  This building is not on Domecile. The{' '}
+                  <strong>Purchase Application Form</strong> must be
+                  uploaded manually — it is required before saving.
+                  Once saved, the ticket will automatically move to{' '}
+                  <strong>Processing</strong>.
+                </p>
+              </div>
+            )}
             <div className="form-grid">
             <FileUploadField
               label="Purchase Application Form"
+              required={formState.cr7de_buildingnotondomicile}
+              error={errors.cr7de_buildingnotondomicile}
               currentFileName={
                 pendingFiles.cr109_purchaseapplicationform
                   ?.name ??
@@ -1604,23 +1658,42 @@ function CheckboxField({
 
 function FileUploadField({
   label,
+  required = false,
+  error,
   currentFileName,
   onFileChange,
   onDelete,
 }: {
   label: string
+  required?: boolean
+  error?: string
   currentFileName?: string
   onFileChange: (file: File) => void
   onDelete: () => void
 }) {
   return (
     <div className="file-upload-field">
-      <span>{label}</span>
-      <div className="file-upload-box">
-        <div className="flex min-w-0 items-center justify-between gap-3">
-          <p className="min-w-0 truncate">
-            {currentFileName ?? 'There is no file.'}
-          </p>
+      <span className="file-upload-label">
+        {label}
+        {required && <span className="file-upload-required"> *</span>}
+      </span>
+      <div className={`file-upload-box${error ? ' file-upload-box-error' : ''}`}>
+        <p className="file-upload-filename">
+          {currentFileName ?? 'There is no file.'}
+        </p>
+        <div className="file-upload-actions">
+          <label className="file-upload-link">
+            Upload file
+            <input
+              type="file"
+              onChange={(event) => {
+                const file = event.target.files?.[0]
+                if (file) {
+                  onFileChange(file)
+                }
+              }}
+            />
+          </label>
           {currentFileName && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -1629,7 +1702,7 @@ function FileUploadField({
                   size="icon"
                   type="button"
                   aria-label={`Delete ${label}`}
-                  className="shrink-0"
+                  className="file-upload-delete-btn"
                 >
                   <Trash2 className="h-4 w-4 text-red-500" />
                 </Button>
@@ -1660,20 +1733,10 @@ function FileUploadField({
             </AlertDialog>
           )}
         </div>
-        <label>
-          Upload file
-          <input
-            type="file"
-            onChange={(event) => {
-              const file = event.target.files?.[0]
-
-              if (file) {
-                onFileChange(file)
-              }
-            }}
-          />
-        </label>
       </div>
+      {error && (
+        <small className="form-error">{error}</small>
+      )}
     </div>
   )
 }

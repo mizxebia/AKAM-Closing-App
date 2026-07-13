@@ -42,7 +42,7 @@ const STATUS_CARDS: StatusCard[] = [
   {
     status: 'Processing', color: '#2563EB', lightBg: '#EFF6FF', lightBorder: '#BFDBFE',
     icon: <Loader2 size={16} />,
-    what: 'The system is pulling Domecile data, seller info, and the purchase application form. Desktop flows run in batches when the automation server is free — your ticket will be picked up in the next available run.',
+    what: 'The system is pulling Domecile data, seller info, and the purchase application form. Desktop flows run in batches when the automation server is free — your ticket will be picked up in the next available run. If the building is not on Domecile, the ticket enters Processing immediately after creation (you uploaded the form manually) and skips directly to purchase form data extraction.',
     action: 'Nothing — automation is running. Desktop flows can take up to a few hours depending on how many tickets are ahead in the queue. Check back later.',
     isUserAction: false, estimatedTime: '~5 min per step + queue time',
   },
@@ -216,6 +216,8 @@ function StatusTimelineCard({ card, isLast }: { card: StatusCard; isLast: boolea
 interface BehaviourCard { icon: string; title: string; body: string }
 
 const BEHAVIOURS: BehaviourCard[] = [
+  { icon: '🏢', title: 'Building not on Domecile — manual upload path',
+    body: 'When the "Building not on Domecile" flag is checked, automated Domecile dump and purchase form download stages are skipped. You must upload the Purchase Application Form manually in the Closing Details tab before saving. On save, the ticket jumps straight to Processing with Bot Status FormDownloaded and continues from Stage 6 (data extraction) onward.' },
   { icon: '📄', title: 'Three documents required before Validate',
     body: 'The Validate button only appears when all three documents are present: Purchase Application Form, RPTT / ACRIS Document, and New Owner Ticket PDF.' },
   { icon: '🔒', title: 'Validation is permanent — ticket locks forever',
@@ -525,6 +527,22 @@ function FlowchartContent() {
       <StepCard variant="user" stage="Stage 1" title="Create Closing Ticket"
         subtitle="User fills in: Building Code, Unit Number, Package Type"
         statuses={[{ label: 'Ticket Status', value: 'Draft' }, { label: 'Bot Status', value: 'Draft' }]} />
+      <Arrow />
+
+      {/* Building Not on Domecile — Alternate Path callout */}
+      <div className="w-full rounded-2xl border-[1.5px] border-dashed border-slate-300 bg-slate-50 px-5 py-4 text-[11.5px] text-slate-600 leading-relaxed">
+        <p className="text-[9px] font-bold uppercase tracking-wide text-slate-400 mb-2">
+          🏢 Building Not on Domecile — Alternate Path
+        </p>
+        <p>
+          If the <strong className="text-slate-700">"Building not on Domecile"</strong> flag is checked, the automated Domecile dump
+          and purchase form download stages are skipped. Instead, the user must{' '}
+          <strong className="text-slate-700">manually upload the Purchase Application Form</strong> in the Closing Details tab
+          and click Save. On save, the system automatically sets Ticket Status to{' '}
+          <strong className="text-slate-700">Processing</strong> and Bot Status to{' '}
+          <strong className="text-slate-700">FormDownloaded</strong>, then continues from Stage 6 onwards.
+        </p>
+      </div>
       <Arrow />
 
       <PhaseHeader number="Phase 2" title="Seller Information Collection" />

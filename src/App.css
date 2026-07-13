@@ -1395,11 +1395,16 @@ body {
   gap: 6px;
 }
 
-.file-upload-field > span {
+.file-upload-label {
   color: #1E3A47;
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.file-upload-required {
+  color: #1E3A47;
+  font-weight: 700;
 }
 
 .file-upload-box {
@@ -1410,10 +1415,16 @@ body {
   border: 1px dashed #C8BBA9;
   border-radius: 8px;
   background: #F5F2EC;
-  padding: 14px;
+  padding: 14px 16px;
+  transition: border-color 160ms ease;
 }
 
-.file-upload-box p {
+.file-upload-box-error {
+  border-color: #fca5a5;
+  background: #fff8f8;
+}
+
+.file-upload-filename {
   margin: 0;
   color: #4B5563;
   font-size: 0.86rem;
@@ -1422,22 +1433,69 @@ body {
   white-space: nowrap;
 }
 
-.file-upload-box label {
-  width: fit-content;
-  color: #8B3A2A;
+.file-upload-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-upload-link {
+  color: #8B3A2A !important;
   cursor: pointer;
-  font-size: 0.84rem;
-  font-weight: 600;
-  text-decoration: underline;
+  font-size: 0.84rem !important;
+  font-weight: 700 !important;
+  text-decoration: underline !important;
   text-underline-offset: 2px;
+  transition: color 160ms ease;
 }
 
-.file-upload-box label:hover {
-  color: #6e2d20;
+.file-upload-link:hover {
+  color: #6e2d20 !important;
 }
 
-.file-upload-box input {
+.file-upload-link input[type='file'] {
   display: none;
+}
+
+.file-upload-delete-btn {
+  width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  border-radius: 6px !important;
+  flex-shrink: 0;
+}
+
+/* --- Documents — not on Domecile info banner --- */
+.documents-not-on-domecile-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  border-radius: 8px;
+  color: #1D4ED8;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.documents-not-on-domecile-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  color: #2563EB;
+}
+
+.documents-not-on-domecile-banner p {
+  margin: 0;
+  color: #1D4ED8;
+}
+
+.documents-not-on-domecile-banner strong {
+  font-weight: 700;
+  color: #1D4ED8;
 }
 
 .form-actions {

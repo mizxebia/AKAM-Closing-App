@@ -6,10 +6,25 @@
 
 **Trigger:** A user creates a new ticket in the application by providing the Building Code, Unit, and Package Type.
 
+### Standard Path (Building on Domecile)
+
 | Field | Value |
 |---|---|
 | Ticket Status | Draft |
 | Bot Status | Draft |
+
+The ticket then advances through Stage 2 (Domecile Data Retrieval) automatically.
+
+### Alternative Path (Building Not on Domecile)
+
+When the **Building not on Domecile** flag is checked during ticket creation, the automated Domecile and Seller retrieval stages are skipped entirely. The user **must** upload the Purchase Application Form at creation time (it is required). The ticket is created with the following initial statuses, bypassing Stages 2–5:
+
+| Field | Value |
+|---|---|
+| Ticket Status | Processing |
+| Bot Status | FormDownloaded |
+
+The ticket then continues from Stage 6 (Purchase Form Data Extraction) onward.
 
 ---
 
