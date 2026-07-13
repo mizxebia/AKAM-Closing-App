@@ -74,7 +74,24 @@ export async function saveNewOwnerTicket(
       newData: payload as Record<string, unknown>,
     })
 
-    return result.data as NewOwnerTicketRecord
+    // Dataverse UPDATE returns 204 No Content — result.data is typically null.
+    // Re-fetch so the caller always gets a fully-populated record with the
+    // correct ID, preventing a ghost "create" on the next save.
+    if (result.data) {
+      return result.data as NewOwnerTicketRecord
+    }
+
+    const refetched = await getNewOwnerTicketByTicketId(
+      typeof ticketId === 'string' ? ticketId : ''
+    )
+    if (refetched) return refetched
+
+    // Fallback: reconstruct a minimal record so the ID is preserved
+    return {
+      ...(oldRecord ?? {}),
+      ...payload,
+      cr7de_newownerticketdetailsid: existingRecordId,
+    } as NewOwnerTicketRecord
   }
 
   const result =

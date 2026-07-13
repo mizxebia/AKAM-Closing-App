@@ -431,7 +431,11 @@ function toPayload(
 }
 
 function isValidEmail(value: string) {
-  return !value || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+  // Only enforce email format when the user typed something that looks like
+  // an email (contains '@'). Values like 'N/A', placeholders, or phone
+  // numbers are accepted as-is — Dataverse has no email-type constraint here.
+  if (!value || !value.includes('@')) return true
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
 }
 
 function validateForm(
@@ -445,11 +449,6 @@ function validateForm(
 
   if (!formState.cr7de_unit.trim()) {
     errors.cr7de_unit = 'Unit is required.'
-  }
-
-  if (!formState.cr7de_newprimaryownername.trim()) {
-    errors.cr7de_newprimaryownername =
-      'Primary owner is required.'
   }
 
   if (!isValidEmail(formState.cr7de_primaryowneremail)) {
@@ -599,15 +598,22 @@ export function NewOwnerTicketTab({
         payload,
         record ?? undefined
       )
+
+      // Write stitched fields back to the closing ticket
       await updateClosingTicket(
         closingTicket.cr7de_closingticketdetailsid,
         buildClosingPayloadFromNewOwnerTicket(payload)
       )
       await onSaved()
-      setRecord(savedRecord)
-      setFormState(
-        getInitialFormState(closingTicket, savedRecord)
-      )
+
+      // savedRecord is now always non-null (service re-fetches on 204).
+      // Use it as the source of truth so form state reflects what is
+      // actually in Dataverse and the record ID is preserved for future saves.
+      if (savedRecord) {
+        setRecord(savedRecord)
+        setFormState(getInitialFormState(closingTicket, savedRecord))
+      }
+
       setMessage('New owner ticket saved successfully.')
     } catch (err) {
       setError(

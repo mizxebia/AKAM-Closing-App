@@ -72,7 +72,6 @@ const FIELD_CONFIGS = [
     section: 'Buyer 1',
     name: 'cr7de_newprimaryownername',
     label: 'Buyer 1 Name',
-    required: true,
   },
   {
     section: 'Buyer 1',
