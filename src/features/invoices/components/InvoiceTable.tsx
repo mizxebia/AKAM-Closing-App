@@ -171,7 +171,7 @@ export function InvoiceTable({
           </p>
         </div>
         <div className="invoice-header-actions">
-          {onGenerateInvoice && (
+          {onGenerateInvoice && records.length > 0 && (
             <button
               type="button"
               className="invoice-generate-button"
@@ -237,8 +237,10 @@ export function InvoiceTable({
       </div>
 
       {loading && (
-        <div className="invoice-state">
-          Loading invoice details...
+        <div className="invoice-skeleton-list" aria-hidden="true">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="invoice-skeleton-row" />
+          ))}
         </div>
       )}
 

@@ -91,10 +91,6 @@ function renderDocumentViewer(
     return (
       <div className="document-loading-overlay">
         <div className="document-loader" />
-
-        <span>
-          Loading document...
-        </span>
       </div>
     )
   }

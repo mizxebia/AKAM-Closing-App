@@ -2342,6 +2342,36 @@ body {
   background: #fef2f2;
 }
 
+/* ── Skeleton shimmer rows ── */
+@keyframes skeleton-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.invoice-skeleton-list,
+.charges-skeleton-list {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.invoice-skeleton-row,
+.charges-skeleton-row {
+  height: 44px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #EDE8E0 25%, #F5F2EC 50%, #EDE8E0 75%);
+  background-size: 800px 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.building-lookup-skeleton-card {
+  height: 64px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #EDE8E0 25%, #F5F2EC 50%, #EDE8E0 75%);
+  background-size: 800px 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
 .invoice-groups {
   display: grid;
   gap: 12px;

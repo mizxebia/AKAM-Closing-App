@@ -1359,7 +1359,11 @@ export function ChargesWorkspace({
       </div>
 
       {loading && !refreshing && (
-        <div className="invoice-state">Loading charges...</div>
+        <div className="charges-skeleton-list" aria-hidden="true">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="charges-skeleton-row" />
+          ))}
+        </div>
       )}
       {error && (
         <div className="invoice-state invoice-state-error">

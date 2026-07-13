@@ -166,8 +166,10 @@ export function BuildingCodeLookup({
           </div>
 
           {loading && (
-            <div className="building-lookup-state">
-              Loading buildings...
+            <div className="building-lookup-results" aria-hidden="true">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="building-lookup-skeleton-card" />
+              ))}
             </div>
           )}
 
