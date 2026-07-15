@@ -648,7 +648,14 @@ export function NewOwnerTicketTab({
         cr109_botstatus: INFORMATION_VALIDATED_BOT_STATUS,
       })
       await onSaved()
-      setMessage('Closing ticket validation submitted successfully.')
+
+      // Regenerate the New Owner Ticket PDF immediately after validation
+      // so the latest data is reflected in the generated document.
+      if (onGenerateTicket) {
+        await onGenerateTicket()
+      }
+
+      setMessage('Closing ticket validated. New Owner Ticket is being regenerated.')
     } catch (err) {
       setError(
         err instanceof Error
@@ -658,7 +665,7 @@ export function NewOwnerTicketTab({
     } finally {
       setValidating(false)
     }
-  }, [closingTicket.cr7de_closingticketdetailsid, onSaved])
+  }, [closingTicket.cr7de_closingticketdetailsid, onSaved, onGenerateTicket])
 
   return (
     <section className="grid gap-4">
