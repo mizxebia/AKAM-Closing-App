@@ -152,14 +152,11 @@ function renderDocumentViewer(
       )
     }
 
-    // Append #toolbar=0 to suppress the browser PDF viewer's toolbar.
-    // This prevents the embedded PDF /Title metadata (e.g. the original
-    // scanner filename like "SKM_C650i26061813460") from being displayed
-    // inside the viewer. The correct Dataverse filename is shown in the
-    // panel header above instead.
-    const pdfSrc = filePreview.url.startsWith('blob:')
-      ? `${filePreview.url}#toolbar=0`
-      : filePreview.url
+    // Use the blob URL directly. Appending #toolbar=0 would hide the
+    // download / print buttons in Chrome's built-in PDF viewer while
+    // having no effect on Firefox's native UI — so we leave the toolbar
+    // intact across all browsers.
+    const pdfSrc = filePreview.url
 
     return (
       <iframe
