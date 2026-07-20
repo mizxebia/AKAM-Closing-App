@@ -97,14 +97,14 @@ const STATUS_CARDS: StatusCard[] = [
   {
     status: 'Failed', color: '#DC2626', lightBg: '#FEF2F2', lightBorder: '#FECACA',
     icon: <AlertTriangle size={16} />,
-    what: 'An automated step ran into an error. If the failure happened at Domecile dump retrieval or seller info retrieval, it could be a data issue with the ticket. For any other step, it is almost certainly a bot or automation issue — your data is fine.',
+    what: 'An automated step encountered an error. If the failure happened at Domecile dump retrieval or seller info retrieval, it may be related to the ticket data. For any other step, it is most likely a bot or automation issue — your data is fine.',
     action: '',
     isUserAction: true, estimatedTime: 'Action required',
     steps: [
-      'Check the failure reason banner at the top of the ticket — it will tell you which step failed',
-      'If it failed at Domecile dump or seller info retrieval: check that the Building Code and NYC Code are correct. If they look right, it may still be a bot issue',
-      'If it failed at any other step: it is a bot or automation issue, not your data. No changes needed from you',
-      'In all cases, notify the Xebia team — they will investigate and reset the status from the backend',
+      'Check the failure reason banner at the top of the ticket — it will describe which step failed',
+      'If it failed at Domecile dump or seller info retrieval: verify that the Building Code and NYC Code are correct. If they look right, it may still be a bot issue',
+      'If it failed at any other step: this is most likely a bot or automation issue, not a problem with your data. No changes are needed from you',
+      'In either case, please reach out to the Xebia team — they will investigate and reset the status from the backend',
     ],
   },
 ]
@@ -228,8 +228,8 @@ const BEHAVIOURS: BehaviourCard[] = [
     body: 'Click "Generate New Owner Ticket" in the New Owner Ticket tab first. The PDF must be generated before the Validate button appears.' },
   { icon: '👁', title: 'All documents are viewable inside the app',
     body: 'Once uploaded or generated, all documents are viewable directly in the document panel on the right side of the ticket.' },
-  { icon: '💬', title: 'Failed ticket? Fix the data first',
-    body: 'The failure reason appears in a banner at the top of the ticket. Fix the data, then the Xebia team resets the status from the backend.' },
+  { icon: '💬', title: 'Ticket showing as Failed?',
+    body: 'A banner at the top of the ticket will describe what went wrong. Review the details, make any necessary corrections, and reach out to the Xebia team — they will investigate and reset the status from the backend.' },
 ]
 
 function BehaviourCardItem({ card }: { card: BehaviourCard }) {

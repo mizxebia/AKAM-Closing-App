@@ -413,6 +413,7 @@ export function ClosingTicketDetailsPage({
                 record={record}
                 onCancel={onBack}
                 onSaved={handleSaved}
+                isCompleted={Number(record.cr7de_ticketstatus) === COMPLETED_STATUS}
                 readOnly={
                   Number(record.cr7de_ticketstatus) === PROCESSING_TICKET_STATUS ||
                   isReadOnly
@@ -463,6 +464,7 @@ export function ClosingTicketDetailsPage({
               onSaved={handleSaved}
               onGenerateTicket={handleGenerateNewOwnerTicket}
               generatingTicket={generatingNewOwnerTicket}
+              isCompleted={Number(record.cr7de_ticketstatus) === COMPLETED_STATUS}
               readOnly={
                 Number(record.cr7de_ticketstatus) === PROCESSING_TICKET_STATUS ||
                 isReadOnly

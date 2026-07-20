@@ -36,6 +36,7 @@ interface NewOwnerTicketTabProps {
   onGenerateTicket?: () => Promise<void>
   generatingTicket?: boolean
   readOnly?: boolean
+  isCompleted?: boolean
 }
 
 type ValidationErrors = Partial<
@@ -475,6 +476,7 @@ export function NewOwnerTicketTab({
   onGenerateTicket,
   generatingTicket,
   readOnly = false,
+  isCompleted = false,
 }: NewOwnerTicketTabProps) {
   const [record, setRecord] =
     useState<NewOwnerTicketRecord | null>(null)
@@ -712,7 +714,17 @@ export function NewOwnerTicketTab({
       {error && <StatusBanner type="error" message={error} />}
       {readOnly && (
         <div className="form-alert form-alert-readonly">
-          <ProcessingDots />
+          {isCompleted ? (
+            <span className="readonly-completed-indicator" role="status" aria-label="Completed">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true" style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }}>
+                <circle cx="10" cy="10" r="9" fill="#0F6E56" opacity="0.15"/>
+                <path d="M6 10.5l3 3 5-6" stroke="#0F6E56" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Completed Successfully — this ticket is locked.
+            </span>
+          ) : (
+            <ProcessingDots />
+          )}
         </div>
       )}
       {message && (

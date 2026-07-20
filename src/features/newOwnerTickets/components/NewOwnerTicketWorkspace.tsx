@@ -7,6 +7,7 @@ interface NewOwnerTicketWorkspaceProps {
   onGenerateTicket?: () => Promise<void>
   generatingTicket?: boolean
   readOnly?: boolean
+  isCompleted?: boolean
 }
 
 export function NewOwnerTicketWorkspace({
@@ -15,6 +16,7 @@ export function NewOwnerTicketWorkspace({
   onGenerateTicket,
   generatingTicket,
   readOnly = false,
+  isCompleted = false,
 }: NewOwnerTicketWorkspaceProps) {
   return (
     <NewOwnerTicketTab
@@ -23,6 +25,7 @@ export function NewOwnerTicketWorkspace({
       onGenerateTicket={onGenerateTicket}
       generatingTicket={generatingTicket}
       readOnly={readOnly}
+      isCompleted={isCompleted}
     />
   )
 }

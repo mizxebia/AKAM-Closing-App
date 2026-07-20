@@ -62,6 +62,7 @@ interface EditClosingTicketFormProps {
   onCancel: () => void
   onSaved: () => Promise<void>
   readOnly?: boolean
+  isCompleted?: boolean
 }
 
 const emptyFormState: ClosingTicketFormState = {
@@ -476,11 +477,13 @@ export function EditClosingTicketForm({
   onCancel,
   onSaved,
   readOnly = false,
+  isCompleted = false,
 }: EditClosingTicketFormProps) {
   return (
     <ClosingTicketEditorForm
       mode="edit"
       readOnly={readOnly}
+      isCompleted={isCompleted}
       initialFormState={getRecordFormState(record)}
       initialFileNames={{
         cr109_purchaseapplicationform:
@@ -529,6 +532,7 @@ function ClosingTicketEditorForm({
   onSuccess,
   onSubmitAndClose,
   readOnly = false,
+  isCompleted = false,
 }: {
   mode: 'create' | 'edit'
   initialFormState: ClosingTicketFormState
@@ -547,6 +551,7 @@ function ClosingTicketEditorForm({
   onSuccess: () => Promise<void>
   onSubmitAndClose?: () => Promise<void>
   readOnly?: boolean
+  isCompleted?: boolean
 }) {
   const [formState, setFormState] =
     useState<ClosingTicketFormState>(initialFormState)
@@ -832,7 +837,17 @@ function ClosingTicketEditorForm({
     >
       {readOnly && (
         <div className="form-alert form-alert-readonly">
-          <ProcessingDots />
+          {isCompleted ? (
+            <span className="readonly-completed-indicator" role="status" aria-label="Completed">
+              <svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true" style={{ display: 'inline', verticalAlign: 'middle', marginRight: '6px' }}>
+                <circle cx="10" cy="10" r="9" fill="#0F6E56" opacity="0.15"/>
+                <path d="M6 10.5l3 3 5-6" stroke="#0F6E56" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Completed Successfully — this ticket is locked.
+            </span>
+          ) : (
+            <ProcessingDots />
+          )}
         </div>
       )}
       {saveError && (

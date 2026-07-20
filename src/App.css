@@ -530,6 +530,21 @@ body {
   font-weight: 500;
 }
 
+.form-alert-readonly:has(.readonly-completed-indicator) {
+  background: #ecfdf5;
+  color: #065f46;
+  border-color: #6ee7b7;
+}
+
+.readonly-completed-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #065f46;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
