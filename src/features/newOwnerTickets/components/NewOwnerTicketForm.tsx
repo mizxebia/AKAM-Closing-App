@@ -353,6 +353,7 @@ interface NewOwnerTicketFormProps {
   saving: boolean
   validating: boolean
   showValidateButton: boolean
+  validateBlockedReason?: string | null
   onFieldChange: <TKey extends keyof NewOwnerTicketFormState>(
     field: TKey,
     value: NewOwnerTicketFormState[TKey]
@@ -382,6 +383,7 @@ export function NewOwnerTicketForm({
   saving,
   validating,
   showValidateButton,
+  validateBlockedReason,
   onFieldChange,
   onSubmit,
   onValidate,
@@ -499,6 +501,14 @@ export function NewOwnerTicketForm({
 
       {!readOnly && (
       <div className="form-actions new-owner-actions">
+        {validateBlockedReason && (
+          <div
+            className="form-alert form-alert-error"
+            style={{ flex: '1 1 100%', marginBottom: 0 }}
+          >
+            {validateBlockedReason}
+          </div>
+        )}
         {showValidateButton && (
           <button
             className="primary-action-button"

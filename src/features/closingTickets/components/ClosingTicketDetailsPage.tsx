@@ -465,6 +465,7 @@ export function ClosingTicketDetailsPage({
               onGenerateTicket={handleGenerateNewOwnerTicket}
               generatingTicket={generatingNewOwnerTicket}
               isCompleted={Number(record.cr7de_ticketstatus) === COMPLETED_STATUS}
+              hasPartiallyPaidCharges={unpaidCharges.some(c => c.cr109_partiallypaid === true)}
               readOnly={
                 Number(record.cr7de_ticketstatus) === PROCESSING_TICKET_STATUS ||
                 isReadOnly

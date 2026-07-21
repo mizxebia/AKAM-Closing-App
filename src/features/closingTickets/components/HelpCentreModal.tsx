@@ -3,7 +3,7 @@ import {
   X, BookOpen, FileText, Loader2, ClipboardCheck,
   Upload, SearchCheck, BadgeCheck, CheckCircle2,
   Clock, AlertTriangle, Info, ChevronDown, ChevronUp,
-  Zap, ArrowRight,
+  Zap, ArrowRight, ReceiptText,
 } from 'lucide-react'
 import { cn } from '../../../lib/utils'
 
@@ -11,7 +11,7 @@ import { cn } from '../../../lib/utils'
 
 type BadgeVariant = 'user' | 'desktop' | 'cloud'
 type OutcomeVariant = 'success' | 'failure'
-type HelpTab = 'quick' | 'process'
+type HelpTab = 'quick' | 'process' | 'payments' | 'yardi'
 
 interface StatusEntry { label: string; value: string }
 interface StepCardProps {
@@ -677,6 +677,205 @@ function FlowchartContent() {
   )
 }
 
+// ─── Payments Tab ────────────────────────────────────────────────────────────
+
+function InfoCallout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-3 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-[12px] text-blue-800 leading-relaxed">
+      <Info size={14} className="text-blue-500 shrink-0 mt-0.5" />
+      <div>{children}</div>
+    </div>
+  )
+}
+
+interface FieldGuideRow { field: string; what: string; required?: boolean }
+
+function FieldGuideTable({ rows }: { rows: FieldGuideRow[] }) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-slate-200 shadow-sm">
+      <table className="w-full text-[12px] border-collapse bg-white">
+        <thead>
+          <tr className="bg-[#EDE8E0]">
+            <th className="px-4 py-2.5 text-left text-[9px] font-bold uppercase tracking-widest text-slate-500 w-40">Field</th>
+            <th className="px-4 py-2.5 text-left text-[9px] font-bold uppercase tracking-widest text-slate-500">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(({ field, what, required }) => (
+            <tr key={field} className="border-t border-slate-100">
+              <td className="px-4 py-2.5 font-semibold text-[#1E3A47] align-top whitespace-nowrap">
+                {field}{required && <span className="ml-1 text-red-500">*</span>}
+              </td>
+              <td className="px-4 py-2.5 text-slate-600 leading-relaxed">{what}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+const PAYMENT_FIELDS: FieldGuideRow[] = [
+  { field: 'Payment', what: 'The type of charge or fee due at closing. Choose from the dropdown — over 50 options including Flip Tax, Legal Fee, Maintenance Fees, Security Deposit, Move In/Out Fee, and more.', required: true },
+  { field: 'Paid By', what: 'Who is responsible for this payment — Seller or Buyer.', required: true },
+  { field: 'Amount', what: 'The dollar amount. Enter a number (e.g. 1340.70) or "TBD" if the amount is not yet confirmed.', required: true },
+  { field: 'Payable To', what: 'Who receives the payment. Choose Building (the co-op/condo), AKAM Associates Inc., or Other. If Other is selected, a free-text field appears so you can specify the recipient.', required: true },
+  { field: 'Cheque #', what: 'Optional. The cheque number associated with this payment, if applicable.' },
+  { field: 'Applicable to Ledger', what: 'Controls whether this payment row is included when reconciling against the YARDI ledger. See details below.' },
+]
+
+function PaymentsContent() {
+  return (
+    <div className="space-y-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Invoice Tab</p>
+          <h3 className="text-[15px] font-bold text-slate-800">Adding Payments to an Invoice</h3>
+          <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">
+            In the <strong>Invoice</strong> tab, use the <em>Add Payments</em> form to create individual payment line items linked to this closing ticket. Each row represents one charge that will appear on the generated invoice.
+          </p>
+        </div>
+        <div className="space-y-2.5">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Steps</p>
+          {['Open the Invoice tab on the closing ticket.','Click "Add Payment" to add extra rows if you have more than one charge.','Fill in each row: Payment type, Paid By, Amount, and Payable To are required.','Optionally enter a Cheque # and set the Applicable to Ledger flag (see below).','Click "Save Payments" when done. Rows are saved together in one batch.','Once payments are saved, use "Generate Invoice" to produce the PDF.'].map((step, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <div className="flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white mt-0.5" style={{ background: '#1E3A47' }}>{i + 1}</div>
+              <p className="text-[12.5px] text-slate-700 leading-relaxed">{step}</p>
+            </div>
+          ))}
+        </div>
+        <FieldGuideTable rows={PAYMENT_FIELDS} />
+      </div>
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Applicable to Ledger</p>
+          <h3 className="text-[15px] font-bold text-slate-800">What does "Applicable to Ledger" mean?</h3>
+          <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">Each payment row has an <strong>Applicable to Ledger</strong> checkbox (labelled <strong>N/A</strong> in the form). This flag controls whether the payment is included in the ledger reconciliation view in the Yardi Charges tab.</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+            <p className="text-[11px] font-bold text-emerald-700 uppercase tracking-wide mb-1.5">✅ Checkbox not ticked (default)</p>
+            <p className="text-[12px] text-emerald-800 leading-relaxed">The payment <strong>is applicable to the ledger</strong>. It will be reconciled against the YARDI Seller or Buyer ledger when you use "Check with Invoice". Standard for maintenance fees, flip tax, closing fees, etc.</p>
+          </div>
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <p className="text-[11px] font-bold text-amber-700 uppercase tracking-wide mb-1.5">⊘ N/A ticked</p>
+            <p className="text-[12px] text-amber-800 leading-relaxed">The payment is <strong>excluded from ledger reconciliation</strong>. It will appear on the invoice but will not be matched against any YARDI ledger row. Use for AKAM Processing Fee, application fees, or one-off charges.</p>
+          </div>
+        </div>
+        <InfoCallout>
+          <strong>Which payable-to option matters for reconciliation?</strong><br />
+          Only payments marked <strong>Payable To: Building</strong> and <strong>not</strong> flagged N/A are matched against YARDI ledger rows in the "Check with Invoice" view.
+        </InfoCallout>
+      </div>
+      <p className="text-center text-[11px] text-slate-400 pt-2">Payments Guide &nbsp;·&nbsp; AKAM Associates &nbsp;·&nbsp; Closing Management System</p>
+    </div>
+  )
+}
+
+// ─── Yardi Charges Tab ────────────────────────────────────────────────────────
+
+const MANUAL_CHARGE_FIELDS: FieldGuideRow[] = [
+  { field: 'Charge',       what: 'The type of scheduled charge (e.g. Parking, Storage Fee, Sublet Fees, Utilities, Security Deposit).', required: true },
+  { field: 'Amount',       what: 'The charge amount per posting cycle.', required: true },
+  { field: 'Date From',    what: 'Optional. The start date for this charge.' },
+  { field: 'Date To',      what: 'Optional. The end date for this charge.' },
+  { field: 'Type',         what: 'Detail (standard posting) or No Charge (records without billing).' },
+  { field: 'E-Pay Type',   what: 'Optional. EFT or Credit Card.' },
+  { field: 'Rate/Sqft',    what: 'Optional. Rate per square foot if the charge is area-based.' },
+  { field: 'Max Postings', what: 'Optional. Maximum number of times the charge can be posted.' },
+  { field: 'Hold',         what: 'Puts the charge on hold — recorded but not posted until released.' },
+  { field: 'Notes',        what: 'Optional free-text notes.' },
+]
+
+function YardiChargesContent() {
+  return (
+    <div className="space-y-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Yardi Charges Tab</p>
+          <h3 className="text-[15px] font-bold text-slate-800">Where do these charges come from?</h3>
+          <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">
+            All charges in this tab are <strong>fetched directly from YARDI</strong> by the automation bot during Stage 9 of the ticket lifecycle. They are pulled into two tables — <strong>Unpaid Charges</strong> and <strong>Scheduled Charges</strong> — along with a <strong>Seller Ledger</strong> and <strong>Buyer Ledger</strong> for reconciliation. You can update the <strong>Move</strong> and <strong>Partially Paid</strong> flags on existing rows, and add manual scheduled charges if something was missed.
+          </p>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Move Flag</p>
+          <h3 className="text-[15px] font-bold text-slate-800">Which charges go to the new owner?</h3>
+          <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">
+            The <strong>Move</strong> toggle on both Unpaid Charges and Scheduled Charges indicates which charges should be transferred to the new owner's account. Tick <strong>Move</strong> on the rows that should follow the property, then click <strong>Save All</strong>.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+            <p className="text-[11px] font-bold text-emerald-700 uppercase tracking-wide mb-1.5">Move ticked</p>
+            <p className="text-[12px] text-emerald-800 leading-relaxed">This charge will be moved to the new owner's account as part of the transfer.</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-[11px] font-bold text-slate-700 uppercase tracking-wide mb-1.5">Move not ticked</p>
+            <p className="text-[12px] text-slate-600 leading-relaxed">The charge stays with the seller's account and is not transferred.</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-red-100 bg-white p-5 shadow-sm space-y-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-red-500 mb-1">Important — Validation</p>
+          <h3 className="text-[15px] font-bold text-slate-800">Partially Paid charges block ticket validation</h3>
+          <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">
+            The <strong>Partially Paid</strong> flag on an Unpaid Charge indicates a partial payment has been made but the balance is not yet fully settled. While any Unpaid Charge is flagged as Partially Paid, the <strong>Validate button in the New Owner Ticket tab will be hidden</strong> and a message will explain why.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <p className="text-[11px] font-bold text-amber-700 uppercase tracking-wide mb-1.5">⚠ Partially Paid ticked</p>
+            <p className="text-[12px] text-amber-800 leading-relaxed">Validation is blocked. Resolve the partial charge first — untick the flag and click Save All.</p>
+          </div>
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+            <p className="text-[11px] font-bold text-emerald-700 uppercase tracking-wide mb-1.5">✅ No partial charges</p>
+            <p className="text-[12px] text-emerald-800 leading-relaxed">Validation can proceed normally once all required documents are present.</p>
+          </div>
+        </div>
+        <InfoCallout>
+          To unblock validation: open Unpaid Charges, untick <strong>Partially Paid</strong> on any flagged rows, and click <strong>Save All</strong>. The Validate button will reappear in the New Owner Ticket tab.
+        </InfoCallout>
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Manual Charges</p>
+          <h3 className="text-[15px] font-bold text-slate-800">Adding a Scheduled Charge manually</h3>
+          <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">If a charge was not picked up by the YARDI fetch, you can add it manually in the Scheduled Charges section.</p>
+        </div>
+        <div className="space-y-2.5">
+          {['Open the Yardi Charges tab.','Scroll to the Scheduled Charges section.','Click "Add Scheduled Charge" — a form expands.','Select the Charge type and enter the Amount (both required).','Fill in optional fields as needed and click "Save Charge".','The new row appears marked with a Manual badge and can be deleted if needed.'].map((step, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <div className="flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white mt-0.5" style={{ background: '#1E3A47' }}>{i + 1}</div>
+              <p className="text-[12.5px] text-slate-700 leading-relaxed">{step}</p>
+            </div>
+          ))}
+        </div>
+        <FieldGuideTable rows={MANUAL_CHARGE_FIELDS} />
+        <InfoCallout>The system prevents duplicate charge codes — if a scheduled charge with the same code already exists, a validation error will appear. Check the existing table first.</InfoCallout>
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Ledger Reconciliation</p>
+          <h3 className="text-[15px] font-bold text-slate-800">Check with Invoice</h3>
+          <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">
+            Each ledger section has a <strong>"Check with Invoice"</strong> toggle. When enabled, invoice payment rows marked <strong>Payable To: Building</strong> and not flagged N/A are overlaid onto the ledger — highlighted in green — so you can confirm invoice payments match outstanding YARDI charges before validating.
+          </p>
+        </div>
+      </div>
+
+      <p className="text-center text-[11px] text-slate-400 pt-2">Yardi Charges Guide &nbsp;·&nbsp; AKAM Associates &nbsp;·&nbsp; Closing Management System</p>
+    </div>
+  )
+}
+
 // ─── Public modal ─────────────────────────────────────────────────────────────
 
 interface HelpCentreModalProps { open: boolean; onClose: () => void }
@@ -694,8 +893,10 @@ export function HelpCentreModal({ open, onClose }: HelpCentreModalProps) {
   if (!open) return null
 
   const tabs: { key: HelpTab; icon: React.ReactNode; label: string; sub: string }[] = [
-    { key: 'quick',   icon: <ClipboardCheck size={13} />, label: 'Quick Reference', sub: 'What do I do?' },
-    { key: 'process', icon: <Zap size={13} />,            label: 'Process Overview', sub: 'Full automation flow' },
+    { key: 'quick',    icon: <ClipboardCheck size={13} />, label: 'Quick Reference',  sub: 'What do I do?' },
+    { key: 'process',  icon: <Zap size={13} />,            label: 'Process Overview', sub: 'Full automation flow' },
+    { key: 'payments', icon: <ReceiptText size={13} />,    label: 'Payments',         sub: 'Invoice & ledger guide' },
+    { key: 'yardi',    icon: <BadgeCheck size={13} />,     label: 'Yardi Charges',    sub: 'Charges, Move & Partial' },
   ]
 
   return (
@@ -772,8 +973,10 @@ export function HelpCentreModal({ open, onClose }: HelpCentreModalProps) {
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto p-6">
-          {activeTab === 'quick'   && <QuickReferenceContent />}
-          {activeTab === 'process' && <><Legend /><FlowchartContent /></>}
+          {activeTab === 'quick'    && <QuickReferenceContent />}
+          {activeTab === 'process'  && <><Legend /><FlowchartContent /></>}
+          {activeTab === 'payments' && <PaymentsContent />}
+          {activeTab === 'yardi'    && <YardiChargesContent />}
         </div>
       </div>
     </div>
