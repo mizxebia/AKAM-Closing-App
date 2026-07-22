@@ -1647,17 +1647,20 @@ function FormField({
   label,
   required = false,
   error,
+  touched = true,
   labelAction,
   children,
 }: {
   label: string
   required?: boolean
   error?: string
+  touched?: boolean
   labelAction?: ReactNode
   children: ReactNode
 }) {
+  const showError = touched && Boolean(error)
   return (
-    <label className="form-field">
+    <label className={`form-field${showError ? ' form-field--invalid' : ''}`}>
       <span className="form-field-label-row">
         <span>
           {required && (
@@ -1668,7 +1671,7 @@ function FormField({
         {labelAction}
       </span>
       {children}
-      {error && (
+      {showError && (
         <small className="form-error">{error}</small>
       )}
     </label>

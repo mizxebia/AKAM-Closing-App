@@ -218,6 +218,8 @@ interface BehaviourCard { icon: string; title: string; body: string }
 const BEHAVIOURS: BehaviourCard[] = [
   { icon: '🏢', title: 'Building not on Domecile — manual upload path',
     body: 'When the "Building not on Domecile" flag is checked, automated Domecile dump and purchase form download stages are skipped. You must upload the Purchase Application Form manually in the Closing Details tab before saving. On save, the ticket jumps straight to Processing with Bot Status FormDownloaded and continues from Stage 6 (data extraction) onward.' },
+  { icon: '🔤', title: 'Seller T-Code is required and must start with T',
+    body: 'When creating a new closing ticket, Seller T-Code is a required field. The value must begin with the letter T (case-insensitive — both T and t are accepted). If the field is left blank or starts with any other character, a validation error will appear. The error clears as soon as a valid value is entered.' },
   { icon: '📄', title: 'Three documents required before Validate',
     body: 'The Validate button only appears when all three documents are present: Purchase Application Form, RPTT / ACRIS Document, and New Owner Ticket PDF.' },
   { icon: '🔒', title: 'Validation is permanent — ticket locks forever',
@@ -266,6 +268,17 @@ function WorkflowProgress() {
             )}
           </div>
         ))}
+      </div>
+
+      {/* Creation requirements note */}
+      <div className="flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+        <Info size={14} className="text-slate-500 mt-0.5 shrink-0" />
+        <div>
+          <p className="text-[11px] font-bold text-slate-700 mb-1">Required fields when creating a ticket</p>
+          <p className="text-[11.5px] text-slate-600 leading-relaxed">
+            Unit Number, NYC Code, Package Type, and <strong>Seller T-Code</strong> are all required. Seller T-Code must start with the letter <strong>T</strong> (e.g. T12345). The field validates when you leave it and again when you click Save — a red border and short message will appear if the value is missing or invalid.
+          </p>
+        </div>
       </div>
 
       {/* Timing note */}
@@ -525,7 +538,7 @@ function FlowchartContent() {
       <PhaseHeader number="Phase 1" title="Ticket Creation" />
       <Arrow />
       <StepCard variant="user" stage="Stage 1" title="Create Closing Ticket"
-        subtitle="User fills in: Building Code, Unit Number, Package Type"
+        subtitle="User fills in: Unit Number, NYC Code, Package Type, Seller T-Code"
         statuses={[{ label: 'Ticket Status', value: 'Draft' }, { label: 'Bot Status', value: 'Draft' }]} />
       <Arrow />
 
@@ -541,6 +554,7 @@ function FlowchartContent() {
           and click Save. On save, the system automatically sets Ticket Status to{' '}
           <strong className="text-slate-700">Processing</strong> and Bot Status to{' '}
           <strong className="text-slate-700">FormDownloaded</strong>, then continues from Stage 6 onwards.
+          The <strong className="text-slate-700">Seller T-Code</strong> is also required when creating the ticket and must start with the letter <strong className="text-slate-700">T</strong>.
         </p>
       </div>
       <Arrow />

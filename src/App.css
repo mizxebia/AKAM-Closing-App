@@ -1375,7 +1375,20 @@ body {
 
 .form-error {
   color: #b91c1c;
-  font-size: 0.76rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.2;
+  margin-top: -2px;
+  display: block;
+}
+
+/* Red border + subtle tint on invalid field inputs */
+.form-field--invalid input,
+.form-field--invalid select,
+.form-field--invalid textarea {
+  border-color: #f87171 !important;
+  background-color: #fff8f8 !important;
+  box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.12) !important;
 }
 
 .form-alert {
