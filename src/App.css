@@ -617,7 +617,7 @@ body {
   left: auto !important;
   z-index: 90 !important;
   display: flex !important;
-  width: min(100vw, 720px) !important;
+  width: min(100vw, 55vw) !important;
   max-width: none !important;
   height: 100vh !important;
   max-height: 100vh !important;
@@ -637,9 +637,12 @@ body {
   position: relative;
   z-index: 3;
   flex: 0 0 auto;
-  display: grid;
-  gap: 4px;
-  padding: 18px 64px 20px 28px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 20px 16px 24px;
   border-bottom: 1px solid rgba(213, 203, 184, 0.7);
   background:
     linear-gradient(135deg, rgba(220, 232, 239, 0.55), rgba(255, 255, 255, 0) 48%),
@@ -661,6 +664,11 @@ body {
     rgba(213, 203, 184, 0.35) 100%
   );
   content: '';
+}
+
+/* Hide the default Radix X button — we render our own in the header */
+.create-closing-sheet > button[class*="absolute"] {
+  display: none !important;
 }
 
 .create-closing-sheet-header p {
@@ -1085,33 +1093,33 @@ body {
 .create-closing-form-scroll {
   display: grid;
   min-height: 0;
-  gap: 14px;
+  gap: 10px;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 20px 24px 18px;
+  padding: 14px 18px 12px;
   overscroll-behavior: contain;
 }
 
 .form-section {
   background: #ffffff;
   border: 1px solid #D5CBB8;
-  border-radius: 12px;
-  padding: 18px;
+  border-radius: 10px;
+  padding: 14px;
   box-shadow: 0 1px 2px rgba(30, 58, 71, 0.04);
 }
 
 .form-section h3 {
-  margin: 0 0 14px;
+  margin: 0 0 10px;
   color: #1E3A47;
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: 0.98rem;
+  font-size: 0.92rem;
   font-weight: 600;
 }
 
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 13px;
+  gap: 9px;
 }
 
 .form-grid-wide {
@@ -1139,15 +1147,15 @@ body {
 .form-field select,
 .form-field textarea {
   width: 100%;
-  min-height: 38px;
+  min-height: 34px;
   box-sizing: border-box;
   border: 1px solid #D5CBB8;
-  border-radius: 8px;
-  padding: 8px 11px;
+  border-radius: 7px;
+  padding: 6px 10px;
   background: #ffffff;
   color: #1E3A47;
   font: inherit;
-  font-size: 0.86rem;
+  font-size: 0.84rem;
   transition:
     border-color 160ms ease,
     background-color 160ms ease,

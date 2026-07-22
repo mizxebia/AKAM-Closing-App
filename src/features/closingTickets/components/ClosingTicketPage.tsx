@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, RefreshCw, BookOpen } from 'lucide-react'
+import { Plus, RefreshCw, BookOpen, X } from 'lucide-react'
 import akamLogo from '../../../assets/akam_logo.png'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import {
@@ -263,16 +263,26 @@ export function ClosingTicketPage() {
         <Sheet open={createFormOpen} onOpenChange={setCreateFormOpen}>
           <SheetContent className="create-closing-sheet">
             <SheetHeader className="create-closing-sheet-header">
-              <SheetDescription className="text-xs font-semibold uppercase tracking-wide text-[#4B5563]">
-                Create closing record
-              </SheetDescription>
-              <SheetTitle
-                id="create-closing-title"
-                className="text-xl font-semibold text-[#1E3A47]"
-                style={{ fontFamily: "'Playfair Display', Georgia, serif", fontStyle: 'italic' }}
+              <div>
+                <SheetDescription className="text-xs font-semibold uppercase tracking-wide text-[#4B5563]">
+                  Create closing record
+                </SheetDescription>
+                <SheetTitle
+                  id="create-closing-title"
+                  className="text-xl font-semibold text-[#1E3A47]"
+                  style={{ fontFamily: "'Playfair Display', Georgia, serif", fontStyle: 'italic' }}
+                >
+                  New Closing Ticket
+                </SheetTitle>
+              </div>
+              <button
+                type="button"
+                className="invoice-viewer-close-btn"
+                onClick={() => setCreateFormOpen(false)}
+                aria-label="Close"
               >
-                New Closing Ticket
-              </SheetTitle>
+                <X size={18} />
+              </button>
             </SheetHeader>
 
             <div className="create-closing-sheet-body">

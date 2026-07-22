@@ -392,6 +392,12 @@ function validateForm(
     errors.cr109_packagetype = 'Package type is required.'
   }
 
+  if (!formState.cr7de_sellertcode.trim()) {
+    errors.cr7de_sellertcode = 'Seller T-Code is required.'
+  } else if (!formState.cr7de_sellertcode.trim().toLowerCase().startsWith('t')) {
+    errors.cr7de_sellertcode = "Seller T-Code must start with the letter 'T'."
+  }
+
   if (
     formState.cr7de_closingagentemail.trim() &&
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
@@ -972,6 +978,25 @@ function ClosingTicketEditorForm({
             </select>
           </FormField>
 
+          {isCreateMode && (
+            <FormField
+              label="Seller T-Code"
+              required
+              error={errors.cr7de_sellertcode}
+            >
+              <input
+                value={formState.cr7de_sellertcode}
+                onChange={(event) =>
+                  updateField(
+                    'cr7de_sellertcode',
+                    event.target.value
+                  )
+                }
+                placeholder="e.g. T12345"
+              />
+            </FormField>
+          )}
+
           {!isCreateMode && (
             <FormField label="Building Name">
               <input
@@ -988,18 +1013,20 @@ function ClosingTicketEditorForm({
           )}
 
           {isCreateMode ? (
-            <FormField label="Legal Name">
-              <input
-                value={formState.cr109_legalname}
-                onChange={(event) =>
-                  updateField(
-                    'cr109_legalname',
-                    event.target.value
-                  )
-                }
-                placeholder="Auto-filled from NYC Code lookup"
-              />
-            </FormField>
+            <div className="form-grid-wide">
+              <FormField label="Legal Name">
+                <input
+                  value={formState.cr109_legalname}
+                  onChange={(event) =>
+                    updateField(
+                      'cr109_legalname',
+                      event.target.value
+                    )
+                  }
+                  placeholder="Auto-filled from NYC Code lookup"
+                />
+              </FormField>
+            </div>
           ) : (
             <FormField label="Closing Date">
               <DatePickerField
@@ -1145,7 +1172,7 @@ function ClosingTicketEditorForm({
               />
             </FormField>
 
-            <FormField label="Seller T-Code">
+            <FormField label="Seller T-Code" required error={errors.cr7de_sellertcode}>
               <input
                 value={formState.cr7de_sellertcode}
                 onChange={(event) =>
