@@ -834,27 +834,14 @@ function YardiChargesContent() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-red-100 bg-white p-5 shadow-sm space-y-4">
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-red-500 mb-1">Important — Validation</p>
-          <h3 className="text-[15px] font-bold text-slate-800">Partially Paid charges block ticket validation</h3>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Partially Paid Flag</p>
+          <h3 className="text-[15px] font-bold text-slate-800">Marking a charge as Partially Paid</h3>
           <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">
-            The <strong>Partially Paid</strong> flag on an Unpaid Charge indicates a partial payment has been made but the balance is not yet fully settled. While any Unpaid Charge is flagged as Partially Paid, the <strong>Validate button in the New Owner Ticket tab will be hidden</strong> and a message will explain why.
+            The <strong>Partially Paid</strong> flag on an Unpaid Charge indicates that a partial payment has been made against that charge but the full balance is not yet settled. Tick this flag to record the partial payment status, then click <strong>Save All</strong>. Validation can still proceed regardless of partial charges.
           </p>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
-            <p className="text-[11px] font-bold text-amber-700 uppercase tracking-wide mb-1.5">⚠ Partially Paid ticked</p>
-            <p className="text-[12px] text-amber-800 leading-relaxed">Validation is blocked. Resolve the partial charge first — untick the flag and click Save All.</p>
-          </div>
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-            <p className="text-[11px] font-bold text-emerald-700 uppercase tracking-wide mb-1.5">✅ No partial charges</p>
-            <p className="text-[12px] text-emerald-800 leading-relaxed">Validation can proceed normally once all required documents are present.</p>
-          </div>
-        </div>
-        <InfoCallout>
-          To unblock validation: open Unpaid Charges, untick <strong>Partially Paid</strong> on any flagged rows, and click <strong>Save All</strong>. The Validate button will reappear in the New Owner Ticket tab.
-        </InfoCallout>
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">

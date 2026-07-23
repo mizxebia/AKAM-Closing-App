@@ -37,7 +37,6 @@ interface NewOwnerTicketTabProps {
   generatingTicket?: boolean
   readOnly?: boolean
   isCompleted?: boolean
-  hasPartiallyPaidCharges?: boolean
 }
 
 type ValidationErrors = Partial<
@@ -478,7 +477,6 @@ export function NewOwnerTicketTab({
   generatingTicket,
   readOnly = false,
   isCompleted = false,
-  hasPartiallyPaidCharges = false,
 }: NewOwnerTicketTabProps) {
   const [record, setRecord] =
     useState<NewOwnerTicketRecord | null>(null)
@@ -630,15 +628,9 @@ export function NewOwnerTicketTab({
     }
   }, [closingTicket, formState, onSaved, record])
 
-  const validateConditionsMet =
+  const showValidateButton =
     closingTicket.cr7de_ticketstatus === VALIDATED_TICKET_STATUS &&
     NEW_OWNER_DOCUMENTS.every((doc) => hasDocument(closingTicket, doc))
-
-  const showValidateButton = validateConditionsMet && !hasPartiallyPaidCharges
-
-  const validateBlockedReason = validateConditionsMet && hasPartiallyPaidCharges
-    ? 'One or more unpaid charges are marked as Partially Paid. Please resolve all partial charges in the Yardi Charges tab before validating.'
-    : null
 
   const validateClosingTicket = useCallback(async () => {
     const recordId = closingTicket.cr7de_closingticketdetailsid
@@ -748,7 +740,6 @@ export function NewOwnerTicketTab({
               saving={saving}
               validating={validating}
               showValidateButton={showValidateButton}
-              validateBlockedReason={validateBlockedReason}
               onFieldChange={updateField}
               onSubmit={saveRecord}
               onValidate={validateClosingTicket}

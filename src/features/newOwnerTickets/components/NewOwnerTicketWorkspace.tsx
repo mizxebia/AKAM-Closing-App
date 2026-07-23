@@ -8,7 +8,6 @@ interface NewOwnerTicketWorkspaceProps {
   generatingTicket?: boolean
   readOnly?: boolean
   isCompleted?: boolean
-  hasPartiallyPaidCharges?: boolean
 }
 
 export function NewOwnerTicketWorkspace({
@@ -18,7 +17,6 @@ export function NewOwnerTicketWorkspace({
   generatingTicket,
   readOnly = false,
   isCompleted = false,
-  hasPartiallyPaidCharges = false,
 }: NewOwnerTicketWorkspaceProps) {
   return (
     <NewOwnerTicketTab
@@ -28,7 +26,6 @@ export function NewOwnerTicketWorkspace({
       generatingTicket={generatingTicket}
       readOnly={readOnly}
       isCompleted={isCompleted}
-      hasPartiallyPaidCharges={hasPartiallyPaidCharges}
     />
   )
 }

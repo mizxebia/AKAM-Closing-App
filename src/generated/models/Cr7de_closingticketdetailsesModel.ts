@@ -9,6 +9,7 @@ export const Cr7de_closingticketdetailsescr109_botstatus = {
   396620001: 'FormDownloaded',
   396620010: 'RPTTUploaded',
   396620011: 'YARDIChargesFetched',
+  396620021: 'YardiChargesUpdated',
   396620007: 'InformationValidated',
   396620002: 'SellerDetailsUpdated',
   396620003: 'OwnerRecordCreated',

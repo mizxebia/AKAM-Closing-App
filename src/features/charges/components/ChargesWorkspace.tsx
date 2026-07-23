@@ -176,10 +176,12 @@ function BooleanPill({
   checked,
   label,
   onChange,
+  disabled = false,
 }: {
   checked: boolean
   label: string
   onChange: (checked: boolean) => void
+  disabled?: boolean
 }) {
   return (
     <label
@@ -188,10 +190,12 @@ function BooleanPill({
           ? 'charge-boolean-pill charge-boolean-pill-active'
           : 'charge-boolean-pill'
       }
+      style={disabled ? { opacity: 0.4, pointerEvents: 'none', cursor: 'not-allowed' } : undefined}
     >
       <input
         type="checkbox"
         checked={checked}
+        disabled={disabled}
         onChange={(event) => onChange(event.target.checked)}
       />
       <span>{label}</span>
@@ -363,7 +367,7 @@ function UnpaidChargesTable({
                 <BooleanPill checked={Boolean(draft.cr109_partiallypaid)} label="Partial" onChange={(checked) => !readOnly && updateDraft(record.crc5c_unpaidchargesid, { cr109_partiallypaid: checked })} />
               </div>
               <div className="cg-cell cg-cell--center">
-                <BooleanPill checked={Boolean(draft.cr109_move)} label="Move" onChange={(checked) => !readOnly && updateDraft(record.crc5c_unpaidchargesid, { cr109_move: checked })} />
+                <BooleanPill checked={Boolean(draft.cr109_move)} label="Move" disabled={Boolean(draft.cr109_partiallypaid)} onChange={(checked) => !readOnly && updateDraft(record.crc5c_unpaidchargesid, { cr109_move: checked })} />
               </div>
               <div className="cg-cell cg-cell--notes">
                 <input className="cg-input" value={draft.cr109_notes} disabled={readOnly} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_notes: e.target.value })} />

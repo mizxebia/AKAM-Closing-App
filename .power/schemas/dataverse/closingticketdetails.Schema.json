@@ -23,6 +23,7 @@
             "Form Downloaded",
             "RPTT Uploaded",
             "YARDI Charges Fetched",
+            "Yardi Charges Updated",
             "Information Validated",
             "Seller Details Updated",
             "Owner Record Created",
@@ -46,6 +47,7 @@
             396620001,
             396620010,
             396620011,
+            396620021,
             396620007,
             396620002,
             396620003,
@@ -63,6 +65,7 @@
             396620020
           ],
           "Color": [
+            null,
             null,
             null,
             null,
