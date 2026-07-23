@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Plus, RotateCw, Save } from 'lucide-react'
+import { Plus, RotateCw, Save, Zap } from 'lucide-react'
 import { useAutoClear } from '../../../hooks/useAutoClear'
+import {
+  updateClosingTicket,
+} from '../../closingTickets/api/closingTicketsService'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +36,8 @@ import type { InvoiceRecord } from '../../invoices/types/invoice'
 
 interface ChargesWorkspaceProps {
   ticketId?: string
+  closingTicketId?: string
+  botStatus?: number
   unpaidCharges: UnpaidChargeRecord[]
   scheduledCharges: ScheduledChargeRecord[]
   sellerLedgers: SellerLedgerRecord[]
@@ -41,6 +46,7 @@ interface ChargesWorkspaceProps {
   refreshing: boolean
   error: string | null
   onRefresh: () => Promise<void> | void
+  onClosingTicketRefresh?: () => Promise<void>
   invoices?: InvoiceRecord[]
   readOnly?: boolean
 }
@@ -1313,8 +1319,123 @@ function LedgerTable({
   )
 }
 
+// ─── Auto Move Charges ───────────────────────────────────────────────────────
+
+const BOT_STATUS_YARDI_CHARGES_FETCHED = 396620011
+const BOT_STATUS_YARDI_CHARGES_UPDATED = 396620021
+
+/**
+ * Parse a month/year from a notes string like "Cable Fee (07/2026)" or
+ * "Maintenance (06/2026)". Returns a numeric sort key (YYYYMM) so that
+ * sorting descending gives latest-month-first. Returns 0 if unparseable.
+ */
+function extractMonthSortKey(notes?: string): number {
+  if (!notes) return 0
+  const match = notes.match(/\((\d{1,2})\/(\d{4})\)/)
+  if (!match) return 0
+  const month = Number(match[1])
+  const year = Number(match[2])
+  return year * 100 + month
+}
+
+/**
+ * Normalise an amount string to a canonical decimal string for comparison.
+ * Strips $ and commas, parses, returns toFixed(2) or the original trimmed
+ * value if it cannot be parsed as a number.
+ */
+function normaliseAmount(value?: string): string {
+  const trimmed = (value ?? '').trim().replace(/[$,\s]/g, '')
+  const n = Number(trimmed)
+  if (!trimmed || !Number.isFinite(n)) return trimmed
+  return n.toFixed(2)
+}
+
+/**
+ * Run the Auto Move Charges matching algorithm.
+ * Returns the set of unpaid charge IDs that should have Move = true.
+ *
+ * Rules (from spec):
+ * 1. Skip partial unpaid charges entirely.
+ * 2. Only consider invoices where Payable To = Building (716070000).
+ * 3. Match by mapped GL code AND exact normalised amount.
+ * 4. Latest month (from Notes) first within each charge-code+amount group.
+ * 5. One-to-one: each invoice row consumes at most one unpaid charge.
+ * 6. Unmatched rows are ignored silently.
+ */
+function computeAutoMoveIds(
+  unpaidCharges: UnpaidChargeRecord[],
+  invoices: InvoiceRecord[]
+): Set<string> {
+  const BUILDING_PAYABLE_TO = 716070000
+
+  // Step 1 — filter invoices to Building-payable only
+  const eligibleInvoices = invoices.filter(
+    (inv) => Number(inv.cr7de_payableto) === BUILDING_PAYABLE_TO
+  )
+
+  // Step 2 — build a list of (glCode, amount) invoice tokens
+  type InvoiceToken = { glCode: string; amount: string; used: boolean }
+  const invoiceTokens: InvoiceToken[] = []
+  for (const inv of eligibleInvoices) {
+    const glCode = INVOICE_GL_CODE_MAP[Number(inv.cr109_dueatclosing)]
+    if (!glCode) continue
+    invoiceTokens.push({
+      glCode: glCode.toLowerCase(),
+      amount: normaliseAmount(inv.cr7de_amount),
+      used: false,
+    })
+  }
+
+  // Step 3 — group eligible (non-partial) unpaid charges by glCode+amount,
+  //           sorted latest month first within each group
+  type UnpaidEntry = { id: string; notes: string | undefined; sortKey: number }
+  const unpaidGroups = new Map<string, UnpaidEntry[]>()
+
+  for (const charge of unpaidCharges) {
+    if (charge.cr109_partiallypaid) continue // Rule 1
+    const code = (charge.cr109_chargecode ?? '').trim().toLowerCase()
+    if (!code) continue
+    const amount = normaliseAmount(charge.cr109_amount)
+    const key = `${code}|${amount}`
+    if (!unpaidGroups.has(key)) unpaidGroups.set(key, [])
+    unpaidGroups.get(key)!.push({
+      id: charge.crc5c_unpaidchargesid,
+      notes: charge.cr109_notes,
+      sortKey: extractMonthSortKey(charge.cr109_notes),
+    })
+  }
+
+  // Sort each group latest-first
+  for (const group of unpaidGroups.values()) {
+    group.sort((a, b) => b.sortKey - a.sortKey)
+  }
+
+  // Step 4 — for each invoice token, consume the first available unpaid entry
+  const movedIds = new Set<string>()
+  const consumedUnpaidIds = new Set<string>()
+
+  for (const token of invoiceTokens) {
+    if (token.used) continue
+    const key = `${token.glCode}|${token.amount}`
+    const group = unpaidGroups.get(key)
+    if (!group) continue
+
+    // Find first unconsumed entry in this group
+    const entry = group.find((e) => !consumedUnpaidIds.has(e.id))
+    if (!entry) continue
+
+    movedIds.add(entry.id)
+    consumedUnpaidIds.add(entry.id)
+    token.used = true
+  }
+
+  return movedIds
+}
+
 export function ChargesWorkspace({
   ticketId,
+  closingTicketId,
+  botStatus,
   unpaidCharges,
   scheduledCharges,
   sellerLedgers,
@@ -1323,12 +1444,73 @@ export function ChargesWorkspace({
   refreshing,
   error,
   onRefresh,
+  onClosingTicketRefresh,
   invoices = [],
   readOnly = false,
 }: ChargesWorkspaceProps) {
-  const [savingId, setSavingId] = useState<string | null>(
-    null
-  )
+  const [savingId, setSavingId] = useState<string | null>(null)
+  const [autoMoving, setAutoMoving] = useState(false)
+  const [autoMoveError, setAutoMoveError] = useState<string | null>(null)
+  const [autoMoveSuccess, setAutoMoveSuccess] = useState<string | null>(null)
+  useAutoClear(autoMoveError, setAutoMoveError, 8000)
+  useAutoClear(autoMoveSuccess, setAutoMoveSuccess, 5000)
+
+  const showAutoMove =
+    !readOnly &&
+    (botStatus === BOT_STATUS_YARDI_CHARGES_FETCHED ||
+      botStatus === BOT_STATUS_YARDI_CHARGES_UPDATED) &&
+    unpaidCharges.length > 0
+
+  const handleAutoMove = async () => {
+    if (!ticketId || !closingTicketId) return
+    setAutoMoving(true)
+    setAutoMoveError(null)
+    setAutoMoveSuccess(null)
+
+    try {
+      const moveIds = computeAutoMoveIds(unpaidCharges, invoices)
+
+      // Update only charges whose move flag needs to change
+      const updates: Promise<unknown>[] = []
+      for (const charge of unpaidCharges) {
+        const shouldMove = moveIds.has(charge.crc5c_unpaidchargesid)
+        if (charge.cr109_move === shouldMove) continue // already correct
+        updates.push(
+          updateUnpaidCharge(
+            charge.crc5c_unpaidchargesid,
+            { cr109_move: shouldMove },
+            { ticketId, oldRecord: charge }
+          ).then(async (updated) => {
+            try {
+              await syncBuyerLedgerWithUnpaidCharge(charge, updated)
+            } catch {
+              // ledger sync failures are non-fatal — continue
+            }
+          })
+        )
+      }
+
+      await Promise.all(updates)
+
+      // Update bot status → YardiChargesUpdated
+      await updateClosingTicket(closingTicketId, {
+        cr109_botstatus: BOT_STATUS_YARDI_CHARGES_UPDATED,
+      })
+
+      await onRefresh()
+      if (onClosingTicketRefresh) await onClosingTicketRefresh()
+
+      setAutoMoveSuccess(
+        `Auto Move Charges complete — ${moveIds.size} charge${moveIds.size !== 1 ? 's' : ''} marked for move.`
+      )
+    } catch (err) {
+      setAutoMoveError(
+        err instanceof Error ? err.message : 'Auto Move Charges failed.'
+      )
+    } finally {
+      setAutoMoving(false)
+    }
+  }
 
   return (
     <div className="dataverse-charges-workspace">
@@ -1351,6 +1533,18 @@ export function ChargesWorkspace({
               Syncing
             </span>
           )}
+          {showAutoMove && (
+            <button
+              type="button"
+              className="auto-move-charges-btn"
+              onClick={handleAutoMove}
+              disabled={autoMoving}
+              title="Automatically mark matching paid charges for Move"
+            >
+              <Zap className="size-4" />
+              {autoMoving ? 'Processing...' : 'Auto Move Charges'}
+            </button>
+          )}
           <button
             type="button"
             onClick={onRefresh}
@@ -1361,6 +1555,17 @@ export function ChargesWorkspace({
           </button>
         </div>
       </div>
+
+      {autoMoveSuccess && (
+        <div className="form-alert form-alert-success" style={{ margin: '0 0 8px' }}>
+          {autoMoveSuccess}
+        </div>
+      )}
+      {autoMoveError && (
+        <div className="form-alert form-alert-error" style={{ margin: '0 0 8px' }}>
+          {autoMoveError}
+        </div>
+      )}
 
       {loading && !refreshing && (
         <div className="charges-skeleton-list" aria-hidden="true">

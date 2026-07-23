@@ -69,15 +69,17 @@ const STATUS_CARDS: StatusCard[] = [
   {
     status: 'Validate Closings', color: '#B45309', lightBg: '#FFFBEB', lightBorder: '#FDE68A',
     icon: <SearchCheck size={16} />,
-    what: 'Everything is ready. The system has finished all automated steps.',
+    what: 'YARDI charges have been fetched and all automated steps are complete. The ticket is ready for your review and final validation. Bot Status will be either YARDIChargesFetched or YardiChargesUpdated at this stage.',
     action: '',
     isUserAction: true, estimatedTime: 'Your action needed',
     steps: [
-      'Go to the New Owner Ticket tab',
-      'Review all the details carefully',
-      'If not done yet, click "Generate New Owner Ticket"',
-      'Confirm all three documents are present (Purchase Form, RPTT, New Owner Ticket)',
-      'Click "Validate" — this cannot be undone',
+      'Open the Yardi Charges tab — review the Unpaid Charges and confirm the Move flags are set correctly.',
+      'Use "Auto Move Charges" to automatically match invoice payments against unpaid charges and tick Move for you. You can run it multiple times.',
+      'If a charge is marked Partially Paid, its Move flag is automatically disabled — only fully outstanding charges can be moved.',
+      'Go to the New Owner Ticket tab and review all the details carefully.',
+      'If not done yet, click "Generate New Owner Ticket" — the PDF must be present before Validate appears.',
+      'Confirm all three documents are present: Purchase Application Form, RPTT / ACRIS Document, and New Owner Ticket PDF.',
+      'Click "Validate" — this cannot be undone. The ticket will lock permanently.',
     ],
   },
   {
@@ -220,14 +222,18 @@ const BEHAVIOURS: BehaviourCard[] = [
     body: 'When the "Building not on Domecile" flag is checked, automated Domecile dump and purchase form download stages are skipped. You must upload the Purchase Application Form manually in the Closing Details tab before saving. On save, the ticket jumps straight to Processing with Bot Status FormDownloaded and continues from Stage 6 (data extraction) onward.' },
   { icon: '🔤', title: 'Seller T-Code is required and must start with T',
     body: 'When creating a new closing ticket, Seller T-Code is a required field. The value must begin with the letter T (case-insensitive — both T and t are accepted). If the field is left blank or starts with any other character, a validation error will appear. The error clears as soon as a valid value is entered.' },
+  { icon: '⚡', title: 'Auto Move Charges — let the app do the matching',
+    body: 'When the ticket is in Validate Closings status, an "Auto Move Charges" button appears in the Yardi Charges tab. It automatically compares your invoice payments against unpaid YARDI charges — matching by charge type and exact amount — and ticks Move for charges that have already been paid by the buyer. Only Payable To: Building invoices are used for matching. You can run it multiple times. Partial charges are never moved.' },
+  { icon: '🔂', title: 'Partially Paid charges cannot be moved',
+    body: 'If an unpaid charge is marked as Partially Paid, its Move toggle is automatically disabled. Partial charges can never be transferred to the new owner. Untick Partially Paid and click Save All if you need to enable Move for that charge.' },
   { icon: '📄', title: 'Three documents required before Validate',
-    body: 'The Validate button only appears when all three documents are present: Purchase Application Form, RPTT / ACRIS Document, and New Owner Ticket PDF.' },
+    body: 'The Validate button only appears when all three documents are present: Purchase Application Form, RPTT / ACRIS Document, and New Owner Ticket PDF. Bot Status must also be YARDIChargesFetched or YardiChargesUpdated.' },
   { icon: '🔒', title: 'Validation is permanent — ticket locks forever',
     body: 'Once you click Validate, the ticket becomes fully read-only. No fields, documents, or charges can be changed. Double-check everything first.' },
   { icon: '↩', title: 'Deleting the RPTT rolls the ticket back',
     body: 'If you delete the RPTT while in Post Closing or Validate Closings, the ticket automatically returns to Ready for Post Closing.' },
   { icon: '🎫', title: 'Generate New Owner Ticket before Validate',
-    body: 'Click "Generate New Owner Ticket" in the New Owner Ticket tab first. The PDF must be generated before the Validate button appears.' },
+    body: 'Click "Generate New Owner Ticket" in the New Owner Ticket tab first. The PDF must be generated before the Validate button appears. When you click Validate, the New Owner Ticket PDF is automatically regenerated with the latest data.' },
   { icon: '👁', title: 'All documents are viewable inside the app',
     body: 'Once uploaded or generated, all documents are viewable directly in the document panel on the right side of the ticket.' },
   { icon: '💬', title: 'Ticket showing as Failed?',
@@ -639,6 +645,14 @@ function FlowchartContent() {
         success={[{ label: 'Ticket Status', value: 'ValidateClosings' }, { label: 'Bot Status', value: 'YARDIChargesFetched' }]}
         failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: '—' }]} />
       <Arrow />
+      <StepCard variant="user" stage="Stage 9b" title="Auto Move Charges (Optional)"
+        subtitle='User clicks "Auto Move Charges" in the Yardi Charges tab to auto-match invoice payments to unpaid charges'
+        statuses={[{ label: 'Bot Status', value: 'YardiChargesUpdated' }, { label: 'Note', value: 'Can re-run anytime' }]} />
+      <Arrow short />
+      <NoteBox icon="⚡" title="Auto Move Charges">
+        The <strong>Auto Move Charges</strong> button is visible when Bot Status is <strong>YARDIChargesFetched</strong> or <strong>YardiChargesUpdated</strong>. It automatically matches invoice payments (Payable To: Building, exact amount) against unpaid YARDI charges and ticks the <strong>Move</strong> flag. Partial charges are never moved. You can re-run it at any time.
+      </NoteBox>
+      <Arrow />
 
       <PhaseHeader number="Phase 5" title="Business Validation" />
       <Arrow />
@@ -647,7 +661,11 @@ function FlowchartContent() {
         statuses={[{ label: 'Before', value: 'ValidateClosings' }, { label: 'Ticket Status', value: 'TransferringBuilding' }, { label: 'Bot Status', value: 'InformationValidated' }]} />
       <Arrow short />
       <NoteBox icon="✅" title="Validation Requirements">
-        The Validate button requires all three documents: <strong>Purchase Application Form</strong>, <strong>RPTT Document</strong>, and <strong>New Owner Ticket PDF</strong>.
+        The Validate button appears only when <strong>all</strong> of the following are true:
+        <br />• Bot Status is <strong>YARDIChargesFetched</strong> or <strong>YardiChargesUpdated</strong>
+        <br />• All three documents are present: <strong>Purchase Application Form</strong>, <strong>RPTT Document</strong>, and <strong>New Owner Ticket PDF</strong>
+        <br /><br />
+        On clicking Validate, the New Owner Ticket PDF is automatically <strong>regenerated</strong> with the latest data.
         <br /><br />
         <strong>🔒 Read-Only Lock —</strong> Once validated, the ticket cannot be modified.
       </NoteBox>
@@ -814,12 +832,45 @@ function YardiChargesContent() {
         </div>
       </div>
 
+      {/* Auto Move Charges */}
+      <div className="rounded-2xl border border-[#1E3A47] bg-white p-5 shadow-sm space-y-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Auto Move Charges</p>
+          <h3 className="text-[15px] font-bold text-slate-800">Automatically match invoice payments to charges</h3>
+          <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">
+            When the ticket is in <strong>Validate Closings</strong> status and the Bot Status is <strong>YARDIChargesFetched</strong> or <strong>YardiChargesUpdated</strong>, an <strong>"Auto Move Charges"</strong> button appears in the toolbar. Clicking it compares your invoice payments against unpaid YARDI charges and automatically ticks the <strong>Move</strong> flag for charges that have been paid.
+          </p>
+        </div>
+        <div className="space-y-2.5">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">How it works</p>
+          {[
+            'Only Invoice rows marked Payable To: Building are used — AKAM and Other invoices are ignored.',
+            'Invoice amounts are matched exactly against YARDI charge amounts (e.g. $56.00 = $56.00).',
+            'Invoice charge types are mapped to YARDI charge codes using the existing charge mapping table.',
+            'If multiple unpaid charges exist for the same code and amount, the most recent month (from Notes) is consumed first.',
+            'Each invoice row matches at most one unpaid charge — one-to-one matching.',
+            'Partial charges are never moved, even if their amount matches.',
+            'After matching, Bot Status is updated to YardiChargesUpdated.',
+            'You can run Auto Move Charges multiple times — it is safe to re-run.',
+          ].map((step, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <div className="flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white mt-0.5" style={{ background: '#1E3A47' }}>{i + 1}</div>
+              <p className="text-[12.5px] text-slate-700 leading-relaxed">{step}</p>
+            </div>
+          ))}
+        </div>
+        <InfoCallout>
+          <strong>Unmatched charges are left unchanged.</strong> If no invoice matches a YARDI charge, its Move flag stays as-is. No errors or warnings are shown for unmatched rows.
+        </InfoCallout>
+      </div>
+
+      {/* Move flag */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Move Flag</p>
           <h3 className="text-[15px] font-bold text-slate-800">Which charges go to the new owner?</h3>
           <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">
-            The <strong>Move</strong> toggle on both Unpaid Charges and Scheduled Charges indicates which charges should be transferred to the new owner's account. Tick <strong>Move</strong> on the rows that should follow the property, then click <strong>Save All</strong>.
+            The <strong>Move</strong> toggle on both Unpaid Charges and Scheduled Charges indicates which charges should be transferred to the new owner's account. You can tick Move manually or use Auto Move Charges to set it automatically. Then click <strong>Save All</strong>.
           </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -832,18 +883,23 @@ function YardiChargesContent() {
             <p className="text-[12px] text-slate-600 leading-relaxed">The charge stays with the seller's account and is not transferred.</p>
           </div>
         </div>
+        <InfoCallout>
+          <strong>Move is disabled for Partially Paid charges.</strong> If an unpaid charge is flagged as Partially Paid, its Move toggle is greyed out and cannot be ticked. Untick Partially Paid and save if you need to enable Move for that charge.
+        </InfoCallout>
       </div>
 
+      {/* Partially Paid */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Partially Paid Flag</p>
           <h3 className="text-[15px] font-bold text-slate-800">Marking a charge as Partially Paid</h3>
           <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">
-            The <strong>Partially Paid</strong> flag on an Unpaid Charge indicates that a partial payment has been made against that charge but the full balance is not yet settled. Tick this flag to record the partial payment status, then click <strong>Save All</strong>. Validation can still proceed regardless of partial charges.
+            The <strong>Partially Paid</strong> flag on an Unpaid Charge indicates that a partial payment has been made against that charge but the full balance is not yet settled. Tick this flag to record the partial payment status, then click <strong>Save All</strong>. Validation can proceed regardless of partial charges — however, a partially paid charge's Move flag will be disabled.
           </p>
         </div>
       </div>
 
+      {/* Manual Charges */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Manual Charges</p>
@@ -862,6 +918,7 @@ function YardiChargesContent() {
         <InfoCallout>The system prevents duplicate charge codes — if a scheduled charge with the same code already exists, a validation error will appear. Check the existing table first.</InfoCallout>
       </div>
 
+      {/* Ledger Reconciliation */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Ledger Reconciliation</p>

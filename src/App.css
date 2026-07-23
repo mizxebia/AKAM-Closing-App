@@ -2698,6 +2698,37 @@ body {
   gap: 10px;
 }
 
+/* Auto Move Charges — primary action button in the charges toolbar */
+.auto-move-charges-btn {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: none;
+  border-radius: 8px;
+  background: #1E3A47;
+  color: #F5F2EC;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  padding: 7px 14px;
+  text-transform: uppercase;
+  transition: background 160ms ease, opacity 160ms ease;
+  box-shadow: 0 2px 8px rgba(30, 58, 71, 0.18);
+}
+
+.auto-move-charges-btn:hover:not(:disabled) {
+  background: #152d38;
+}
+
+.auto-move-charges-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Subtle "Syncing" pill shown during background polls — not a spinner */
 .charges-sync-indicator {
   display: inline-flex;

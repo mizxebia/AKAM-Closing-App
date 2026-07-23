@@ -46,6 +46,8 @@ type ValidationErrors = Partial<
 const VALIDATED_TICKET_STATUS = 716070001
 const TRANSFERRING_BUILDING_STATUS = 716070002
 const INFORMATION_VALIDATED_BOT_STATUS = 396620007
+const BOT_STATUS_YARDI_CHARGES_FETCHED = 396620011
+const BOT_STATUS_YARDI_CHARGES_UPDATED = 396620021
 
 function getDateInputValue(value?: string) {
   if (!value) {
@@ -630,6 +632,8 @@ export function NewOwnerTicketTab({
 
   const showValidateButton =
     closingTicket.cr7de_ticketstatus === VALIDATED_TICKET_STATUS &&
+    (Number(closingTicket.cr109_botstatus) === BOT_STATUS_YARDI_CHARGES_FETCHED ||
+      Number(closingTicket.cr109_botstatus) === BOT_STATUS_YARDI_CHARGES_UPDATED) &&
     NEW_OWNER_DOCUMENTS.every((doc) => hasDocument(closingTicket, doc))
 
   const validateClosingTicket = useCallback(async () => {

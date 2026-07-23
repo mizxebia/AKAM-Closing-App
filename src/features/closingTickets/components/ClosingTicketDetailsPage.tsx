@@ -445,6 +445,8 @@ export function ClosingTicketDetailsPage({
           {activeTab === 'charges' && (
             <ChargesWorkspace
               ticketId={record.cr7de_ticketid ?? ''}
+              closingTicketId={record.cr7de_closingticketdetailsid}
+              botStatus={Number(record.cr109_botstatus)}
               unpaidCharges={unpaidCharges}
               scheduledCharges={scheduledCharges}
               sellerLedgers={sellerLedgers}
@@ -453,6 +455,7 @@ export function ClosingTicketDetailsPage({
               refreshing={chargesRefreshing}
               error={chargesError}
               onRefresh={refreshCharges}
+              onClosingTicketRefresh={refreshClosingRecord}
               invoices={invoiceRecords}
               readOnly={isReadOnly}
             />
