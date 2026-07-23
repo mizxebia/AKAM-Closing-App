@@ -1602,7 +1602,7 @@ export function ChargesWorkspace({
               savingId={savingId}
               onSaved={onRefresh}
               onSavingChange={setSavingId}
-              readOnly={readOnly}
+              readOnly={readOnly || autoMoving}
             />
           )}
 
@@ -1618,7 +1618,7 @@ export function ChargesWorkspace({
               savingId={savingId}
               onSaved={onRefresh}
               onSavingChange={setSavingId}
-              readOnly={readOnly}
+              readOnly={readOnly || autoMoving}
             />
           )}
 

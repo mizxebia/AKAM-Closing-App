@@ -2722,6 +2722,7 @@ body {
 
 .auto-move-charges-btn:hover:not(:disabled) {
   background: #152d38;
+  color: #ffffff;
 }
 
 .auto-move-charges-btn:disabled {
