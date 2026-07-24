@@ -3,7 +3,7 @@ import {
   X, BookOpen, FileText, Loader2, ClipboardCheck,
   Upload, SearchCheck, BadgeCheck, CheckCircle2,
   Clock, AlertTriangle, Info, ChevronDown, ChevronUp,
-  Zap, ArrowRight, ReceiptText,
+  Zap, ArrowRight, ReceiptText, UserPlus,
 } from 'lucide-react'
 import { cn } from '../../../lib/utils'
 
@@ -11,7 +11,7 @@ import { cn } from '../../../lib/utils'
 
 type BadgeVariant = 'user' | 'desktop' | 'cloud'
 type OutcomeVariant = 'success' | 'failure'
-type HelpTab = 'quick' | 'process' | 'payments' | 'yardi'
+type HelpTab = 'quick' | 'process' | 'payments' | 'yardi' | 'newowner'
 
 interface StatusEntry { label: string; value: string }
 interface StepCardProps {
@@ -233,7 +233,7 @@ const BEHAVIOURS: BehaviourCard[] = [
   { icon: '↩', title: 'Deleting the RPTT rolls the ticket back',
     body: 'If you delete the RPTT while in Post Closing or Validate Closings, the ticket automatically returns to Ready for Post Closing.' },
   { icon: '🎫', title: 'Generate New Owner Ticket before Validate',
-    body: 'Click "Generate New Owner Ticket" in the New Owner Ticket tab first. The PDF must be generated before the Validate button appears. When you click Validate, the New Owner Ticket PDF is automatically regenerated with the latest data.' },
+    body: 'Click "Generate New Owner Ticket" in the New Owner Ticket tab first. The PDF must be generated before the Validate button appears. When you click Validate, the New Owner Ticket PDF is automatically regenerated with the latest data. Buyer and Seller SSN/EIN fields only accept 9 digits. Occupancy fields are locked to "Present" or "Absent". Empty Additional Occupant fields are saved as N/A.' },
   { icon: '👁', title: 'All documents are viewable inside the app',
     body: 'Once uploaded or generated, all documents are viewable directly in the document panel on the right side of the ticket.' },
   { icon: '💬', title: 'Ticket showing as Failed?',
@@ -934,6 +934,237 @@ function YardiChargesContent() {
   )
 }
 
+// ─── New Owner Ticket Tab ─────────────────────────────────────────────────────
+
+function NewOwnerTicketContent() {
+  return (
+    <div className="space-y-6">
+
+      {/* Overview */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">New Owner Ticket Tab</p>
+          <h3 className="text-[15px] font-bold text-slate-800">How is the New Owner Ticket populated?</h3>
+          <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">
+            The automation populates the New Owner Ticket using two source documents. Each document is the authoritative source for a specific set of fields — they are never mixed.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+            <p className="text-[11px] font-bold text-blue-700 uppercase tracking-wide mb-2">📄 RPTT — Real Property Transfer Tax Return</p>
+            <ul className="text-[12px] text-blue-800 space-y-1 leading-relaxed list-disc list-inside">
+              <li>Buyer names (legal ownership)</li>
+              <li>Seller names</li>
+              <li>Buyer &amp; Seller addresses</li>
+              <li>Identification Numbers (SSN / EIN)</li>
+            </ul>
+          </div>
+          <div className="rounded-xl border border-violet-200 bg-violet-50 p-4">
+            <p className="text-[11px] font-bold text-violet-700 uppercase tracking-wide mb-2">📋 PAF — Purchase Application Form</p>
+            <ul className="text-[12px] text-violet-800 space-y-1 leading-relaxed list-disc list-inside">
+              <li>Contact information (phone, email)</li>
+              <li>Owner occupancy status</li>
+              <li>Additional occupants</li>
+              <li>Financial information</li>
+            </ul>
+          </div>
+        </div>
+        <InfoCallout>
+          <strong>The RPTT is always the authority for Buyer and Seller names.</strong> The Purchase Application Form never overwrites names — it only provides contact, occupancy and financial details.
+        </InfoCallout>
+      </div>
+
+      {/* Buyer Mapping */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Buyer Mapping</p>
+          <h3 className="text-[15px] font-bold text-slate-800">How Buyers are mapped from the RPTT</h3>
+        </div>
+        <FieldGuideTable rows={[
+          { field: 'Primary Owner', what: 'Always Buyer 1 from the RPTT. Name, Address, City, State, ZIP and Identification Number (SSN or EIN) are populated from Buyer 1.' },
+          { field: 'Alternate Owner', what: 'Populated from Buyer 2 in the RPTT, if present. If Buyer 2 does not exist, the Alternate Owner section is left blank.' },
+          { field: 'SSN / EIN', what: 'If the Buyer is an individual, their SSN is extracted. If the Buyer is a Trust, LLC, Estate or other legal entity, the EIN is extracted. Both are stored in the same Identification Number field — the ticket does not distinguish between them.' },
+        ]} />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-[11px] font-bold text-slate-700 uppercase tracking-wide mb-1.5">Individual Purchase</p>
+            <p className="text-[12px] text-slate-600 leading-relaxed">Buyer 1 → Primary Owner (SSN). Buyer 2 → Alternate Owner (SSN) if present.</p>
+          </div>
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <p className="text-[11px] font-bold text-amber-700 uppercase tracking-wide mb-1.5">Trust / LLC / Estate</p>
+            <p className="text-[12px] text-amber-800 leading-relaxed">The legal entity remains the Primary Owner (EIN). The Applicant from the PAF acts as the primary contact — Buyer 2 contact is left blank.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Contact Information */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Contact Information</p>
+          <h3 className="text-[15px] font-bold text-slate-800">Phone &amp; Email — sourced from the PAF</h3>
+          <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">
+            Contact details (phone and email) come exclusively from the Purchase Application Form. The RPTT does not contain contact information.
+          </p>
+        </div>
+        <FieldGuideTable rows={[
+          { field: 'Individual', what: 'Applicant contact → Primary Owner. Co-Applicant contact → Alternate Owner.' },
+          { field: 'Trust / LLC / Estate', what: 'Applicant contact → Buyer 1 (legal entity). Buyer 2 contact is left blank. The trustee or authorised signer is the Applicant.' },
+        ]} />
+      </div>
+
+      {/* Owner Occupancy */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Owner Occupancy</p>
+          <h3 className="text-[15px] font-bold text-slate-800">Present or Absent — determined from the PAF</h3>
+          <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">
+            Occupancy status is determined solely from the Occupants section of the Purchase Application Form. The RPTT is not used for this.
+          </p>
+        </div>
+        <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+          <table className="w-full text-[12px] border-collapse bg-white">
+            <thead><tr className="bg-[#EDE8E0]">
+              <th className="px-4 py-2.5 text-left text-[9px] font-bold uppercase tracking-widest text-slate-500 w-36">Purchase Type</th>
+              <th className="px-4 py-2.5 text-left text-[9px] font-bold uppercase tracking-widest text-slate-500">Rule</th>
+            </tr></thead>
+            <tbody>
+              <tr className="border-t border-slate-100">
+                <td className="px-4 py-2.5 font-semibold text-[#1E3A47] align-top">Individual</td>
+                <td className="px-4 py-2.5 text-slate-600 leading-relaxed">If Purchaser 1 appears in the Occupants list → Primary Owner = <strong>Present</strong>. Otherwise → <strong>Absent</strong>. Same logic applies to Purchaser 2 / Alternate Owner.</td>
+              </tr>
+              <tr className="border-t border-slate-100">
+                <td className="px-4 py-2.5 font-semibold text-[#1E3A47] align-top">Trust / LLC / Estate</td>
+                <td className="px-4 py-2.5 text-slate-600 leading-relaxed">Purchaser 2 is the Applicant (trustee / signer). If the Applicant appears in Occupants → both Primary and Alternate Owner = <strong>Present</strong>. Otherwise → both = <strong>Absent</strong>.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <InfoCallout>
+          In the app, the Occupancy field only accepts <strong>Present</strong> or <strong>Absent</strong>. You cannot type free text into this field — use the dropdown.
+        </InfoCallout>
+      </div>
+
+      {/* Additional Occupants */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Additional Occupants</p>
+          <h3 className="text-[15px] font-bold text-slate-800">Who is added as an Additional Occupant?</h3>
+          <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">
+            Additional Occupants are taken from the Occupants section of the Purchase Application Form, after removing the buyers themselves.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p className="text-[11px] font-bold text-slate-700 uppercase tracking-wide mb-1.5">Individual — remove</p>
+            <p className="text-[12px] text-slate-600 leading-relaxed">Purchaser 1 and Purchaser 2 are removed from the occupants list before creating Additional Occupant records.</p>
+          </div>
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <p className="text-[11px] font-bold text-amber-700 uppercase tracking-wide mb-1.5">Trust / LLC / Estate — remove</p>
+            <p className="text-[12px] text-amber-800 leading-relaxed">Only Purchaser 2 (the Applicant) is removed. The Trust / LLC / Estate is not an occupant, so it is not removed.</p>
+          </div>
+        </div>
+        <FieldGuideTable rows={[
+          { field: 'Age requirement', what: 'Only occupants aged 18 or older are added. Occupants younger than 18 or with a missing age are ignored.' },
+          { field: 'Order', what: 'Occupants are added in the same order as they appear on the Purchase Application Form.' },
+          { field: 'Relationship', what: 'All additional occupants are created with Relationship = Other. The automation does not attempt to determine family relationships.' },
+          { field: 'Empty fields', what: 'If an Additional Occupant field is left empty when you save, the app automatically stores it as N/A.' },
+        ]} />
+      </div>
+
+      {/* Seller Mapping */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Seller Mapping</p>
+          <h3 className="text-[15px] font-bold text-slate-800">Sellers are sourced entirely from the RPTT</h3>
+          <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">
+            Seller names are always taken from the RPTT (Grantor 1 and Grantor 2). The Purchase Application Form is never used to overwrite seller names.
+          </p>
+        </div>
+        <FieldGuideTable rows={[
+          { field: 'Seller 1', what: 'Mapped from Grantor 1 in the RPTT.' },
+          { field: 'Seller 2', what: 'Mapped from Grantor 2 in the RPTT, if present.' },
+          { field: 'Seller Phone / Email', what: 'These contact fields are the only Seller information sourced from the Purchase Application Form.' },
+        ]} />
+      </div>
+
+      {/* Financial Information */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Financial Information</p>
+          <h3 className="text-[15px] font-bold text-slate-800">Extracted from the Purchase Application Form</h3>
+          <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">
+            All financial fields in the New Owner Ticket are sourced exclusively from the Purchase Application Form.
+          </p>
+        </div>
+        <FieldGuideTable rows={[
+          { field: 'Purchase Price', what: 'From the PAF.' },
+          { field: 'Maintenance / Common Charges', what: 'From the PAF.' },
+          { field: 'Deposit Amount', what: 'From the PAF.' },
+          { field: 'Amount Financed', what: 'From the PAF.' },
+          { field: 'Mortgage Lender', what: 'From the PAF.' },
+          { field: 'Shares', what: 'From the PAF.' },
+        ]} />
+      </div>
+
+      {/* SSN/EIN field rules */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">App Field Rules</p>
+          <h3 className="text-[15px] font-bold text-slate-800">Input constraints in the New Owner Ticket form</h3>
+        </div>
+        <FieldGuideTable rows={[
+          { field: 'Buyer 1 SSN/EIN', what: '9 digits only. Letters are rejected with an inline warning. No formatting is applied — store the raw 9-digit number.' },
+          { field: 'Buyer 2 SSN/EIN', what: 'Same as Buyer 1 — 9 digits, numbers only.' },
+          { field: 'Buyer 1 Occupancy', what: 'Dropdown — select Present or Absent only. Defaults to Present.' },
+          { field: 'Buyer 2 Occupancy', what: 'Dropdown — select Present or Absent only. Defaults to Present.' },
+          { field: 'Additional Occupants', what: 'Free text. If left empty when saving, the value is automatically replaced with N/A.' },
+        ]} />
+      </div>
+
+      {/* Summary table */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Summary</p>
+          <h3 className="text-[15px] font-bold text-slate-800">Source of truth at a glance</h3>
+        </div>
+        <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+          <table className="w-full text-[12px] border-collapse bg-white">
+            <thead><tr className="bg-[#EDE8E0]">
+              <th className="px-4 py-2.5 text-left text-[9px] font-bold uppercase tracking-widest text-slate-500">Data</th>
+              <th className="px-4 py-2.5 text-left text-[9px] font-bold uppercase tracking-widest text-slate-500">Source</th>
+            </tr></thead>
+            <tbody>
+              {[
+                ['Buyer names', 'RPTT'],
+                ['Seller names', 'RPTT'],
+                ['Buyer / Seller addresses', 'RPTT'],
+                ['Identification Numbers (SSN / EIN)', 'RPTT'],
+                ['Contact information (phone, email)', 'Purchase Application Form'],
+                ['Owner Occupancy', 'Purchase Application Form'],
+                ['Additional Occupants', 'Purchase Application Form'],
+                ['Financial information', 'Purchase Application Form'],
+              ].map(([data, source]) => (
+                <tr key={data} className="border-t border-slate-100">
+                  <td className="px-4 py-2.5 font-semibold text-[#1E3A47]">{data}</td>
+                  <td className="px-4 py-2.5 text-slate-600">
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${source === 'RPTT' ? 'bg-blue-100 text-blue-700' : 'bg-violet-100 text-violet-700'}`}>
+                      {source === 'RPTT' ? '📄' : '📋'} {source}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <p className="text-center text-[11px] text-slate-400 pt-2">
+        New Owner Ticket Guide &nbsp;·&nbsp; AKAM Associates &nbsp;·&nbsp; Closing Management System
+      </p>
+    </div>
+  )
+}
+
 // ─── Public modal ─────────────────────────────────────────────────────────────
 
 interface HelpCentreModalProps { open: boolean; onClose: () => void }
@@ -955,6 +1186,7 @@ export function HelpCentreModal({ open, onClose }: HelpCentreModalProps) {
     { key: 'process',  icon: <Zap size={13} />,            label: 'Process Overview', sub: 'Full automation flow' },
     { key: 'payments', icon: <ReceiptText size={13} />,    label: 'Payments',         sub: 'Invoice & ledger guide' },
     { key: 'yardi',    icon: <BadgeCheck size={13} />,     label: 'Yardi Charges',    sub: 'Charges, Move & Partial' },
+    { key: 'newowner', icon: <UserPlus size={13} />,       label: 'New Owner Ticket', sub: 'Buyers, Sellers & Occupancy' },
   ]
 
   return (
@@ -1035,6 +1267,7 @@ export function HelpCentreModal({ open, onClose }: HelpCentreModalProps) {
           {activeTab === 'process'  && <><Legend /><FlowchartContent /></>}
           {activeTab === 'payments' && <PaymentsContent />}
           {activeTab === 'yardi'    && <YardiChargesContent />}
+          {activeTab === 'newowner' && <NewOwnerTicketContent />}
         </div>
       </div>
     </div>
