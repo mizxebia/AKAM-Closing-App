@@ -1355,28 +1355,32 @@ function normaliseAmount(value?: string): string {
  * Returns the set of unpaid charge IDs that should have Move = true.
  *
  * Rules (from spec):
- * 1. Skip partial unpaid charges entirely.
- * 2. Only consider invoices where Payable To = Building (716070000).
- * 3. Match by mapped GL code AND exact normalised amount.
- * 4. Latest month (from Notes) first within each charge-code+amount group.
- * 5. One-to-one: each invoice row consumes at most one unpaid charge.
- * 6. Unmatched rows are ignored silently.
+ * 1. Only Buyer Cheques (cr7de_paidby = 716070001) are considered. Seller Cheques are ignored entirely.
+ * 2. From Buyer Cheques, only Payable To = Building (716070000).
+ * 3. Skip partial unpaid charges (cr109_partiallypaid = true).
+ * 4. Match by mapped GL code AND exact normalised amount.
+ * 5. Latest month (from Notes) first within each charge-code+amount group.
+ * 6. One-to-one: each Buyer Cheque row consumes at most one unpaid charge.
+ * 7. Unmatched rows are ignored silently.
  */
 function computeAutoMoveIds(
   unpaidCharges: UnpaidChargeRecord[],
   invoices: InvoiceRecord[]
 ): Set<string> {
+  const BUYER_PAID_BY = 716070001
   const BUILDING_PAYABLE_TO = 716070000
 
-  // Step 1 — filter invoices to Building-payable only
-  const eligibleInvoices = invoices.filter(
-    (inv) => Number(inv.cr7de_payableto) === BUILDING_PAYABLE_TO
+  // Step 1 — filter to Buyer Cheques payable to Building only
+  const buyerCheques = invoices.filter(
+    (inv) =>
+      Number(inv.cr7de_paidby) === BUYER_PAID_BY &&
+      Number(inv.cr7de_payableto) === BUILDING_PAYABLE_TO
   )
 
-  // Step 2 — build a list of (glCode, amount) invoice tokens
+  // Step 2 — build invoice tokens with mapped GL code + normalised amount
   type InvoiceToken = { glCode: string; amount: string; used: boolean }
   const invoiceTokens: InvoiceToken[] = []
-  for (const inv of eligibleInvoices) {
+  for (const inv of buyerCheques) {
     const glCode = INVOICE_GL_CODE_MAP[Number(inv.cr109_dueatclosing)]
     if (!glCode) continue
     invoiceTokens.push({
@@ -1386,13 +1390,13 @@ function computeAutoMoveIds(
     })
   }
 
-  // Step 3 — group eligible (non-partial) unpaid charges by glCode+amount,
+  // Step 3 — group eligible (non-partial) unpaid charges by glCode|amount,
   //           sorted latest month first within each group
-  type UnpaidEntry = { id: string; notes: string | undefined; sortKey: number }
+  type UnpaidEntry = { id: string; sortKey: number }
   const unpaidGroups = new Map<string, UnpaidEntry[]>()
 
   for (const charge of unpaidCharges) {
-    if (charge.cr109_partiallypaid) continue // Rule 1
+    if (charge.cr109_partiallypaid) continue // Rule 3
     const code = (charge.cr109_chargecode ?? '').trim().toLowerCase()
     if (!code) continue
     const amount = normaliseAmount(charge.cr109_amount)
@@ -1400,7 +1404,6 @@ function computeAutoMoveIds(
     if (!unpaidGroups.has(key)) unpaidGroups.set(key, [])
     unpaidGroups.get(key)!.push({
       id: charge.crc5c_unpaidchargesid,
-      notes: charge.cr109_notes,
       sortKey: extractMonthSortKey(charge.cr109_notes),
     })
   }
@@ -1410,7 +1413,7 @@ function computeAutoMoveIds(
     group.sort((a, b) => b.sortKey - a.sortKey)
   }
 
-  // Step 4 — for each invoice token, consume the first available unpaid entry
+  // Step 4 — one-to-one matching
   const movedIds = new Set<string>()
   const consumedUnpaidIds = new Set<string>()
 
@@ -1420,7 +1423,6 @@ function computeAutoMoveIds(
     const group = unpaidGroups.get(key)
     if (!group) continue
 
-    // Find first unconsumed entry in this group
     const entry = group.find((e) => !consumedUnpaidIds.has(e.id))
     if (!entry) continue
 
