@@ -2,6 +2,7 @@ import type {
   FormEvent,
   InputHTMLAttributes,
 } from 'react'
+import { useState } from 'react'
 import type {
   EditableNewOwnerTicketField,
   NewOwnerTicketFormState,
@@ -25,6 +26,8 @@ type FieldKind =
   | 'date'
   | 'textarea'
   | 'checkbox'
+  | 'ssnein'
+  | 'occupancy'
 
 interface FieldConfig {
   name: EditableNewOwnerTicketField
@@ -112,6 +115,7 @@ const FIELD_CONFIGS = [
     section: 'Buyer 1',
     name: 'cr7de_primaryownerssnein',
     label: 'Buyer 1 SSN/EIN',
+    kind: 'ssnein',
   },
   {
     section: 'Buyer 1',
@@ -142,6 +146,7 @@ const FIELD_CONFIGS = [
     section: 'Buyer 1',
     name: 'cr109_purchaser1occupancy',
     label: 'Buyer 1 Occupancy',
+    kind: 'occupancy',
   },
   {
     section: 'Buyer 1',
@@ -181,6 +186,7 @@ const FIELD_CONFIGS = [
     section: 'Buyer 2',
     name: 'cr7de_secondaryownerssnein',
     label: 'Buyer 2 SSN/EIN',
+    kind: 'ssnein',
   },
   {
     section: 'Buyer 2',
@@ -206,6 +212,7 @@ const FIELD_CONFIGS = [
     section: 'Buyer 2',
     name: 'cr109_purchaser2occupancy',
     label: 'Buyer 2 Occupancy',
+    kind: 'occupancy',
   },
   {
     section: 'Seller',
@@ -373,6 +380,59 @@ interface NewOwnerTicketFormProps {
   readOnly?: boolean
 }
 
+/** Standalone input for SSN/EIN — accepts digits only, max 9 characters.
+ *  Shows an inline warning if the user attempts to type a letter. */
+function SsnEinInput({
+  label,
+  value,
+  required,
+  readOnly,
+  wide,
+  onChange,
+}: {
+  label: string
+  value: string
+  required?: boolean
+  readOnly?: boolean
+  wide?: boolean
+  onChange: (value: string) => void
+}) {
+  const [warning, setWarning] = useState<string | null>(null)
+
+  const handleChange = (raw: string) => {
+    if (/[a-zA-Z]/.test(raw)) {
+      setWarning('Only numbers are allowed.')
+      // Strip letters, keep only digits up to 9
+      onChange(raw.replace(/\D/g, '').slice(0, 9))
+      return
+    }
+    setWarning(null)
+    // Digits only, max 9
+    onChange(raw.replace(/\D/g, '').slice(0, 9))
+  }
+
+  return (
+    <label className={wide ? 'form-field new-owner-form-wide' : 'form-field'}>
+      <span>
+        {label}
+        {required && <strong> *</strong>}
+      </span>
+      <input
+        type="text"
+        inputMode="numeric"
+        value={value}
+        readOnly={readOnly}
+        maxLength={9}
+        placeholder="123456789"
+        onChange={(e) => handleChange(e.target.value)}
+      />
+      {warning && (
+        <span className="form-error" role="alert">{warning}</span>
+      )}
+    </label>
+  )
+}
+
 function getInputMode(
   field: FieldConfig
 ): InputHTMLAttributes<HTMLInputElement>['inputMode'] {
@@ -382,6 +442,10 @@ function getInputMode(
 
   if (field.kind === 'tel') {
     return 'tel'
+  }
+
+  if (field.kind === 'ssnein') {
+    return 'numeric'
   }
 
   return undefined
@@ -457,6 +521,50 @@ export function NewOwnerTicketForm({
           />
           {error && <span className="form-error">{error}</span>}
         </label>
+      )
+    }
+
+    if (field.kind === 'occupancy') {
+      return (
+        <label key={field.name} className={commonClassName}>
+          <span>
+            {field.label}
+            {field.required && <strong> *</strong>}
+          </span>
+          <select
+            value={String(value)}
+            disabled={field.readOnly}
+            onChange={(event) =>
+              onFieldChange(
+                field.name,
+                event.target.value as NewOwnerTicketFormState[typeof field.name]
+              )
+            }
+          >
+            <option value="Present">Present</option>
+            <option value="Absent">Absent</option>
+          </select>
+          {error && <span className="form-error">{error}</span>}
+        </label>
+      )
+    }
+
+    if (field.kind === 'ssnein') {
+      return (
+        <SsnEinInput
+          key={field.name}
+          label={field.label}
+          value={String(value)}
+          required={field.required}
+          readOnly={field.readOnly}
+          wide={field.wide}
+          onChange={(formatted) =>
+            onFieldChange(
+              field.name,
+              formatted as NewOwnerTicketFormState[typeof field.name]
+            )
+          }
+        />
       )
     }
 

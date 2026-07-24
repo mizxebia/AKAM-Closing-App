@@ -131,13 +131,13 @@ function getInitialFormState(
     ),
     cr109_purchaser1occupancy: valueOrEmpty(
       record?.cr109_purchaser1occupancy
-    ),
+    ) || 'Present',
     cr109_purchaser1purchasedate: valueOrEmpty(
       record?.cr109_purchaser1purchasedate
     ),
     cr109_purchaser2occupancy: valueOrEmpty(
       record?.cr109_purchaser2occupancy
-    ),
+    ) || 'Present',
     cr109_secondaryownerhomephonenumber: valueOrEmpty(
       record?.cr109_secondaryownerhomephonenumber
     ),
@@ -263,13 +263,13 @@ function toPayload(
   const payload: NewOwnerTicketInput = {
     cr109_additional_occupants1name: normalizeText(
       formState.cr109_additional_occupants1name
-    ),
+    ) ?? 'N/A',
     cr109_additionaloccupant2name: normalizeText(
       formState.cr109_additionaloccupant2name
-    ),
+    ) ?? 'N/A',
     cr109_additionaloccupant3name: normalizeText(
       formState.cr109_additionaloccupant3name
-    ),
+    ) ?? 'N/A',
     cr109_amountfinanced: normalizeText(
       formState.cr109_amountfinanced
     ),
