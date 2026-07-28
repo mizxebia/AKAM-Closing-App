@@ -49,7 +49,7 @@ const STATUS_CARDS: StatusCard[] = [
   {
     status: 'Ready for Post Closing', color: '#7C3AED', lightBg: '#F5F3FF', lightBorder: '#DDD6FE',
     icon: <ClipboardCheck size={16} />,
-    what: 'The purchase form has been extracted. The system is waiting for you to upload the RPTT document.',
+    what: 'The purchase form has been extracted. The system is waiting for you to upload the RPTT document. This is the only ticket status in which the RPTT upload control is enabled — in every other status the field is disabled.',
     action: '',
     isUserAction: true, estimatedTime: 'Your action needed',
     steps: [
@@ -230,8 +230,10 @@ const BEHAVIOURS: BehaviourCard[] = [
     body: 'The Validate button only appears when all three documents are present: Purchase Application Form, RPTT / ACRIS Document, and New Owner Ticket PDF. Bot Status must also be YARDIChargesFetched or YardiChargesUpdated.' },
   { icon: '🔒', title: 'Validation is permanent — ticket locks forever',
     body: 'Once you click Validate, the ticket becomes fully read-only. No fields, documents, or charges can be changed. Double-check everything first.' },
+  { icon: '📤', title: 'RPTT upload only enabled in Ready For Post Closing',
+    body: 'The RPTT Document upload control is only enabled when Ticket Status is Ready For Post Closing. In every other status the field is disabled and shows a banner explaining why — this prevents the document from being replaced once it is already being processed or validated.' },
   { icon: '↩', title: 'Deleting the RPTT rolls the ticket back',
-    body: 'If you delete the RPTT while in Post Closing or Validate Closings, the ticket automatically returns to Ready for Post Closing.' },
+    body: 'If the RPTT was uploaded incorrectly, delete it while the ticket is in Post Closing or Validate Closings — the ticket automatically rolls back to Ready For Post Closing. From there, upload the correct document and click Save, then click "Move to Post Closing" again. RPTT extraction and the YARDI charges fetch both run again from scratch on the new document, and once charges are refetched you will need to validate the closing again.' },
   { icon: '🎫', title: 'Generate New Owner Ticket before Validate',
     body: 'Click "Generate New Owner Ticket" in the New Owner Ticket tab first. The PDF must be generated before the Validate button appears. When you click Validate, the New Owner Ticket PDF is automatically regenerated with the latest data. Buyer and Seller SSN/EIN fields only accept 9 digits. Occupancy fields are locked to "Present" or "Absent". Empty Additional Occupant fields are saved as N/A.' },
   { icon: '👁', title: 'All documents are viewable inside the app',
@@ -617,13 +619,17 @@ function FlowchartContent() {
       <StepCard variant="user" stage="Stage 7a" title="Upload RPTT / ACRIS Document"
         subtitle="User attaches the RPTT document in Closing Details and clicks Save"
         statuses={[{ label: 'Ticket Status', value: 'ReadyForPostClosing' }, { label: 'Bot Status', value: 'RPTTUploaded' }]} />
+      <Arrow short />
+      <NoteBox icon="🔒" title="Upload Restriction">
+        The RPTT upload control is only enabled while Ticket Status is <strong>ReadyForPostClosing</strong>. In every other status the field is disabled, so the document cannot be swapped once it is already in Post Closing, Validate Closings, or beyond.
+      </NoteBox>
       <Arrow />
       <StepCard variant="user" stage="Stage 7b" title="Move to Post Closing"
         subtitle='User clicks "Move to Post Closing" (only visible after RPTT is uploaded)'
         statuses={[{ label: 'Ticket Status', value: 'PostClosing' }, { label: 'Bot Status', value: 'RPTTUploaded (unchanged)' }]} />
       <Arrow short />
-      <NoteBox icon="↩" title="Rollback Rule">
-        If the RPTT is <strong>deleted</strong> while in <strong>Post Closing</strong> or <strong>Validate Closings</strong>, the ticket rolls back to <strong>ReadyForPostClosing</strong> automatically.
+      <NoteBox icon="↩" title="Rollback Rule — RPTT uploaded by mistake">
+        If the RPTT was uploaded incorrectly, <strong>delete</strong> it while the ticket is in <strong>Post Closing</strong> or <strong>Validate Closings</strong> — the ticket rolls back to <strong>ReadyForPostClosing</strong> automatically. From there: upload the correct document and Save, then click <strong>"Move to Post Closing"</strong> again. This re-triggers Stage 8 (RPTT extraction) and Stage 9 (YARDI charges fetch) from scratch on the new document, and once charges are refetched you must go through <strong>Validate Closings</strong> again before the ticket can proceed.
       </NoteBox>
       <Arrow />
 

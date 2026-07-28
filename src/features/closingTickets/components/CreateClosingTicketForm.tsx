@@ -1363,9 +1363,9 @@ function ClosingTicketEditorForm({
           <section className="form-section">
             <h3>Documents</h3>
             {formState.cr7de_buildingnotondomicile && (
-              <div className="documents-not-on-domecile-banner">
+              <div className="documents-info-banner">
                 <svg
-                  className="documents-not-on-domecile-icon"
+                  className="documents-info-icon"
                   viewBox="0 0 20 20"
                   fill="currentColor"
                   aria-hidden="true"
@@ -1382,6 +1382,27 @@ function ClosingTicketEditorForm({
                   uploaded manually — it is required before saving.
                   Once saved, the ticket will automatically move to{' '}
                   <strong>Processing</strong>.
+                </p>
+              </div>
+            )}
+            {!isCreateMode && (
+              <div className="documents-info-banner">
+                <svg
+                  className="documents-info-icon"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <p>
+                  The <strong>RPTT Document</strong> can only be uploaded
+                  once the ticket status is{' '}
+                  <strong>Ready For Post Closing</strong>.
                 </p>
               </div>
             )}
@@ -1407,22 +1428,26 @@ function ClosingTicketEditorForm({
                 )
               }
             />
-            <FileUploadField
-              label="RPTT Document"
-              currentFileName={
-                pendingFiles.cr109_rpttdocument?.name ??
-                uploadedFileNames.cr109_rpttdocument
-              }
-              onFileChange={(file) =>
-                setPendingFiles((currentFiles) => ({
-                  ...currentFiles,
-                  cr109_rpttdocument: file,
-                }))
-              }
-              onDelete={() =>
-                handleDeleteDocument('cr109_rpttdocument')
-              }
-            />
+            {!isCreateMode && (
+              <FileUploadField
+                label="RPTT Document"
+                currentFileName={
+                  pendingFiles.cr109_rpttdocument?.name ??
+                  uploadedFileNames.cr109_rpttdocument
+                }
+                onFileChange={(file) =>
+                  setPendingFiles((currentFiles) => ({
+                    ...currentFiles,
+                    cr109_rpttdocument: file,
+                  }))
+                }
+                onDelete={() =>
+                  handleDeleteDocument('cr109_rpttdocument')
+                }
+                disabled={ticketStatusLabel !== 'ReadyForPostClosing'}
+                disabledMessage="RPTT document can only be uploaded when the ticket status is Ready For Post Closing."
+              />
+            )}
             </div>
           </section>
         )}
@@ -1708,6 +1733,8 @@ function FileUploadField({
   currentFileName,
   onFileChange,
   onDelete,
+  disabled = false,
+  disabledMessage,
 }: {
   label: string
   required?: boolean
@@ -1715,6 +1742,8 @@ function FileUploadField({
   currentFileName?: string
   onFileChange: (file: File) => void
   onDelete: () => void
+  disabled?: boolean
+  disabledMessage?: string
 }) {
   return (
     <div className="file-upload-field">
@@ -1727,10 +1756,14 @@ function FileUploadField({
           {currentFileName ?? 'There is no file.'}
         </p>
         <div className="file-upload-actions">
-          <label className="file-upload-link">
+          <label
+            className={`file-upload-link${disabled ? ' file-upload-link-disabled' : ''}`}
+            title={disabled ? disabledMessage : undefined}
+          >
             Upload file
             <input
               type="file"
+              disabled={disabled}
               onChange={(event) => {
                 const file = event.target.files?.[0]
                 if (file) {

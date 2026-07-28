@@ -1445,13 +1445,11 @@ body {
 
 .file-upload-box {
   display: grid;
-  gap: 10px;
-  min-height: 96px;
-  align-content: center;
+  gap: 6px;
   border: 1px dashed #C8BBA9;
   border-radius: 8px;
   background: #F5F2EC;
-  padding: 14px 16px;
+  padding: 16px;
   transition: border-color 160ms ease;
 }
 
@@ -1493,6 +1491,12 @@ body {
   display: none;
 }
 
+.file-upload-link-disabled {
+  color: #9CA3AF !important;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .file-upload-delete-btn {
   width: 28px !important;
   height: 28px !important;
@@ -1502,7 +1506,7 @@ body {
 }
 
 /* --- Documents — not on Domecile info banner --- */
-.documents-not-on-domecile-banner {
+.documents-info-banner {
   display: flex;
   align-items: flex-start;
   gap: 10px;
@@ -1516,7 +1520,7 @@ body {
   line-height: 1.5;
 }
 
-.documents-not-on-domecile-icon {
+.documents-info-icon {
   flex-shrink: 0;
   width: 18px;
   height: 18px;
@@ -1524,12 +1528,12 @@ body {
   color: #2563EB;
 }
 
-.documents-not-on-domecile-banner p {
+.documents-info-banner p {
   margin: 0;
   color: #1D4ED8;
 }
 
-.documents-not-on-domecile-banner strong {
+.documents-info-banner strong {
   font-weight: 700;
   color: #1D4ED8;
 }
