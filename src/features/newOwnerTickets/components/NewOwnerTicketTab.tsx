@@ -10,6 +10,10 @@ import { LoadingSkeleton } from '../../../components/enterprise'
 import { updateClosingTicket } from '../../closingTickets/api/closingTicketsService'
 import type { ClosingTicketRecord } from '../../closingTickets/types/closingTicket'
 import {
+  getUnconfirmedScheduledCharges,
+  type ScheduledChargeRecord,
+} from '../../charges'
+import {
   ensureNewOwnerTicketForClosingTicket,
   saveNewOwnerTicket,
 } from '../api/newOwnerTicketService'
@@ -32,6 +36,7 @@ import { ProcessingDots } from '../../../components/feedback/ProcessingDots'
 
 interface NewOwnerTicketTabProps {
   closingTicket: ClosingTicketRecord
+  scheduledCharges?: ScheduledChargeRecord[]
   onSaved: () => Promise<void>
   onGenerateTicket?: () => Promise<void>
   generatingTicket?: boolean
@@ -474,6 +479,7 @@ function validateForm(
 
 export function NewOwnerTicketTab({
   closingTicket,
+  scheduledCharges = [],
   onSaved,
   onGenerateTicket,
   generatingTicket,
@@ -630,11 +636,22 @@ export function NewOwnerTicketTab({
     }
   }, [closingTicket, formState, onSaved, record])
 
-  const showValidateButton =
+  const hasUnconfirmedScheduledCharges =
+    getUnconfirmedScheduledCharges(scheduledCharges).length > 0
+
+  const missingDocuments = NEW_OWNER_DOCUMENTS.filter(
+    (doc) => !hasDocument(closingTicket, doc)
+  )
+
+  const meetsStatusAndBotStatus =
     closingTicket.cr7de_ticketstatus === VALIDATED_TICKET_STATUS &&
     (Number(closingTicket.cr109_botstatus) === BOT_STATUS_YARDI_CHARGES_FETCHED ||
-      Number(closingTicket.cr109_botstatus) === BOT_STATUS_YARDI_CHARGES_UPDATED) &&
-    NEW_OWNER_DOCUMENTS.every((doc) => hasDocument(closingTicket, doc))
+      Number(closingTicket.cr109_botstatus) === BOT_STATUS_YARDI_CHARGES_UPDATED)
+
+  const showValidateButton =
+    meetsStatusAndBotStatus &&
+    missingDocuments.length === 0 &&
+    !hasUnconfirmedScheduledCharges
 
   const validateClosingTicket = useCallback(async () => {
     const recordId = closingTicket.cr7de_closingticketdetailsid
@@ -734,6 +751,25 @@ export function NewOwnerTicketTab({
       {message && (
         <StatusBanner type="success" message={message} />
       )}
+      {meetsStatusAndBotStatus && missingDocuments.length > 0 && (
+        <div className="form-alert form-alert-warning">
+          Missing document{missingDocuments.length !== 1 ? 's' : ''} required
+          to validate: {missingDocuments.map((doc) => doc.label).join(', ')}.
+          {missingDocuments.some(
+            (doc) => doc.key === 'newOwnerTicketPdf'
+          ) && ' Click "Generate New Owner Ticket" to create the missing PDF.'}
+        </div>
+      )}
+      {meetsStatusAndBotStatus &&
+        missingDocuments.length === 0 &&
+        hasUnconfirmedScheduledCharges && (
+          <div className="form-alert form-alert-warning">
+            Validation is blocked — one or more Scheduled Charges in the
+            Yardi Charges tab have an unconfirmed "TBD" amount. Update them
+            with the actual charge amount before this ticket can be
+            validated.
+          </div>
+        )}
 
       {!loading && (
         <div className="grid items-start gap-4 lg:grid-cols-[1fr_minmax(0,1fr)] xl:grid-cols-2">

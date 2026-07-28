@@ -33,6 +33,7 @@ import type {
   UnpaidChargeUpdateInput,
 } from '../types/charges'
 import type { InvoiceRecord } from '../../invoices/types/invoice'
+import { getUnconfirmedScheduledCharges } from '../utils/scheduledChargeValidation'
 
 interface ChargesWorkspaceProps {
   ticketId?: string
@@ -1463,6 +1464,10 @@ export function ChargesWorkspace({
       botStatus === BOT_STATUS_YARDI_CHARGES_UPDATED) &&
     unpaidCharges.length > 0
 
+  const unconfirmedScheduledCharges = getUnconfirmedScheduledCharges(
+    scheduledCharges
+  )
+
   const handleAutoMove = async () => {
     if (!ticketId || !closingTicketId) return
     setAutoMoving(true)
@@ -1566,6 +1571,17 @@ export function ChargesWorkspace({
       {autoMoveError && (
         <div className="form-alert form-alert-error" style={{ margin: '0 0 8px' }}>
           {autoMoveError}
+        </div>
+      )}
+
+      {!loading && unconfirmedScheduledCharges.length > 0 && (
+        <div className="form-alert form-alert-warning" style={{ margin: '0 0 8px' }}>
+          {unconfirmedScheduledCharges.length} scheduled charge
+          {unconfirmedScheduledCharges.length !== 1 ? 's have' : ' has'} an
+          unconfirmed <strong>"TBD"</strong> amount — update{' '}
+          {unconfirmedScheduledCharges.length !== 1 ? 'them' : 'it'} with the
+          actual charge amount. This ticket cannot be validated while a
+          scheduled charge amount is TBD.
         </div>
       )}
 

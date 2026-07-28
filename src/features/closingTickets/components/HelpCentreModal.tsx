@@ -227,7 +227,9 @@ const BEHAVIOURS: BehaviourCard[] = [
   { icon: '🔂', title: 'Partially Paid charges cannot be moved',
     body: 'If an unpaid charge is marked as Partially Paid, its Move toggle is automatically disabled. Partial charges can never be transferred to the new owner. Untick Partially Paid and click Save All if you need to enable Move for that charge.' },
   { icon: '📄', title: 'Three documents required before Validate',
-    body: 'The Validate button only appears when all three documents are present: Purchase Application Form, RPTT / ACRIS Document, and New Owner Ticket PDF. Bot Status must also be YARDIChargesFetched or YardiChargesUpdated.' },
+    body: 'The Validate button only appears when all three documents are present: Purchase Application Form, RPTT / ACRIS Document, and New Owner Ticket PDF. Bot Status must also be YARDIChargesFetched or YardiChargesUpdated. If the ticket is in Validate Closings but a document is still missing, a warning banner in the New Owner Ticket tab names exactly which one(s).' },
+  { icon: '❓', title: 'A "TBD" scheduled charge amount blocks Validate',
+    body: 'If any Scheduled Charge in the Yardi Charges tab still has its Amount set to "TBD", the Validate button is hidden and a warning banner appears in both the Yardi Charges tab and the New Owner Ticket tab. Update the charge with its actual confirmed amount and click Save All to clear the block.' },
   { icon: '🔒', title: 'Validation is permanent — ticket locks forever',
     body: 'Once you click Validate, the ticket becomes fully read-only. No fields, documents, or charges can be changed. Double-check everything first.' },
   { icon: '📤', title: 'RPTT upload only enabled in Ready For Post Closing',
@@ -670,6 +672,9 @@ function FlowchartContent() {
         The Validate button appears only when <strong>all</strong> of the following are true:
         <br />• Bot Status is <strong>YARDIChargesFetched</strong> or <strong>YardiChargesUpdated</strong>
         <br />• All three documents are present: <strong>Purchase Application Form</strong>, <strong>RPTT Document</strong>, and <strong>New Owner Ticket PDF</strong>
+        <br />• No Scheduled Charge in the Yardi Charges tab has an unconfirmed <strong>"TBD"</strong> amount
+        <br /><br />
+        If the ticket is in <strong>Validate Closings</strong> but the button is missing, a warning banner in the New Owner Ticket tab explains which requirement is unmet — either the missing document(s) by name, or the unconfirmed scheduled charge amount.
         <br /><br />
         On clicking Validate, the New Owner Ticket PDF is automatically <strong>regenerated</strong> with the latest data.
         <br /><br />
@@ -903,6 +908,29 @@ function YardiChargesContent() {
             The <strong>Partially Paid</strong> flag on an Unpaid Charge indicates that a partial payment has been made against that charge but the full balance is not yet settled. Tick this flag to record the partial payment status, then click <strong>Save All</strong>. Validation can proceed regardless of partial charges — however, a partially paid charge's Move flag will be disabled.
           </p>
         </div>
+      </div>
+
+      {/* TBD Amount Validation Block */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Scheduled Charges</p>
+          <h3 className="text-[15px] font-bold text-slate-800">A "TBD" amount blocks Validate</h3>
+          <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">
+            If a Scheduled Charge's <strong>Amount</strong> is still set to <strong>"TBD"</strong> (the amount has not yet been confirmed), the ticket cannot be validated. This applies whether the charge came from the YARDI fetch or was added manually.
+          </p>
+        </div>
+        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+          <AlertTriangle size={14} className="text-amber-600 mt-0.5 shrink-0" />
+          <div>
+            <p className="text-[11px] font-bold text-amber-800 mb-1">You'll be notified in two places</p>
+            <p className="text-[11.5px] text-amber-700 leading-relaxed">
+              A warning banner listing the affected charge(s) appears at the top of the <strong>Yardi Charges</strong> tab, and the <strong>Validate</strong> button is hidden in the <strong>New Owner Ticket</strong> tab with the same explanation until the amount is fixed.
+            </p>
+          </div>
+        </div>
+        <p className="text-[12px] text-slate-500 leading-relaxed">
+          To resolve: open the Scheduled Charges table, replace <strong>TBD</strong> with the confirmed dollar amount, and click <strong>Save All</strong>. The warning clears automatically once no charge amount reads "TBD".
+        </p>
       </div>
 
       {/* Manual Charges */}

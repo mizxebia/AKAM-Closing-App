@@ -1409,6 +1409,12 @@ body {
   border: 1px solid #a7f3d0;
 }
 
+.form-alert-warning {
+  background: #FFFBEB;
+  color: #B45309;
+  border: 1px solid #FDE68A;
+}
+
 .checkbox-field {
   min-height: 38px;
   display: flex;

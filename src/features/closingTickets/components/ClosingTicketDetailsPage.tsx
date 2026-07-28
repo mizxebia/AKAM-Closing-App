@@ -464,6 +464,7 @@ export function ClosingTicketDetailsPage({
           {activeTab === 'newOwner' && (
             <NewOwnerTicketWorkspace
               closingTicket={record}
+              scheduledCharges={scheduledCharges}
               onSaved={handleSaved}
               onGenerateTicket={handleGenerateNewOwnerTicket}
               generatingTicket={generatingNewOwnerTicket}

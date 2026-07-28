@@ -1,8 +1,10 @@
 import type { ClosingTicketRecord } from '../../closingTickets/types/closingTicket'
+import type { ScheduledChargeRecord } from '../../charges'
 import { NewOwnerTicketTab } from './NewOwnerTicketTab'
 
 interface NewOwnerTicketWorkspaceProps {
   closingTicket: ClosingTicketRecord
+  scheduledCharges?: ScheduledChargeRecord[]
   onSaved: () => Promise<void>
   onGenerateTicket?: () => Promise<void>
   generatingTicket?: boolean
@@ -12,6 +14,7 @@ interface NewOwnerTicketWorkspaceProps {
 
 export function NewOwnerTicketWorkspace({
   closingTicket,
+  scheduledCharges = [],
   onSaved,
   onGenerateTicket,
   generatingTicket,
@@ -21,6 +24,7 @@ export function NewOwnerTicketWorkspace({
   return (
     <NewOwnerTicketTab
       closingTicket={closingTicket}
+      scheduledCharges={scheduledCharges}
       onSaved={onSaved}
       onGenerateTicket={onGenerateTicket}
       generatingTicket={generatingTicket}
