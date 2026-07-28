@@ -16,6 +16,26 @@ import type {
   UnpaidChargeRecord,
 } from '../types/charges'
 
+const COMPLETION_STATUS_COMPLETED = 396620000
+const COMPLETION_STATUS_INCOMPLETE = 396620001
+
+// Before a ticket is Completed, ledgers show rows with no completion status
+// set yet (pre-existing records) or explicitly InComplete. Once Completed,
+// the backend flow has posted a fresh batch of rows marked Completed, and
+// only those should be visible.
+function isVisibleForCompletionState(
+  completionStatus: number | undefined,
+  isTicketCompleted: boolean
+) {
+  if (isTicketCompleted) {
+    return completionStatus === COMPLETION_STATUS_COMPLETED
+  }
+  return (
+    completionStatus === undefined ||
+    completionStatus === COMPLETION_STATUS_INCOMPLETE
+  )
+}
+
 function normalizeText(value?: string) {
   return value?.trim() ?? ''
 }
@@ -44,7 +64,10 @@ function getChargeStatusLabel(
   return undefined
 }
 
-export function useCharges(ticketId?: string) {
+export function useCharges(
+  ticketId?: string,
+  isTicketCompleted = false
+) {
   const [unpaidCharges, setUnpaidCharges] = useState<
     UnpaidChargeRecord[]
   >([])
@@ -99,6 +122,45 @@ export function useCharges(ticketId?: string) {
       setUnpaidCharges(unpaidRecords)
       setScheduledCharges(scheduledRecords)
 
+      if (isTicketCompleted) {
+        // Once Completed, the backend flow owns the ledgers — it has posted
+        // a fresh batch of rows marked Completed. Show only those and skip
+        // the mid-process Move/charge-status reconciliation entirely, since
+        // the ticket (and its Unpaid Charges) are locked by this point.
+        setSellerLedgers(
+          sellerLedgerRecords.filter((record) =>
+            isVisibleForCompletionState(
+              record.cr109_completionstatus,
+              true
+            )
+          )
+        )
+        setBuyerLedgers(
+          buyerLedgerRecords.filter((record) =>
+            isVisibleForCompletionState(
+              record.cr109_completionstatus,
+              true
+            )
+          )
+        )
+        return
+      }
+
+      const incompleteSellerLedgerRecords =
+        sellerLedgerRecords.filter((record) =>
+          isVisibleForCompletionState(
+            record.cr109_completionstatus,
+            false
+          )
+        )
+      const incompleteBuyerLedgerRecords =
+        buyerLedgerRecords.filter((record) =>
+          isVisibleForCompletionState(
+            record.cr109_completionstatus,
+            false
+          )
+        )
+
       const chargeCodeToMove = new Map<string, boolean>()
       unpaidRecords.forEach((record) => {
         const code = normalizeText(record.cr109_chargecode)
@@ -108,7 +170,7 @@ export function useCharges(ticketId?: string) {
       })
 
       await Promise.all(
-        sellerLedgerRecords.map(async (record) => {
+        incompleteSellerLedgerRecords.map(async (record) => {
           const sellerCode = extractChargeCode(
             record.cr109_description
           )
@@ -144,8 +206,8 @@ export function useCharges(ticketId?: string) {
         })
       )
 
-      const visibleSellerLedgers = sellerLedgerRecords.filter(
-        (record) => {
+      const visibleSellerLedgers =
+        incompleteSellerLedgerRecords.filter((record) => {
           const sellerCode = extractChargeCode(
             record.cr109_description
           )
@@ -154,8 +216,7 @@ export function useCharges(ticketId?: string) {
           }
 
           return !chargeCodeToMove.get(sellerCode)
-        }
-      )
+        })
 
       // Reconcile buyer ledger for any unpaid charge that has cr109_move = true
       // but no corresponding buyer ledger entry. This handles records created or
@@ -169,7 +230,7 @@ export function useCharges(ticketId?: string) {
         // record — we pass the same charge as both prev and current so the
         // function only runs the "create if missing" branch.
         for (const charge of chargesNeedingSync) {
-          const alreadySynced = buyerLedgerRecords.some(
+          const alreadySynced = incompleteBuyerLedgerRecords.some(
             (ledger) =>
               normalizeLedgerValue(ledger.cr109_date) ===
                 normalizeLedgerValue(charge.cr109_date) &&
@@ -187,7 +248,7 @@ export function useCharges(ticketId?: string) {
       }
 
       setSellerLedgers(visibleSellerLedgers)
-      setBuyerLedgers(buyerLedgerRecords)
+      setBuyerLedgers(incompleteBuyerLedgerRecords)
     } catch (err) {
       setError(
         err instanceof Error
@@ -199,7 +260,7 @@ export function useCharges(ticketId?: string) {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [ticketId])
+  }, [ticketId, isTicketCompleted])
 
   useEffect(() => {
     void refresh()

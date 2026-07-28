@@ -65,6 +65,37 @@
           "x-ms-schema-name": "cr109_ChgRec",
           "maxLength": 100
         },
+        "cr109_completionstatus": {
+          "type": "string",
+          "title": "CompletionStatus",
+          "x-ms-dataverse-attribute": "cr109_completionstatus",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "cr109_CompletionStatus",
+          "enum": [
+            "Completed",
+            "InComplete"
+          ],
+          "x-ms-enum-values": [
+            396620000,
+            396620001
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "be80e6f4-8f8a-f111-ab10-000d3a53960c",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "CompletionStatus",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "cr109_completionstatusname": {
+          "type": "string",
+          "title": "cr109_completionstatusname",
+          "x-ms-dataverse-attribute": "cr109_completionstatusname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "cr109_completionstatusName",
+          "x-ms-read-only": true
+        },
         "cr109_date": {
           "type": "string",
           "title": "Date",

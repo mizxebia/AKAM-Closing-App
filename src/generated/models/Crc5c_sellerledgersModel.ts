@@ -7,6 +7,11 @@ export const Crc5c_sellerledgerscr109_chargestatus = {
   396620001: 'InActive'
 } as const;
 export type Crc5c_sellerledgerscr109_chargestatus = keyof typeof Crc5c_sellerledgerscr109_chargestatus;
+export const Crc5c_sellerledgerscr109_completionstatus = {
+  396620000: 'Completed',
+  396620001: 'InComplete'
+} as const;
+export type Crc5c_sellerledgerscr109_completionstatus = keyof typeof Crc5c_sellerledgerscr109_completionstatus;
 export const Crc5c_sellerledgersstatecode = {
   0: 'Active',
   1: 'Inactive'
@@ -23,6 +28,7 @@ export interface Crc5c_sellerledgersBase {
   cr109_charges?: string;
   cr109_chargestatus?: Crc5c_sellerledgerscr109_chargestatus;
   cr109_chgrec?: string;
+  cr109_completionstatus?: Crc5c_sellerledgerscr109_completionstatus;
   cr109_date?: string;
   cr109_description?: string;
   cr109_index?: string;
@@ -42,6 +48,7 @@ export interface Crc5c_sellerledgersBase {
 
 export interface Crc5c_sellerledgers extends Crc5c_sellerledgersBase {
   cr109_chargestatusname?: string;
+  cr109_completionstatusname?: string;
   createdbyname?: string;
   createdbyyominame: string;
   createdon?: string;

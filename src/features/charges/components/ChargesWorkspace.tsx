@@ -50,6 +50,7 @@ interface ChargesWorkspaceProps {
   onClosingTicketRefresh?: () => Promise<void>
   invoices?: InvoiceRecord[]
   readOnly?: boolean
+  isCompleted?: boolean
 }
 
 type UnpaidChargeDraft = {
@@ -1038,6 +1039,7 @@ function LedgerTable({
   useRunningBalance = false,
   invoices = [],
   isSellerLedger,
+  isCompleted = false,
 }: {
   title: string
   subtitle: string
@@ -1046,13 +1048,16 @@ function LedgerTable({
   useRunningBalance?: boolean
   invoices?: InvoiceRecord[]
   isSellerLedger: boolean
+  isCompleted?: boolean
 }) {
   const [checkWithInvoice, setCheckWithInvoice] =
     useState(false)
 
   const displayedRows = useMemo((): LedgerDisplayRow[] => {
-    // -- Normal mode: just show Dataverse records with running balance --
-    if (!checkWithInvoice) {
+    // Once the ticket is Completed, ledgers show the backend flow's final
+    // snapshot — invoice reconciliation no longer applies, regardless of
+    // local toggle state.
+    if (!checkWithInvoice || isCompleted) {
       let runningBalance = 0
       return records.map((record): LedgerDisplayRow => {
         const id =
@@ -1177,6 +1182,7 @@ function LedgerTable({
     return rows
   }, [
     checkWithInvoice,
+    isCompleted,
     records,
     invoices,
     isSellerLedger,
@@ -1189,39 +1195,41 @@ function LedgerTable({
       subtitle={subtitle}
       tableWrapClassName="dataverse-charge-table-wrap--no-scroll"
       headerActions={
-        <button
-          type="button"
-          onClick={() =>
-            setCheckWithInvoice((prev) => !prev)
-          }
-          style={{
-            display: 'inline-flex',
-            minHeight: '28px',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '6px',
-            borderRadius: '6px',
-            border: '1.5px solid #1E3A47',
-            background: checkWithInvoice
-              ? '#1E3A47'
-              : '#ffffff',
-            color: checkWithInvoice ? '#ffffff' : '#1E3A47',
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-            fontSize: '0.72rem',
-            fontWeight: 800,
-            letterSpacing: '0.04em',
-            padding: '5px 10px',
-            textTransform: 'uppercase',
-            whiteSpace: 'nowrap',
-            transition:
-              'background 160ms ease, color 160ms ease',
-          }}
-        >
-          {checkWithInvoice
-            ? 'Hide Invoice Check'
-            : 'Check with Invoice'}
-        </button>
+        !isCompleted && (
+          <button
+            type="button"
+            onClick={() =>
+              setCheckWithInvoice((prev) => !prev)
+            }
+            style={{
+              display: 'inline-flex',
+              minHeight: '28px',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              borderRadius: '6px',
+              border: '1.5px solid #1E3A47',
+              background: checkWithInvoice
+                ? '#1E3A47'
+                : '#ffffff',
+              color: checkWithInvoice ? '#ffffff' : '#1E3A47',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              fontSize: '0.72rem',
+              fontWeight: 800,
+              letterSpacing: '0.04em',
+              padding: '5px 10px',
+              textTransform: 'uppercase',
+              whiteSpace: 'nowrap',
+              transition:
+                'background 160ms ease, color 160ms ease',
+            }}
+          >
+            {checkWithInvoice
+              ? 'Hide Invoice Check'
+              : 'Check with Invoice'}
+          </button>
+        )
       }
     >
       <table className="dataverse-charge-table dataverse-ledger-table">
@@ -1450,6 +1458,7 @@ export function ChargesWorkspace({
   onClosingTicketRefresh,
   invoices = [],
   readOnly = false,
+  isCompleted = false,
 }: ChargesWorkspaceProps) {
   const [savingId, setSavingId] = useState<string | null>(null)
   const [autoMoving, setAutoMoving] = useState(false)
@@ -1648,6 +1657,7 @@ export function ChargesWorkspace({
               paymentsHeader="Payments"
               invoices={invoices}
               isSellerLedger={true}
+              isCompleted={isCompleted}
             />
 
             <LedgerTable
@@ -1658,6 +1668,7 @@ export function ChargesWorkspace({
               useRunningBalance
               invoices={invoices}
               isSellerLedger={false}
+              isCompleted={isCompleted}
             />
           </div>
         </div>

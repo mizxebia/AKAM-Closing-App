@@ -108,7 +108,10 @@ export function ClosingTicketDetailsPage({
     refreshing: chargesRefreshing,
     error: chargesError,
     refresh: refreshCharges,
-  } = useCharges(ticketId)
+  } = useCharges(
+    ticketId,
+    Number(record?.cr7de_ticketstatus) === COMPLETED_STATUS
+  )
 
   useEffect(() => {
     let isMounted = true
@@ -458,6 +461,7 @@ export function ClosingTicketDetailsPage({
               onClosingTicketRefresh={refreshClosingRecord}
               invoices={invoiceRecords}
               readOnly={isReadOnly}
+              isCompleted={Number(record.cr7de_ticketstatus) === COMPLETED_STATUS}
             />
           )}
 

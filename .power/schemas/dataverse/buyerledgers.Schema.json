@@ -26,6 +26,45 @@
           "x-ms-schema-name": "cr109_Charges",
           "maxLength": 100
         },
+        "cr109_chgrec": {
+          "type": "string",
+          "title": "Chg/Rec",
+          "x-ms-dataverse-attribute": "cr109_chgrec",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_ChgRec",
+          "maxLength": 100
+        },
+        "cr109_completionstatus": {
+          "type": "string",
+          "title": "CompletionStatus",
+          "x-ms-dataverse-attribute": "cr109_completionstatus",
+          "x-ms-dataverse-type": "PicklistType",
+          "x-ms-schema-name": "cr109_CompletionStatus",
+          "enum": [
+            "Completed",
+            "InComplete"
+          ],
+          "x-ms-enum-values": [
+            396620000,
+            396620001
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "7de645a0-908a-f111-ab0f-7c1e52005c97",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "CompletionStatus",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "cr109_completionstatusname": {
+          "type": "string",
+          "title": "cr109_completionstatusname",
+          "x-ms-dataverse-attribute": "cr109_completionstatusname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "cr109_completionstatusName",
+          "x-ms-read-only": true
+        },
         "cr109_date": {
           "type": "string",
           "title": "Date",
@@ -48,6 +87,14 @@
           "x-ms-dataverse-attribute": "cr109_index",
           "x-ms-dataverse-type": "StringType",
           "x-ms-schema-name": "cr109_Index",
+          "maxLength": 100
+        },
+        "cr109_invoiceno": {
+          "type": "string",
+          "title": "Invoice No",
+          "x-ms-dataverse-attribute": "cr109_invoiceno",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_InvoiceNo",
           "maxLength": 100
         },
         "cr109_payments": {
