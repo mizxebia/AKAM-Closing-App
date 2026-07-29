@@ -451,6 +451,20 @@ function getInputMode(
   return undefined
 }
 
+const BUYER_1_ADDRESS_FIELDS: EditableNewOwnerTicketField[] = [
+  'cr109_buyer1address',
+  'cr109_buyer1city',
+  'cr109_buyer1state',
+  'cr109_buyer1zip',
+]
+
+const BUYER_2_ADDRESS_FIELDS: EditableNewOwnerTicketField[] = [
+  'cr109_buyer2address',
+  'cr109_buyer2city',
+  'cr109_buyer2state',
+  'cr109_buyer2zip',
+]
+
 export function NewOwnerTicketForm({
   formState,
   errors,
@@ -465,6 +479,27 @@ export function NewOwnerTicketForm({
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault()
     onSubmit()
+  }
+
+  // Buyer 1/2 address fields become required once the corresponding
+  // Occupancy is set to Absent (mailing address is needed to reach them).
+  const isFieldRequired = (field: FieldConfig) => {
+    if (field.required) {
+      return true
+    }
+    if (
+      BUYER_1_ADDRESS_FIELDS.includes(field.name) &&
+      formState.cr109_purchaser1occupancy === 'Absent'
+    ) {
+      return true
+    }
+    if (
+      BUYER_2_ADDRESS_FIELDS.includes(field.name) &&
+      formState.cr109_purchaser2occupancy === 'Absent'
+    ) {
+      return true
+    }
+    return false
   }
 
   const renderField = (field: FieldConfig) => {
@@ -506,7 +541,7 @@ export function NewOwnerTicketForm({
         <label key={field.name} className={commonClassName}>
           <span>
             {field.label}
-            {field.required && <strong> *</strong>}
+            {isFieldRequired(field) && <strong> *</strong>}
           </span>
           <textarea
             value={String(value)}
@@ -529,7 +564,7 @@ export function NewOwnerTicketForm({
         <label key={field.name} className={commonClassName}>
           <span>
             {field.label}
-            {field.required && <strong> *</strong>}
+            {isFieldRequired(field) && <strong> *</strong>}
           </span>
           <select
             value={String(value)}
@@ -555,7 +590,7 @@ export function NewOwnerTicketForm({
           key={field.name}
           label={field.label}
           value={String(value)}
-          required={field.required}
+          required={isFieldRequired(field)}
           readOnly={field.readOnly}
           wide={field.wide}
           onChange={(formatted) =>

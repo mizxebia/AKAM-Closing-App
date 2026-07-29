@@ -474,6 +474,44 @@ function validateForm(
       'Enter a valid email address.'
   }
 
+  if (formState.cr109_purchaser1occupancy === 'Absent') {
+    if (!formState.cr109_buyer1address.trim()) {
+      errors.cr109_buyer1address =
+        'Required when Buyer 1 Occupancy is Absent.'
+    }
+    if (!formState.cr109_buyer1city.trim()) {
+      errors.cr109_buyer1city =
+        'Required when Buyer 1 Occupancy is Absent.'
+    }
+    if (!formState.cr109_buyer1state.trim()) {
+      errors.cr109_buyer1state =
+        'Required when Buyer 1 Occupancy is Absent.'
+    }
+    if (!formState.cr109_buyer1zip.trim()) {
+      errors.cr109_buyer1zip =
+        'Required when Buyer 1 Occupancy is Absent.'
+    }
+  }
+
+  if (formState.cr109_purchaser2occupancy === 'Absent') {
+    if (!formState.cr109_buyer2address.trim()) {
+      errors.cr109_buyer2address =
+        'Required when Buyer 2 Occupancy is Absent.'
+    }
+    if (!formState.cr109_buyer2city.trim()) {
+      errors.cr109_buyer2city =
+        'Required when Buyer 2 Occupancy is Absent.'
+    }
+    if (!formState.cr109_buyer2state.trim()) {
+      errors.cr109_buyer2state =
+        'Required when Buyer 2 Occupancy is Absent.'
+    }
+    if (!formState.cr109_buyer2zip.trim()) {
+      errors.cr109_buyer2zip =
+        'Required when Buyer 2 Occupancy is Absent.'
+    }
+  }
+
   return errors
 }
 
