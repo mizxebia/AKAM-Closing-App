@@ -238,6 +238,8 @@ const BEHAVIOURS: BehaviourCard[] = [
     body: 'If the RPTT was uploaded incorrectly, delete it while the ticket is in Post Closing or Validate Closings — the ticket automatically rolls back to Ready For Post Closing. From there, upload the correct document and click Save, then click "Move to Post Closing" again. RPTT extraction and the YARDI charges fetch both run again from scratch on the new document, and once charges are refetched you will need to validate the closing again.' },
   { icon: '🎫', title: 'Generate New Owner Ticket before Validate',
     body: 'Click "Generate New Owner Ticket" in the New Owner Ticket tab first. The PDF must be generated before the Validate button appears. When you click Validate, the New Owner Ticket PDF is automatically regenerated with the latest data. Buyer and Seller SSN/EIN fields only accept 9 digits. Occupancy fields are locked to "Present" or "Absent". Empty Additional Occupant fields are saved as N/A.' },
+  { icon: '📍', title: 'Absent buyers need their own mailing address',
+    body: 'When Buyer 1 or Buyer 2 Occupancy is set to Absent, that buyer\'s Address, City, State and ZIP become required. Whatever is typed there is sent to YARDI exactly as entered — the unit\'s building address is never used as a substitute.' },
   { icon: '👁', title: 'All documents are viewable inside the app',
     body: 'Once uploaded or generated, all documents are viewable directly in the document panel on the right side of the ticket.' },
   { icon: '💬', title: 'Ticket showing as Failed?',
@@ -1075,6 +1077,9 @@ function NewOwnerTicketContent() {
         </div>
         <InfoCallout>
           In the app, the Occupancy field only accepts <strong>Present</strong> or <strong>Absent</strong>. You cannot type free text into this field — use the dropdown.
+        </InfoCallout>
+        <InfoCallout>
+          <strong>Absent buyers need their own mailing address.</strong> When Buyer 1 or Buyer 2 Occupancy is set to Absent, that buyer's Address, City, State and ZIP become required fields on this form. Whatever is typed into them is sent to YARDI <strong>exactly as entered</strong> — the unit's building address is never substituted in, so type the buyer's actual mailing address.
         </InfoCallout>
       </div>
 
