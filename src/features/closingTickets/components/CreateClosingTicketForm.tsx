@@ -33,6 +33,7 @@ import type {
 } from '../types/closingTicket'
 import { useCurrentUser } from '../hooks/useCurrentUser'
 import { ProcessingDots } from '../../../components/feedback/ProcessingDots'
+import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import { getBuildings } from '../data/buildingListCache'
 
 type FormErrors = Partial<
@@ -50,6 +51,7 @@ const READY_FOR_POST_CLOSING_STATUS = 716070006
 const POST_CLOSING_STATUS = 716070004
 const PURCHASE_FORM_DATA_EXTRACTED_BOT_STATUS = 396620013
 const RPTT_UPLOADED_BOT_STATUS = 396620010
+const COOP_TRANSFER_PACKAGE_TYPE = 396620002
 const emptyUploadedFileNames: UploadedFileNames = {}
 
 interface CreateClosingTicketFormProps {
@@ -399,6 +401,14 @@ function validateForm(
   }
 
   if (
+    formState.cr109_packagetype === COOP_TRANSFER_PACKAGE_TYPE &&
+    !formState.cr7de_buyertcode.trim()
+  ) {
+    errors.cr7de_buyertcode =
+      'Buyer T-Code is required for Coop Transfer.'
+  }
+
+  if (
     formState.cr7de_closingagentemail.trim() &&
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
       formState.cr7de_closingagentemail
@@ -572,6 +582,10 @@ function ClosingTicketEditorForm({
   const [saving, setSaving] = useState(false)
   const [buildingLookupOpen, setBuildingLookupOpen] =
     useState(false)
+  const [yardiFlagConfirmOpen, setYardiFlagConfirmOpen] =
+    useState(false)
+  const [packageTypeChangedAt, setPackageTypeChangedAt] =
+    useState<number | null>(null)
   const submitIntentRef = useRef<'save' | 'submit'>(
     'save'
   )
@@ -861,6 +875,14 @@ function ClosingTicketEditorForm({
           {saveError}
         </div>
       )}
+      {packageTypeChangedAt !== null && (
+        <StatusBanner
+          key={packageTypeChangedAt}
+          type="success"
+          message="Package Type has been changed to Coop Transfer."
+          autoDismissMs={4000}
+        />
+      )}
 
       <fieldset disabled={readOnly} style={{ border: 'none', padding: 0, margin: 0 }}>
       <div className="create-closing-form-scroll">
@@ -955,16 +977,22 @@ function ClosingTicketEditorForm({
           <FormField label="Package Type" required error={errors.cr109_packagetype}>
             <select
               value={formState.cr109_packagetype}
-              onChange={(event) =>
-                updateField(
-                  'cr109_packagetype',
-                  (event.target.value === ''
-                    ? ''
-                    : Number(
-                        event.target.value
-                      )) as ClosingTicketFormState['cr109_packagetype']
-                )
-              }
+              onChange={(event) => {
+                const nextValue = (event.target.value === ''
+                  ? ''
+                  : Number(
+                      event.target.value
+                    )) as ClosingTicketFormState['cr109_packagetype']
+                updateField('cr109_packagetype', nextValue)
+                // Coop Transfer buyers are already set up in Yardi, so flag it automatically.
+                // Any other package type hides the Buyer T-Code field, so clear the flag too.
+                if (nextValue === COOP_TRANSFER_PACKAGE_TYPE) {
+                  updateField('cr7de_buyerexistsinyardi', true)
+                } else {
+                  updateField('cr7de_buyerexistsinyardi', false)
+                  updateField('cr7de_buyertcode', '')
+                }
+              }}
             >
               <option value="">Select package</option>
               {packageTypeOptions.map((option) => (
@@ -996,6 +1024,27 @@ function ClosingTicketEditorForm({
               />
             </FormField>
           )}
+
+          {isCreateMode &&
+            formState.cr109_packagetype ===
+              COOP_TRANSFER_PACKAGE_TYPE && (
+              <FormField
+                label="Buyer T-Code"
+                required
+                error={errors.cr7de_buyertcode}
+              >
+                <input
+                  value={formState.cr7de_buyertcode}
+                  onChange={(event) =>
+                    updateField(
+                      'cr7de_buyertcode',
+                      event.target.value
+                    )
+                  }
+                  placeholder="e.g. T12345"
+                />
+              </FormField>
+            )}
 
           {!isCreateMode && (
             <FormField label="Building Name">
@@ -1160,7 +1209,14 @@ function ClosingTicketEditorForm({
               />
             </FormField>
 
-            <FormField label="Buyer T-Code">
+            <FormField
+              label="Buyer T-Code"
+              required={
+                formState.cr109_packagetype ===
+                COOP_TRANSFER_PACKAGE_TYPE
+              }
+              error={errors.cr7de_buyertcode}
+            >
               <input
                 value={formState.cr7de_buyertcode}
                 onChange={(event) =>
@@ -1349,12 +1405,22 @@ function ClosingTicketEditorForm({
           <CheckboxField
             label="Buyer exists in Yardi"
             checked={formState.cr7de_buyerexistsinyardi}
-            onChange={(checked) =>
-              updateField(
-                'cr7de_buyerexistsinyardi',
-                checked
-              )
+            disabled={
+              formState.cr109_packagetype ===
+              COOP_TRANSFER_PACKAGE_TYPE
             }
+            title="Buyer exists in Yardi cannot be unchecked while Package Type is Coop Transfer."
+            onChange={(checked) => {
+              if (
+                checked &&
+                formState.cr109_packagetype !==
+                  COOP_TRANSFER_PACKAGE_TYPE
+              ) {
+                setYardiFlagConfirmOpen(true)
+                return
+              }
+              updateField('cr7de_buyerexistsinyardi', checked)
+            }}
           />
           </div>
         </section>
@@ -1514,6 +1580,44 @@ function ClosingTicketEditorForm({
           updateField('cr109_legalname', legalName)
         }}
       />
+
+      <AlertDialog
+        open={yardiFlagConfirmOpen}
+        onOpenChange={setYardiFlagConfirmOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Change Package Type to Coop Transfer?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              "Buyer exists in Yardi" only applies to Coop
+              Transfer closings. Checking this flag will change
+              the Package Type to Coop Transfer. Do you want to
+              go ahead with the change?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-white text-[#1E3A47] border border-[#1E3A47] hover:bg-[#1E3A47]/5">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-[#1E3A47] text-[#F5F2EC] hover:bg-[#152d38]"
+              onClick={() => {
+                updateField(
+                  'cr109_packagetype',
+                  COOP_TRANSFER_PACKAGE_TYPE
+                )
+                updateField('cr7de_buyerexistsinyardi', true)
+                setPackageTypeChangedAt(Date.now())
+              }}
+            >
+              Change Package Type
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </form>
   )
 }
@@ -1707,16 +1811,24 @@ function CheckboxField({
   label,
   checked,
   onChange,
+  disabled = false,
+  title,
 }: {
   label: string
   checked: boolean
   onChange: (checked: boolean) => void
+  disabled?: boolean
+  title?: string
 }) {
   return (
-    <label className="checkbox-field">
+    <label
+      className="checkbox-field"
+      title={disabled ? title : undefined}
+    >
       <input
         type="checkbox"
         checked={checked}
+        disabled={disabled}
         onChange={(event) =>
           onChange(event.target.checked)
         }
