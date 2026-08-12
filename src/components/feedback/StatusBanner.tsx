@@ -10,23 +10,27 @@ interface StatusBannerProps {
 export function StatusBanner({
   type,
   message,
-  autoDismissMs = 5000,
+  autoDismissMs,
 }: StatusBannerProps) {
   const [visible, setVisible] = useState(true)
+  // Errors get longer on-screen time by default so there's time to read
+  // and copy the message before it disappears; callers can still override.
+  const effectiveAutoDismissMs =
+    autoDismissMs ?? (type === 'error' ? 20000 : 5000)
 
   useEffect(() => {
     setVisible(true)
 
-    if (type === 'loading' || autoDismissMs <= 0) {
+    if (type === 'loading' || effectiveAutoDismissMs <= 0) {
       return
     }
 
     const timeoutId = window.setTimeout(() => {
       setVisible(false)
-    }, autoDismissMs)
+    }, effectiveAutoDismissMs)
 
     return () => window.clearTimeout(timeoutId)
-  }, [autoDismissMs, message, type])
+  }, [effectiveAutoDismissMs, message, type])
 
   if (!visible) {
     return null

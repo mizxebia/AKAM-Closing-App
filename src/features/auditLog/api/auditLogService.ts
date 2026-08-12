@@ -64,7 +64,11 @@ function getModifiedBy(): Promise<string> {
   return _modifiedByPromise
 }
 
-export type ChangeOperation = 'create' | 'update' | 'delete'
+export type ChangeOperation =
+  | 'create'
+  | 'update'
+  | 'delete'
+  | 'action'
 
 export interface ChangeLogEntry {
   /** The closing ticket this change is associated with */
@@ -134,6 +138,147 @@ export function writeChangeLog(entry: ChangeLogEntry): void {
       console.warn('[auditLog] writeChangeLog threw:', err)
     }
   })()
+}
+
+/**
+ * Records a significant lifecycle event that isn't a plain Dataverse
+ * create/update/delete — e.g. "Generate Invoice was triggered" or
+ * "Closing was validated" — so it shows up distinctly in the App Logs
+ * viewer instead of blending into routine field edits.
+ *
+ * `details` is stored as-is under `newData` (with an `action` label
+ * merged in) so any relevant data — flow status, a snapshot of the
+ * record being validated, etc. — is captured alongside the event.
+ */
+export function writeActionLog(entry: {
+  ticketId: string
+  tableName: string
+  action: string
+  details?: Record<string, unknown>
+}): void {
+  writeChangeLog({
+    ticketId: entry.ticketId,
+    tableName: entry.tableName,
+    operation: 'create',
+    oldData: null,
+    newData: { action: entry.action, ...entry.details },
+  })
+}
+
+export interface ChangeLogRecord {
+  id: string
+  ticketId: string
+  tableName: string
+  operation: ChangeOperation
+  modifiedBy: string
+  createdOn: string
+  oldData: Record<string, unknown> | null
+  newData: Record<string, unknown> | null
+}
+
+export interface ChangeLogFilters {
+  ticketId?: string
+  tableName?: string
+  operation?: ChangeOperation
+  limit?: number
+}
+
+function escapeODataString(value: string) {
+  return value.replace(/'/g, "''")
+}
+
+function parseJsonField(
+  value: string | undefined
+): Record<string, unknown> | null {
+  if (!value) {
+    return null
+  }
+
+  try {
+    return JSON.parse(value) as Record<string, unknown>
+  } catch {
+    // Fall back to a readable wrapper rather than dropping the data —
+    // logs should still be inspectable even if a field didn't round-trip.
+    return { raw: value }
+  }
+}
+
+function inferOperation(
+  oldData: Record<string, unknown> | null,
+  newData: Record<string, unknown> | null
+): ChangeOperation {
+  // writeActionLog tags lifecycle events (Generate Invoice, Validate,
+  // etc.) with an "action" label inside newData — there's no dedicated
+  // Dataverse column for operation, so this is the only signal available
+  // to tell those apart from a plain record create.
+  if (newData && typeof newData.action === 'string') {
+    return 'action'
+  }
+  if (!oldData) {
+    return 'create'
+  }
+  if (!newData) {
+    return 'delete'
+  }
+  return 'update'
+}
+
+/**
+ * Reads change log entries, most recent first. Pass `ticketId` to scope
+ * the log viewer to a single closing (e.g. when opened from the Closing
+ * Details page); omit it to browse everything (e.g. from the dashboard).
+ */
+export async function getChangeLogs(
+  filters: ChangeLogFilters = {}
+): Promise<ChangeLogRecord[]> {
+  const filterClauses: string[] = []
+
+  if (filters.ticketId?.trim()) {
+    filterClauses.push(
+      `cr7de_ticketid eq '${escapeODataString(filters.ticketId.trim())}'`
+    )
+  }
+  if (filters.tableName?.trim()) {
+    filterClauses.push(
+      `cr7de_tablename eq '${escapeODataString(filters.tableName.trim())}'`
+    )
+  }
+
+  const response = await Cr7de_appchangelogsService.getAll({
+    filter: filterClauses.length
+      ? filterClauses.join(' and ')
+      : undefined,
+    orderBy: ['createdon desc'],
+    top: filters.limit ?? 200,
+  })
+
+  if (!response.success) {
+    throw new Error(
+      response.error?.message || 'Failed to load change logs.'
+    )
+  }
+
+  const records = (response.data ?? []).map(
+    (record): ChangeLogRecord => {
+      const oldData = parseJsonField(record.cr7de_olddata)
+      const newData = parseJsonField(record.cr7de_newdata)
+
+      return {
+        id: record.cr7de_appchangelogid,
+        ticketId: record.cr7de_ticketid ?? '',
+        tableName: record.cr7de_tablename ?? '',
+        operation: inferOperation(oldData, newData),
+        modifiedBy: record.cr7de_modifiedby ?? 'unknown',
+        createdOn: record.createdon ?? '',
+        oldData,
+        newData,
+      }
+    }
+  )
+
+  return filters.operation
+    ? records.filter((r) => r.operation === filters.operation)
+    : records
 }
 
 /**

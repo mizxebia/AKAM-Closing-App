@@ -607,7 +607,7 @@ export function NewOwnerTicketForm({
       <label key={field.name} className={commonClassName}>
         <span>
           {field.label}
-          {field.required && <strong> *</strong>}
+          {isFieldRequired(field) && <strong> *</strong>}
         </span>
         <input
           type={field.kind === 'date' ? 'date' : 'text'}

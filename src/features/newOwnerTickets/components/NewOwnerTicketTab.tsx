@@ -8,6 +8,7 @@ import { ClipboardList, UserPlus } from 'lucide-react'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import { LoadingSkeleton } from '../../../components/enterprise'
 import { updateClosingTicket } from '../../closingTickets/api/closingTicketsService'
+import { writeActionLog } from '../../auditLog/api/auditLogService'
 import type { ClosingTicketRecord } from '../../closingTickets/types/closingTicket'
 import {
   getUnconfirmedScheduledCharges,
@@ -44,7 +45,7 @@ interface NewOwnerTicketTabProps {
   isCompleted?: boolean
 }
 
-type ValidationErrors = Partial<
+export type ValidationErrors = Partial<
   Record<EditableNewOwnerTicketField, string>
 >
 
@@ -69,7 +70,7 @@ function valueOrEmpty(value?: string) {
   return value ?? ''
 }
 
-function getInitialFormState(
+export function getInitialFormState(
   closingTicket: ClosingTicketRecord,
   record?: NewOwnerTicketRecord | null
 ): NewOwnerTicketFormState {
@@ -256,7 +257,7 @@ function getInitialFormState(
   }
 }
 
-function normalizeText(value: string) {
+export function normalizeText(value: string) {
   const trimmedValue = value.trim()
   return trimmedValue === '' ? undefined : trimmedValue
 }
@@ -270,7 +271,7 @@ function normalizeOrNA(value: string) {
   return normalizeText(value) ?? 'N/A'
 }
 
-function toPayload(
+export function toPayload(
   formState: NewOwnerTicketFormState,
   includeStateFields: boolean
 ): NewOwnerTicketInput {
@@ -460,7 +461,7 @@ function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
 }
 
-function validateForm(
+export function validateForm(
   formState: NewOwnerTicketFormState
 ): ValidationErrors {
   const errors: ValidationErrors = {}
@@ -724,6 +725,36 @@ export function NewOwnerTicketTab({
       })
       await onSaved()
 
+      // Record what was validated — a curated subset of the New Owner
+      // Ticket record, not the full ~40-field record, since the audit
+      // log's data columns are capped at 4000 characters.
+      writeActionLog({
+        ticketId: closingTicket.cr7de_ticketid ?? recordId,
+        tableName: 'cr7de_newownerticketdetailses',
+        action: 'Validate Closing',
+        details: {
+          validatedData: record
+            ? {
+                ticketId: record.cr7de_ticketid,
+                primaryOwnerName: record.cr7de_newprimaryownername,
+                primaryOwnerTCode: record.cr109_primaryownertcode,
+                secondaryOwnerName:
+                  record.cr7de_newsecondaryownername,
+                purchaser1Occupancy:
+                  record.cr109_purchaser1occupancy,
+                purchaser2Occupancy:
+                  record.cr109_purchaser2occupancy,
+                sellerName: record.cr7de_sellername,
+                sellerTCode: record.cr7de_sellertcode,
+                purchasePrice: record.cr109_purchaseprice,
+                amountFinanced: record.cr109_amountfinanced,
+                shares: record.cr109_shares,
+                closingDate: record.cr7de_closingdate,
+              }
+            : null,
+        },
+      })
+
       // Regenerate the New Owner Ticket PDF immediately after validation
       // so the latest data is reflected in the generated document.
       if (onGenerateTicket) {
@@ -740,7 +771,13 @@ export function NewOwnerTicketTab({
     } finally {
       setValidating(false)
     }
-  }, [closingTicket.cr7de_closingticketdetailsid, onSaved, onGenerateTicket])
+  }, [
+    closingTicket.cr7de_closingticketdetailsid,
+    closingTicket.cr7de_ticketid,
+    onSaved,
+    onGenerateTicket,
+    record,
+  ])
 
   return (
     <section className="grid gap-4">

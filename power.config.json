@@ -45,6 +45,14 @@
           }
         }
       }
+    },
+    "90bef2d6-aa50-46a0-bfa3-0291b4726e76": {
+      "id": "/providers/Microsoft.PowerApps/apis/shared_onedriveforbusiness",
+      "displayName": "OneDrive for Business",
+      "dataSources": [
+        "onedriveforbusiness"
+      ],
+      "dataSets": {}
     }
   },
   "databaseReferences": {

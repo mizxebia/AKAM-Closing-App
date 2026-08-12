@@ -13,9 +13,11 @@ import {
 } from '../../auditLog/api/auditLogService'
 import { trimStringFields } from '../../../lib/textNormalization'
 
-type ClosingTicketUploadColumnName =
+export type ClosingTicketUploadColumnName =
   | 'cr109_purchaseapplicationform'
   | 'cr109_rpttdocument'
+  | 'cr109_closingticketdetailspdf'
+  | 'cr109_newownerticketpdf'
 
 const TABLE_NAME = 'cr7de_closingticketdetailses'
 const closingTicketTableName = TABLE_NAME

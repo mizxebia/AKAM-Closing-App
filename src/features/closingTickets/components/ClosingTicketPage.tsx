@@ -24,6 +24,11 @@ import { useCurrentUser } from '../hooks/useCurrentUser'
 import { CreateClosingTicketForm } from './CreateClosingTicketForm'
 import { ClosingTicketDetailsPage } from './ClosingTicketDetailsPage'
 import { HelpCentreModal } from './HelpCentreModal'
+import {
+  useDeveloperMode,
+  DeveloperModeToggle,
+} from '../../devScreenshots'
+import { AppLogsViewer } from '../../devTools'
 
 function getInitials(name: string | null): string {
   if (!name) return '?'
@@ -113,6 +118,8 @@ export function ClosingTicketPage() {
   const [selectedRecordId, setSelectedRecordId] =
     useState<string | null>(null)
   const [helpOpen, setHelpOpen] = useState(false)
+  const [logsViewerOpen, setLogsViewerOpen] = useState(false)
+  const developerMode = useDeveloperMode()
 
   const {
     records,
@@ -177,6 +184,21 @@ export function ClosingTicketPage() {
             gradient="linear-gradient(135deg, #dce8ef 0%, #F5F2EC 55%, #EDE8E0 100%)"
             actions={
               <>
+                {developerMode.isAllowed && (
+                  <DeveloperModeToggle
+                    enabled={developerMode.enabled}
+                    onToggle={developerMode.toggle}
+                  />
+                )}
+                {developerMode.enabled && (
+                  <button
+                    className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] transition hover:bg-[#F5F2EC]"
+                    type="button"
+                    onClick={() => setLogsViewerOpen(true)}
+                  >
+                    View Logs
+                  </button>
+                )}
                 <button
                   className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#1E3A47] bg-transparent px-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] transition hover:bg-[rgba(30,58,71,0.06)] disabled:cursor-not-allowed disabled:opacity-50"
                   type="button"
@@ -293,6 +315,13 @@ export function ClosingTicketPage() {
             </div>
           </SheetContent>
         </Sheet>
+
+        {developerMode.isAllowed && (
+          <AppLogsViewer
+            open={logsViewerOpen}
+            onOpenChange={setLogsViewerOpen}
+          />
+        )}
       </div>
     </>
   )

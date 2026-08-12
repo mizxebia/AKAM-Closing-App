@@ -37,6 +37,16 @@ import {
 } from './WorkflowTabs'
 import { domecileLogoBase64, yardiLogoBase64 } from '../../../assets/logoData'
 import { useAutoClear } from '../../../hooks/useAutoClear'
+import {
+  useDeveloperMode,
+  DeveloperModeToggle,
+  ScreenshotGallery,
+} from '../../devScreenshots'
+import {
+  AppLogsViewer,
+  ManualDocumentUpload,
+} from '../../devTools'
+import { writeActionLog } from '../../auditLog/api/auditLogService'
 
 const FAILED_TICKET_STATUS = 716070007
 const PROCESSING_TICKET_STATUS = 716070005
@@ -92,7 +102,9 @@ export function ClosingTicketDetailsPage({
     useState<WorkflowTabKey>('details')
   const [invoiceViewerOpen, setInvoiceViewerOpen] =
     useState(false)
+  const [logsViewerOpen, setLogsViewerOpen] = useState(false)
   const ticketId = record?.cr7de_ticketid
+  const developerMode = useDeveloperMode()
   const {
     records: invoiceRecords,
     loading: invoicesLoading,
@@ -207,14 +219,26 @@ export function ClosingTicketDetailsPage({
       setSuccessMessage(
         'Invoice Generated Successfully.'
       )
+      writeActionLog({
+        ticketId: currentTicketId,
+        tableName: 'cr7de_closingticketdetailses',
+        action: 'Generate Invoice',
+        details: { result: 'success', flowStatus },
+      })
       await refreshClosingRecord()
       await refreshInvoices()
     } catch (err) {
-      setError(
+      const message =
         err instanceof Error
           ? err.message
           : 'Unable to generate invoice.'
-      )
+      setError(message)
+      writeActionLog({
+        ticketId: currentTicketId,
+        tableName: 'cr7de_closingticketdetailses',
+        action: 'Generate Invoice',
+        details: { result: 'failed', error: message },
+      })
     } finally {
       setGeneratingInvoice(false)
     }
@@ -259,13 +283,25 @@ export function ClosingTicketDetailsPage({
       setSuccessMessage(
         'New Owner Ticket Generated Successfully.'
       )
+      writeActionLog({
+        ticketId: currentTicketId,
+        tableName: 'cr7de_closingticketdetailses',
+        action: 'Generate New Owner Ticket',
+        details: { result: 'success', flowStatus },
+      })
       await refreshClosingRecord()
     } catch (err) {
-      setError(
+      const message =
         err instanceof Error
           ? err.message
           : 'Unable to generate new owner ticket.'
-      )
+      setError(message)
+      writeActionLog({
+        ticketId: currentTicketId,
+        tableName: 'cr7de_closingticketdetailses',
+        action: 'Generate New Owner Ticket',
+        details: { result: 'failed', error: message },
+      })
     } finally {
       setGeneratingNewOwnerTicket(false)
     }
@@ -308,6 +344,13 @@ export function ClosingTicketDetailsPage({
             className="h-6 w-auto max-w-full object-contain"
           />
         </a>
+
+        {developerMode.isAllowed && (
+          <DeveloperModeToggle
+            enabled={developerMode.enabled}
+            onToggle={developerMode.toggle}
+          />
+        )}
 
         <button
           className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-sm font-semibold text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC]"
@@ -384,6 +427,36 @@ export function ClosingTicketDetailsPage({
             </p>
           </div>
         </div>
+      )}
+
+      {developerMode.enabled && record && ticketId && (
+        <>
+          <section className="form-section">
+            <div className="flex items-center justify-between">
+              <h3>Developer Tools</h3>
+              <button
+                type="button"
+                className="inline-flex h-8 items-center gap-1.5 rounded-md border border-[#D5CBB8] bg-white px-3 text-xs font-semibold text-[#1E3A47] hover:bg-[#F5F2EC]"
+                onClick={() => setLogsViewerOpen(true)}
+              >
+                View Logs
+              </button>
+            </div>
+
+            <ManualDocumentUpload
+              closingTicketId={record.cr7de_closingticketdetailsid}
+              currentInvoicePdfName={
+                record.cr109_closingticketdetailspdf_name
+              }
+              currentNewOwnerPdfName={
+                record.cr109_newownerticketpdf_name
+              }
+              onUploaded={refreshClosingRecord}
+            />
+          </section>
+
+          <ScreenshotGallery ticketId={ticketId} />
+        </>
       )}
 
       {loading && (
@@ -516,6 +589,14 @@ export function ClosingTicketDetailsPage({
             </div>
           </SheetContent>
         </Sheet>
+      )}
+
+      {developerMode.isAllowed && (
+        <AppLogsViewer
+          open={logsViewerOpen}
+          onOpenChange={setLogsViewerOpen}
+          ticketId={ticketId}
+        />
       )}
     </>
   )
