@@ -9,6 +9,7 @@ import {
   writeChangeLog,
   extractOldValues,
 } from '../../auditLog/api/auditLogService'
+import { trimStringFields } from '../../../lib/textNormalization'
 
 const TABLE_NAME = 'cr7de_invoicedetailses'
 
@@ -44,6 +45,8 @@ export async function getInvoicesByClosingTicketId(
 export async function createInvoiceDetail(
   newRecord: InvoiceCreateInput
 ): Promise<InvoiceRecord> {
+  newRecord = trimStringFields(newRecord)
+
   const result =
     await Cr7de_invoicedetailsesService.create(
       newRecord as Omit<
@@ -83,6 +86,8 @@ export async function updateInvoiceDetail(
   changedFields: InvoiceUpdateInput,
   context: { ticketId: string; oldRecord?: InvoiceRecord }
 ): Promise<InvoiceRecord> {
+  changedFields = trimStringFields(changedFields)
+
   const result =
     await Cr7de_invoicedetailsesService.update(
       invoiceId,

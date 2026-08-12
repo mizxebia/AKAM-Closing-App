@@ -17,30 +17,14 @@
       "displayName": "Logic flows",
       "dataSources": [
         "nsc_generate_invoice"
-      ],
-      "workflowDetails": {
-        "workflowEntityId": "3a83a9c6-6650-f111-bec6-7ced8d1a5d5b",
-        "workflowDisplayName": "NSC_Generate_Invoice",
-        "workflowName": "f08c6a8a-fc9e-4c39-735d-53c71c441d7d",
-        "dependencies": {
-          "shared_office365": "72e1301e-2b3f-46c9-9b11-35c763bdad20"
-        }
-      }
+      ]
     },
     "377cb07f-27b5-4ae5-b765-e3c1d001b6d6": {
       "id": "/providers/Microsoft.PowerApps/apis/shared_logicflows",
       "displayName": "Logic flows",
       "dataSources": [
         "nsc_generate_new_owner_ticket"
-      ],
-      "workflowDetails": {
-        "workflowEntityId": "5fde12b8-935d-f111-a826-7ced8d1a5d5b",
-        "workflowDisplayName": "NSC_Generate_New_Owner_Ticket",
-        "workflowName": "042f9690-d468-00e6-6fc4-9ef86c1a9d3c",
-        "dependencies": {
-          "shared_office365": "72e1301e-2b3f-46c9-9b11-35c763bdad20"
-        }
-      }
+      ]
     },
     "72e1301e-2b3f-46c9-9b11-35c763bdad20": {
       "id": "/providers/microsoft.powerapps/apis/shared_office365",

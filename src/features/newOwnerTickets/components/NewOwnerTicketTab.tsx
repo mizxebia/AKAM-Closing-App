@@ -261,10 +261,24 @@ function normalizeText(value: string) {
   return trimmedValue === '' ? undefined : trimmedValue
 }
 
+// Name/SSN/address/city/state/zip fields fall back to 'N/A' when left blank,
+// since Dataverse and downstream documents expect a value in these fields.
+// Buyer 1/2 address-group fields are the exception: while the matching
+// Occupancy is 'Absent' a real mailing address is required, so they must
+// stay blank so validateForm's required-field check can still catch them.
+function normalizeOrNA(value: string) {
+  return normalizeText(value) ?? 'N/A'
+}
+
 function toPayload(
   formState: NewOwnerTicketFormState,
   includeStateFields: boolean
 ): NewOwnerTicketInput {
+  const buyer1AddressRequired =
+    formState.cr109_purchaser1occupancy === 'Absent'
+  const buyer2AddressRequired =
+    formState.cr109_purchaser2occupancy === 'Absent'
+
   const payload: NewOwnerTicketInput = {
     cr109_additional_occupants1name: normalizeText(
       formState.cr109_additional_occupants1name
@@ -281,30 +295,30 @@ function toPayload(
     cr109_buildingname: normalizeText(
       formState.cr109_buildingname
     ),
-    cr109_buyer1address: normalizeText(
-      formState.cr109_buyer1address
-    ),
-    cr109_buyer1city: normalizeText(
-      formState.cr109_buyer1city
-    ),
-    cr109_buyer1state: normalizeText(
-      formState.cr109_buyer1state
-    ),
-    cr109_buyer1zip: normalizeText(
-      formState.cr109_buyer1zip
-    ),
-    cr109_buyer2address: normalizeText(
-      formState.cr109_buyer2address
-    ),
-    cr109_buyer2city: normalizeText(
-      formState.cr109_buyer2city
-    ),
-    cr109_buyer2state: normalizeText(
-      formState.cr109_buyer2state
-    ),
-    cr109_buyer2zip: normalizeText(
-      formState.cr109_buyer2zip
-    ),
+    cr109_buyer1address: buyer1AddressRequired
+      ? normalizeText(formState.cr109_buyer1address)
+      : normalizeOrNA(formState.cr109_buyer1address),
+    cr109_buyer1city: buyer1AddressRequired
+      ? normalizeText(formState.cr109_buyer1city)
+      : normalizeOrNA(formState.cr109_buyer1city),
+    cr109_buyer1state: buyer1AddressRequired
+      ? normalizeText(formState.cr109_buyer1state)
+      : normalizeOrNA(formState.cr109_buyer1state),
+    cr109_buyer1zip: buyer1AddressRequired
+      ? normalizeText(formState.cr109_buyer1zip)
+      : normalizeOrNA(formState.cr109_buyer1zip),
+    cr109_buyer2address: buyer2AddressRequired
+      ? normalizeText(formState.cr109_buyer2address)
+      : normalizeOrNA(formState.cr109_buyer2address),
+    cr109_buyer2city: buyer2AddressRequired
+      ? normalizeText(formState.cr109_buyer2city)
+      : normalizeOrNA(formState.cr109_buyer2city),
+    cr109_buyer2state: buyer2AddressRequired
+      ? normalizeText(formState.cr109_buyer2state)
+      : normalizeOrNA(formState.cr109_buyer2state),
+    cr109_buyer2zip: buyer2AddressRequired
+      ? normalizeText(formState.cr109_buyer2zip)
+      : normalizeOrNA(formState.cr109_buyer2zip),
     cr109_lendersname: normalizeText(
       formState.cr109_lendersname
     ),
@@ -336,34 +350,34 @@ function toPayload(
     cr109_secondaryownerworkphonenumber: normalizeText(
       formState.cr109_secondaryownerworkphonenumber
     ),
-    cr109_seller1address: normalizeText(
+    cr109_seller1address: normalizeOrNA(
       formState.cr109_seller1address
     ),
-    cr109_seller1city: normalizeText(
+    cr109_seller1city: normalizeOrNA(
       formState.cr109_seller1city
     ),
-    cr109_seller1state: normalizeText(
+    cr109_seller1state: normalizeOrNA(
       formState.cr109_seller1state
     ),
-    cr109_seller1zip: normalizeText(
+    cr109_seller1zip: normalizeOrNA(
       formState.cr109_seller1zip
     ),
-    cr109_seller2address: normalizeText(
+    cr109_seller2address: normalizeOrNA(
       formState.cr109_seller2address
     ),
-    cr109_seller2city: normalizeText(
+    cr109_seller2city: normalizeOrNA(
       formState.cr109_seller2city
     ),
-    cr109_seller2name: normalizeText(
+    cr109_seller2name: normalizeOrNA(
       formState.cr109_seller2name
     ),
-    cr109_seller2ssnein: normalizeText(
+    cr109_seller2ssnein: normalizeOrNA(
       formState.cr109_seller2ssnein
     ),
-    cr109_seller2state: normalizeText(
+    cr109_seller2state: normalizeOrNA(
       formState.cr109_seller2state
     ),
-    cr109_seller2zip: normalizeText(
+    cr109_seller2zip: normalizeOrNA(
       formState.cr109_seller2zip
     ),
     cr109_shares: normalizeText(formState.cr109_shares),
@@ -376,10 +390,10 @@ function toPayload(
     cr7de_forwardingaddressforseller: normalizeText(
       formState.cr7de_forwardingaddressforseller
     ),
-    cr7de_newprimaryownername: normalizeText(
+    cr7de_newprimaryownername: normalizeOrNA(
       formState.cr7de_newprimaryownername
     ),
-    cr7de_newsecondaryownername: normalizeText(
+    cr7de_newsecondaryownername: normalizeOrNA(
       formState.cr7de_newsecondaryownername
     ),
     cr7de_paymentappliedtoselleraccount: normalizeText(
@@ -388,7 +402,7 @@ function toPayload(
     cr7de_primaryowneremail: normalizeText(
       formState.cr7de_primaryowneremail
     ),
-    cr7de_primaryownerssnein: normalizeText(
+    cr7de_primaryownerssnein: normalizeOrNA(
       formState.cr7de_primaryownerssnein
     ),
     cr7de_primaryphonenumber: normalizeText(
@@ -397,7 +411,7 @@ function toPayload(
     cr7de_secondaryowneremail: normalizeText(
       formState.cr7de_secondaryowneremail
     ),
-    cr7de_secondaryownerssnein: normalizeText(
+    cr7de_secondaryownerssnein: normalizeOrNA(
       formState.cr7de_secondaryownerssnein
     ),
     cr7de_secondaryphonenumber: normalizeText(
@@ -411,10 +425,10 @@ function toPayload(
     cr7de_sellercontactnumber: normalizeText(
       formState.cr7de_sellercontactnumber
     ),
-    cr7de_sellername: normalizeText(
+    cr7de_sellername: normalizeOrNA(
       formState.cr7de_sellername
     ),
-    cr7de_sellerssnein: normalizeText(
+    cr7de_sellerssnein: normalizeOrNA(
       formState.cr7de_sellerssnein
     ),
     cr7de_sellertcode: normalizeText(

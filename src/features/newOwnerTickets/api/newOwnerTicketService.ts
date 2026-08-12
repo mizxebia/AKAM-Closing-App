@@ -10,6 +10,7 @@ import {
   writeChangeLog,
   extractOldValues,
 } from '../../auditLog/api/auditLogService'
+import { trimStringFields } from '../../../lib/textNormalization'
 
 const TABLE_NAME = 'cr7de_newownerticketdetailses'
 
@@ -48,6 +49,7 @@ export async function saveNewOwnerTicket(
   payload: NewOwnerTicketInput,
   oldRecord?: NewOwnerTicketRecord
 ) {
+  payload = trimStringFields(payload)
   const ticketId = payload.cr7de_ticketid ?? existingRecordId ?? ''
 
   if (existingRecordId) {

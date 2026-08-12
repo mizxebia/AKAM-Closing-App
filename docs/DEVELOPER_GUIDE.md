@@ -238,6 +238,8 @@ Entity set: `cr7de_closingticketdetailses`
 | `cr7de_buildingnotondomicile` | bool | When true: skips stages 2–5, requires manual PAF upload, ticket starts at Processing/FormDownloaded |
 | `cr7de_nyccode` | string | Yardi building ID (e.g. `NYC12345`). Looked up from SharePoint Building List. |
 | `cr7de_sellertcode` | string | Required on create. Must start with `T` (case-insensitive). |
+| `cr7de_buyertcode` | string | Required on create only when `cr109_packagetype = coop_transfer`. Synced to New Owner Ticket's `cr109_primaryownertcode` (§10.3). |
+| `cr7de_buyerexistsinyardi` | bool | Auto-checked (and locked — cannot be manually unchecked) when Package Type is Coop Transfer. See §10.7. |
 | `cr7de_notes` | string (4000) | Invoice notes — stored on the closing ticket, displayed in Invoice tab. |
 | `cr109_purchaseapplicationform` | file | Binary. Column name used for upload: `'cr109_purchaseapplicationform'` |
 | `cr109_rpttdocument` | file | Binary. Upload triggers `RPTTUploaded` bot status. Delete rolls back to `ReadyForPostClosing`. |
@@ -692,6 +694,25 @@ Enforced in the create form (`validateForm` in `CreateClosingTicketForm.tsx`):
 | Seller phone/email | Purchase Application Form | Only contact fields from PAF for sellers |
 
 For Trust/LLC/Estate purchases: legal entity = Primary Owner (EIN), Applicant = primary contact.
+
+### 10.7 Coop Transfer — Buyer T-Code & Yardi Flag Rule
+
+Enforced in the create form (`CreateClosingTicketForm.tsx`), package type `coop_transfer` (`396620002`):
+
+- **Selecting Coop Transfer** as Package Type automatically checks `cr7de_buyerexistsinyardi` and
+  reveals a required **Buyer T-Code** (`cr7de_buyertcode`) field, since Coop Transfer buyers are
+  already set up in YARDI.
+- **Switching away** from Coop Transfer to any other package type automatically unchecks
+  `cr7de_buyerexistsinyardi`, clears `cr7de_buyertcode`, and hides the field again.
+- **Manually checking** `cr7de_buyerexistsinyardi` while Package Type is *not* Coop Transfer does
+  not check the box directly — it opens a confirmation `AlertDialog` ("Change Package Type to Coop
+  Transfer?"). Confirming sets Package Type to `coop_transfer` and checks the flag (and shows a
+  success `StatusBanner`); cancelling leaves both fields unchanged.
+- **Unchecking is blocked** while Package Type is Coop Transfer — the checkbox is rendered
+  `disabled` (with an explanatory `title` tooltip) so the flag cannot be turned off without first
+  changing the Package Type away from Coop Transfer.
+- **Validation:** `validateForm` requires `cr7de_buyertcode` to be non-empty whenever
+  `cr109_packagetype === COOP_TRANSFER_PACKAGE_TYPE`, on both create and edit forms.
 
 
 ---

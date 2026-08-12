@@ -49,7 +49,9 @@ Click **Create New Closing** and fill in:
   - **Building not on Domecile** — check this if the building isn't already set up in the Domecile system. If checked, you must also upload a **Purchase Application Form** before saving.
   - **Buyer exists in Yardi** — check if the buyer is already in the Yardi accounting system.
 
-If you set **Package Type** to **Coop Transfer**, the app automatically checks **Buyer exists in Yardi** for you, and a **Buyer T-Code** field appears so you can enter the buyer's T-Code. This T-Code is saved on the ticket and is also carried over automatically to the matching New Owner Ticket record.
+If you set **Package Type** to **Coop Transfer**, the app automatically checks **Buyer exists in Yardi** for you, and a **Buyer T-Code** field appears — it's required and must be filled in before saving. This T-Code is saved on the ticket and is also carried over automatically to the matching New Owner Ticket record. Switching the Package Type away from Coop Transfer hides the field again and un-checks the flag.
+
+If you try to check **Buyer exists in Yardi** by hand while the Package Type is something other than Coop Transfer, the app won't let you check it directly — instead it asks you to confirm first, since checking that flag means switching the Package Type to Coop Transfer. Choose **Change Package Type** to go ahead (you'll see a confirmation message once it's done), or **Cancel** to leave everything as it was. Once Package Type is Coop Transfer, the flag is locked on — you can't uncheck it until you change the Package Type to something else.
 
 Once saved, a new ticket is created with status **Draft**, and a matching New Owner Ticket is automatically started behind the scenes.
 
@@ -128,6 +130,8 @@ Click **Help Center** any time to:
 ## 6. Good to Know (Key Rules)
 
 - Seller T-Codes must start with "T".
+- Buyer T-Code is required whenever Package Type is "Coop Transfer."
+- "Buyer exists in Yardi" can't be checked on its own — checking it always asks to change the Package Type to Coop Transfer first, and it can't be unchecked while Coop Transfer is selected.
 - You can only upload the RPTT document while a ticket is "Ready for Post Closing"; removing it sends the ticket back a step.
 - A charge marked "Partially Paid" can never be flagged to "Move."
 - A scheduled charge left as "TBD" blocks the New Owner Ticket from being validated.

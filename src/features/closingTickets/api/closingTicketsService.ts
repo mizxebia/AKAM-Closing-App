@@ -11,6 +11,7 @@ import {
   writeChangeLog,
   extractOldValues,
 } from '../../auditLog/api/auditLogService'
+import { trimStringFields } from '../../../lib/textNormalization'
 
 type ClosingTicketUploadColumnName =
   | 'cr109_purchaseapplicationform'
@@ -39,6 +40,8 @@ export async function getClosingTickets(): Promise<
 export async function createClosingTicket(
   newRecord: ClosingTicketCreateInput
 ): Promise<ClosingTicketRecord> {
+  newRecord = trimStringFields(newRecord)
+
   const result =
     await Cr7de_closingticketdetailsesService.create(
       newRecord as Omit<
@@ -99,6 +102,8 @@ export async function updateClosingTicket(
   // Fetch the current record before mutating so we always have old values
   // for the audit diff, even when callers don't provide it.
   const recordBefore = oldRecord ?? await getClosingTicketById(id)
+
+  changedFields = trimStringFields(changedFields)
 
   const result =
     await Cr7de_closingticketdetailsesService.update(

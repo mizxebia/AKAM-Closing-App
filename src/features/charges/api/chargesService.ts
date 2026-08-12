@@ -21,6 +21,7 @@ import {
   writeChangeLog,
   extractOldValues,
 } from '../../auditLog/api/auditLogService'
+import { trimStringFields } from '../../../lib/textNormalization'
 
 const TABLE = {
   unpaidCharges: 'crc5c_unpaidchargeses',
@@ -402,6 +403,8 @@ export async function updateUnpaidCharge(
   changedFields: UnpaidChargeUpdateInput,
   context: { ticketId: string; oldRecord: UnpaidChargeRecord }
 ): Promise<UnpaidChargeRecord> {
+  changedFields = trimStringFields(changedFields)
+
   const result =
     await Crc5c_unpaidchargesesService.update(
       chargeId,
@@ -434,6 +437,8 @@ export async function updateScheduledCharge(
   changedFields: ScheduledChargeUpdateInput,
   context: { ticketId: string; oldRecord: ScheduledChargeRecord }
 ): Promise<ScheduledChargeRecord> {
+  changedFields = trimStringFields(changedFields)
+
   const result =
     await Crc5c_copyscheduledchargesesService.update(
       chargeId,
@@ -479,6 +484,8 @@ export async function deleteScheduledCharge(
 export async function createManualCharge(
   input: ManualChargeCreateInput
 ): Promise<void> {
+  input = trimStringFields(input)
+
   const result = await Crc5c_manualchargesesService.create(
     input as Parameters<typeof Crc5c_manualchargesesService.create>[0]
   )
