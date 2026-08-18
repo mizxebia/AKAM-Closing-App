@@ -35,6 +35,10 @@ import { useCurrentUser } from '../hooks/useCurrentUser'
 import { ProcessingDots } from '../../../components/feedback/ProcessingDots'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import { getBuildings } from '../data/buildingListCache'
+import {
+  COOP_TRANSFER_PACKAGE_TYPE,
+  generateTicketId,
+} from '../utils/ticketCreation'
 
 type FormErrors = Partial<
   Record<keyof ClosingTicketFormState, string>
@@ -51,7 +55,6 @@ const READY_FOR_POST_CLOSING_STATUS = 716070006
 const POST_CLOSING_STATUS = 716070004
 const PURCHASE_FORM_DATA_EXTRACTED_BOT_STATUS = 396620013
 const RPTT_UPLOADED_BOT_STATUS = 396620010
-const COOP_TRANSFER_PACKAGE_TYPE = 396620002
 const emptyUploadedFileNames: UploadedFileNames = {}
 
 interface CreateClosingTicketFormProps {
@@ -96,14 +99,6 @@ const emptyFormState: ClosingTicketFormState = {
   cr7de_ticketstatus: 716070000,
   cr7de_titlerole: '',
   cr7de_unitnumber: '',
-}
-
-function generateTicketId() {
-  const randomNumber = Math.floor(
-    Math.random() * 1_000_000_000
-  )
-
-  return `CL-${String(randomNumber).padStart(9, '0')}`
 }
 
 function createInitialFormState(): ClosingTicketFormState {

@@ -2,6 +2,7 @@ import './App.css'
 import { useEffect } from 'react'
 import { ClosingTicketPage } from './features/closingTickets'
 import { prefetchBuildings } from './features/closingTickets/data/buildingListCache'
+import { ToastContainer } from './components/feedback/ToastContainer'
 
 function App() {
   useEffect(() => {
@@ -9,7 +10,12 @@ function App() {
     prefetchBuildings()
   }, [])
 
-  return <ClosingTicketPage />
+  return (
+    <>
+      <ClosingTicketPage />
+      <ToastContainer />
+    </>
+  )
 }
 
 export default App

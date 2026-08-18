@@ -241,6 +241,17 @@ export function DocumentViewerPanel({
     closingTicket,
   ])
 
+  // Identifies *this specific file* rather than the whole ticket record.
+  // closingTicket is a brand-new object reference every time any part of
+  // the page saves (invoice rows, Yardi charges, notes, etc.), and using
+  // it directly as an effect dependency was causing the currently-open
+  // document to be re-downloaded and re-decoded from scratch on every one
+  // of those unrelated saves. The filename only changes when the file
+  // itself is actually replaced, so it's a much more precise signal.
+  const activeDocumentFileName = activeDocument
+    ? (closingTicket[activeDocument.fileNameColumn] ?? null)
+    : null
+
   useEffect(() => {
 
     if (
@@ -327,9 +338,11 @@ export function DocumentViewerPanel({
       isActive = false
     }
 
+    // Deliberately scoped to activeDocumentFileName, not closingTicket — see comment above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     activeDocument,
-    closingTicket,
+    activeDocumentFileName,
   ])
 
   return (

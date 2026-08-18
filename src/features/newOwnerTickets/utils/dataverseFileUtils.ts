@@ -391,11 +391,6 @@ export async function getDataverseFileUrl(
       document.columnName
     )
 
-  console.log(
-    'Document API response:',
-    response
-  )
-
   if (!response.success || !response.data) {
     throw new Error(
       'Unable to preview file.'
@@ -406,13 +401,6 @@ export async function getDataverseFileUrl(
     normalizeFileContentToBase64(
       response.data
     )
-
-  console.log(
-    'Base64 sample:',
-    typeof base64Content === 'string'
-      ? base64Content.substring(0, 50)
-      : 'invalid'
-  )
 
   if (!base64Content) {
     throw new Error(
@@ -449,11 +437,6 @@ export async function getDataverseFileUrl(
       : `data:${resolvedContentType};base64,${base64Content}`
 
   const dataUrl = `data:${resolvedContentType};base64,${base64Content}`
-
-  console.log(
-    'Generated PDF URL:',
-    fileUrl.substring(0, 100)
-  )
 
   return {
     url: fileUrl,

@@ -40,11 +40,13 @@ import { useAutoClear } from '../../../hooks/useAutoClear'
 import {
   useDeveloperMode,
   DeveloperModeToggle,
+  DeveloperModePasswordPrompt,
   ScreenshotGallery,
 } from '../../devScreenshots'
 import {
   AppLogsViewer,
   ManualDocumentUpload,
+  StatusOverridePanel,
 } from '../../devTools'
 import { writeActionLog } from '../../auditLog/api/auditLogService'
 
@@ -453,6 +455,25 @@ export function ClosingTicketDetailsPage({
               }
               onUploaded={refreshClosingRecord}
             />
+
+            <hr className="my-3 border-[#e2e8f0]" />
+
+            <StatusOverridePanel
+              closingTicketId={record.cr7de_closingticketdetailsid}
+              ticketId={ticketId}
+              currentTicketStatus={
+                record.cr7de_ticketstatus !== undefined
+                  ? Number(record.cr7de_ticketstatus)
+                  : undefined
+              }
+              currentBotStatus={
+                record.cr109_botstatus !== undefined &&
+                String(record.cr109_botstatus).trim() !== ''
+                  ? Number(record.cr109_botstatus)
+                  : undefined
+              }
+              onUpdated={refreshClosingRecord}
+            />
           </section>
 
           <ScreenshotGallery ticketId={ticketId} />
@@ -596,6 +617,15 @@ export function ClosingTicketDetailsPage({
           open={logsViewerOpen}
           onOpenChange={setLogsViewerOpen}
           ticketId={ticketId}
+        />
+      )}
+
+      {developerMode.isAllowed && (
+        <DeveloperModePasswordPrompt
+          open={developerMode.promptOpen}
+          error={developerMode.passwordError}
+          onSubmit={developerMode.submitPassword}
+          onCancel={developerMode.cancelPrompt}
         />
       )}
     </>

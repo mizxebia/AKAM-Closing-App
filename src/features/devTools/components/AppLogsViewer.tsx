@@ -337,23 +337,54 @@ export function AppLogsViewer({
                               </tr>
                             </thead>
                             <tbody>
-                              {diffKeys(entry).map((key) => (
-                                <tr key={key}>
-                                  <td className="py-0.5 pr-3 font-mono text-[#475569]">
-                                    {key}
-                                  </td>
-                                  <td className="py-0.5 pr-3 text-[#64748b]">
-                                    {formatDiffValue(
-                                      entry.oldData?.[key]
-                                    )}
-                                  </td>
-                                  <td className="py-0.5 text-[#1E3A47]">
-                                    {formatDiffValue(
-                                      entry.newData?.[key]
-                                    )}
-                                  </td>
-                                </tr>
-                              ))}
+                              {diffKeys(entry).map((key) => {
+                                const hadOldValue =
+                                  entry.oldData?.[key] !==
+                                  undefined
+                                const hasNewValue =
+                                  entry.newData?.[key] !==
+                                  undefined
+                                const formattedOld =
+                                  formatDiffValue(
+                                    entry.oldData?.[key]
+                                  )
+                                const formattedNew =
+                                  formatDiffValue(
+                                    entry.newData?.[key]
+                                  )
+                                const isChanged =
+                                  formattedOld !== formattedNew
+
+                                return (
+                                  <tr key={key}>
+                                    <td className="py-0.5 pr-3 font-mono text-[#475569]">
+                                      {key}
+                                    </td>
+                                    <td
+                                      className={`py-0.5 pr-3 ${
+                                        hadOldValue && isChanged
+                                          ? 'rounded bg-red-50 px-1.5 text-red-700 line-through decoration-red-300'
+                                          : hadOldValue
+                                            ? 'text-[#64748b]'
+                                            : 'text-[#94a3b8]'
+                                      }`}
+                                    >
+                                      {formattedOld}
+                                    </td>
+                                    <td
+                                      className={`py-0.5 ${
+                                        hasNewValue && isChanged
+                                          ? 'rounded bg-emerald-50 px-1.5 text-emerald-700'
+                                          : hasNewValue
+                                            ? 'text-[#1E3A47]'
+                                            : 'text-[#94a3b8]'
+                                      }`}
+                                    >
+                                      {formattedNew}
+                                    </td>
+                                  </tr>
+                                )
+                              })}
                             </tbody>
                           </table>
                         )}

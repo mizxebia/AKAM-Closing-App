@@ -26,10 +26,8 @@
     "framer-motion": "^12.39.0",
     "lucide-react": "^1.16.0",
     "pac": "^1.0.0",
-    "pdfjs-dist": "^5.7.284",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "react-pdf": "^10.4.1",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.0"
   },

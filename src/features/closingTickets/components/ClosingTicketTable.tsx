@@ -27,12 +27,21 @@ interface ClosingTicketTableProps {
   records: ClosingTicketRecord[]
   columns: ClosingTicketColumn[]
   onRecordSelect: (recordId: string) => void
+  /** Developer Mode bulk-select — shows a checkbox column when true. */
+  selectable?: boolean
+  selectedIds?: Set<string>
+  onToggleSelect?: (recordId: string) => void
+  onToggleSelectAll?: (recordIds: string[]) => void
 }
 
 export function ClosingTicketTable({
   records,
   columns,
   onRecordSelect,
+  selectable = false,
+  selectedIds,
+  onToggleSelect,
+  onToggleSelectAll,
 }: ClosingTicketTableProps) {
   const [page, setPage] = useState(0)
   const [createdSortDirection, setCreatedSortDirection] =
@@ -104,6 +113,29 @@ export function ClosingTicketTable({
         <table className="min-w-[1100px] w-full border-collapse">
           <thead className="sticky top-0 z-[1] bg-[#EDE8E0]">
             <tr>
+              {selectable && (
+                <th className="border-b border-[#D5CBB8] px-4 py-2.5 text-left">
+                  <input
+                    type="checkbox"
+                    aria-label="Select all rows on this page"
+                    checked={
+                      pageRecords.length > 0 &&
+                      pageRecords.every((r) =>
+                        selectedIds?.has(
+                          r.cr7de_closingticketdetailsid
+                        )
+                      )
+                    }
+                    onChange={() =>
+                      onToggleSelectAll?.(
+                        pageRecords.map(
+                          (r) => r.cr7de_closingticketdetailsid
+                        )
+                      )
+                    }
+                  />
+                </th>
+              )}
               {columns.map((column) => (
                 <th
                   key={column.key}
@@ -145,6 +177,27 @@ export function ClosingTicketTable({
                   }
                 }}
               >
+                {selectable && (
+                  <td
+                    className="border-b border-[#EDE8E0] px-4 py-1.5"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <input
+                      type="checkbox"
+                      aria-label={`Select ticket ${record.cr7de_ticketid ?? ''}`}
+                      checked={Boolean(
+                        selectedIds?.has(
+                          record.cr7de_closingticketdetailsid
+                        )
+                      )}
+                      onChange={() =>
+                        onToggleSelect?.(
+                          record.cr7de_closingticketdetailsid
+                        )
+                      }
+                    />
+                  </td>
+                )}
                 {columns.map((column, colIndex) => (
                   <td
                     key={column.key}

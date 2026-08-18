@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Plus, RotateCw, Save, Zap } from 'lucide-react'
 import { useAutoClear } from '../../../hooks/useAutoClear'
+import { toast } from '../../../components/feedback/toastStore'
 import {
   updateClosingTicket,
 } from '../../closingTickets/api/closingTicketsService'
@@ -312,6 +313,8 @@ function UnpaidChargesTable({
         setSaveError(
           `Completed with ${failures.length} error(s). ${failures[0]}`
         )
+      } else {
+        toast.success('Unpaid charges saved.')
       }
 
       await onSaved()
@@ -478,6 +481,7 @@ function ScheduledChargesTable({
                     `Failed to save ${failed.length} scheduled charge(s).`
                   )
                 } else {
+                  toast.success('Scheduled charges saved.')
                   await onSaved()
                 }
               } catch (err) {
@@ -552,7 +556,7 @@ function ScheduledChargesTable({
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction className="invoice-confirm-delete-button" onClick={async () => { onSavingChange('deleting-' + record.crc5c_copyscheduledchargesid); try { await deleteScheduledCharge(record.crc5c_copyscheduledchargesid, { ticketId: ticketId ?? '', oldRecord: record }); await onSaved() } catch {} finally { onSavingChange(null) } }}>Delete</AlertDialogAction>
+                        <AlertDialogAction className="invoice-confirm-delete-button" onClick={async () => { onSavingChange('deleting-' + record.crc5c_copyscheduledchargesid); try { await deleteScheduledCharge(record.crc5c_copyscheduledchargesid, { ticketId: ticketId ?? '', oldRecord: record }); toast.success('Scheduled charge deleted.'); await onSaved() } catch {} finally { onSavingChange(null) } }}>Delete</AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
@@ -688,6 +692,7 @@ function AddScheduledChargeForm({
       await createManualCharge(payload)
       reset()
       setOpen(false)
+      toast.success('Scheduled charge added.')
       await onSaved()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to save charge.')

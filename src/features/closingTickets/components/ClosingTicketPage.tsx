@@ -27,8 +27,13 @@ import { HelpCentreModal } from './HelpCentreModal'
 import {
   useDeveloperMode,
   DeveloperModeToggle,
+  DeveloperModePasswordPrompt,
 } from '../../devScreenshots'
-import { AppLogsViewer } from '../../devTools'
+import {
+  AppLogsViewer,
+  BulkStatusChangeScreen,
+  BulkCreateClosingsScreen,
+} from '../../devTools'
 
 function getInitials(name: string | null): string {
   if (!name) return '?'
@@ -119,6 +124,10 @@ export function ClosingTicketPage() {
     useState<string | null>(null)
   const [helpOpen, setHelpOpen] = useState(false)
   const [logsViewerOpen, setLogsViewerOpen] = useState(false)
+  const [bulkStatusScreenOpen, setBulkStatusScreenOpen] =
+    useState(false)
+  const [bulkCreateScreenOpen, setBulkCreateScreenOpen] =
+    useState(false)
   const developerMode = useDeveloperMode()
 
   const {
@@ -155,6 +164,39 @@ export function ClosingTicketPage() {
     await refresh()
   }
 
+  if (bulkStatusScreenOpen) {
+    return (
+      <>
+        <TopNav userName={userName} onHelp={() => setHelpOpen(true)} />
+        <HelpCentreModal open={helpOpen} onClose={() => setHelpOpen(false)} />
+        <div className="min-h-screen bg-[#F5F2EC]">
+          <BulkStatusChangeScreen
+            records={records}
+            userName={userName}
+            userId={userId}
+            onBack={() => setBulkStatusScreenOpen(false)}
+            onApplied={refresh}
+          />
+        </div>
+      </>
+    )
+  }
+
+  if (bulkCreateScreenOpen) {
+    return (
+      <>
+        <TopNav userName={userName} onHelp={() => setHelpOpen(true)} />
+        <HelpCentreModal open={helpOpen} onClose={() => setHelpOpen(false)} />
+        <div className="min-h-screen bg-[#F5F2EC]">
+          <BulkCreateClosingsScreen
+            onBack={() => setBulkCreateScreenOpen(false)}
+            onApplied={refresh}
+          />
+        </div>
+      </>
+    )
+  }
+
   if (selectedRecordId) {
     return (
       <>
@@ -184,21 +226,6 @@ export function ClosingTicketPage() {
             gradient="linear-gradient(135deg, #dce8ef 0%, #F5F2EC 55%, #EDE8E0 100%)"
             actions={
               <>
-                {developerMode.isAllowed && (
-                  <DeveloperModeToggle
-                    enabled={developerMode.enabled}
-                    onToggle={developerMode.toggle}
-                  />
-                )}
-                {developerMode.enabled && (
-                  <button
-                    className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] transition hover:bg-[#F5F2EC]"
-                    type="button"
-                    onClick={() => setLogsViewerOpen(true)}
-                  >
-                    View Logs
-                  </button>
-                )}
                 <button
                   className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#1E3A47] bg-transparent px-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] transition hover:bg-[rgba(30,58,71,0.06)] disabled:cursor-not-allowed disabled:opacity-50"
                   type="button"
@@ -222,6 +249,43 @@ export function ClosingTicketPage() {
               </>
             }
           />
+
+          {developerMode.isAllowed && (
+            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[#D5CBB8] bg-white px-4 py-2.5 shadow-sm">
+              <span className="mr-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#94a3b8]">
+                Developer Tools
+              </span>
+              <DeveloperModeToggle
+                enabled={developerMode.enabled}
+                onToggle={developerMode.toggle}
+              />
+              {developerMode.enabled && (
+                <>
+                  <button
+                    className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] transition hover:bg-[#F5F2EC]"
+                    type="button"
+                    onClick={() => setLogsViewerOpen(true)}
+                  >
+                    View Logs
+                  </button>
+                  <button
+                    className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] transition hover:bg-[#F5F2EC]"
+                    type="button"
+                    onClick={() => setBulkStatusScreenOpen(true)}
+                  >
+                    Bulk Status Change
+                  </button>
+                  <button
+                    className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] transition hover:bg-[#F5F2EC]"
+                    type="button"
+                    onClick={() => setBulkCreateScreenOpen(true)}
+                  >
+                    Bulk Create Closings
+                  </button>
+                </>
+              )}
+            </div>
+          )}
 
           {loading && (
             <LoadingSkeleton />
@@ -320,6 +384,15 @@ export function ClosingTicketPage() {
           <AppLogsViewer
             open={logsViewerOpen}
             onOpenChange={setLogsViewerOpen}
+          />
+        )}
+
+        {developerMode.isAllowed && (
+          <DeveloperModePasswordPrompt
+            open={developerMode.promptOpen}
+            error={developerMode.passwordError}
+            onSubmit={developerMode.submitPassword}
+            onCancel={developerMode.cancelPrompt}
           />
         )}
       </div>

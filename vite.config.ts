@@ -13,4 +13,22 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Split large third-party libraries into their own cacheable
+        // chunks instead of bundling everything into one file — these
+        // rarely change between deploys, so browsers can cache them
+        // across app updates.
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined
+          if (id.includes('framer-motion')) return 'vendor-motion'
+          if (id.includes('lucide-react')) return 'vendor-icons'
+          if (id.includes('@radix-ui')) return 'vendor-radix'
+          if (id.includes('@microsoft/power-apps')) return 'vendor-powerapps'
+          return 'vendor'
+        },
+      },
+    },
+  },
 });
