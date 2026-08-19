@@ -6,6 +6,7 @@ export type WorkflowTabKey =
   | 'invoice'
   | 'charges'
   | 'newOwner'
+  | 'sendToATeam'
 
 export type WorkflowTab = {
   key: WorkflowTabKey

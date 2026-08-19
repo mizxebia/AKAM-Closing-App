@@ -30,6 +30,7 @@ import {
 } from '../../../generated'
 import { EditClosingTicketForm } from './CreateClosingTicketForm'
 import { InvoiceDocumentViewer } from './InvoiceDocumentViewer'
+import { SendToATeamTab } from './SendToATeamTab'
 import {
   WorkflowTabs,
   WorkflowTabBar,
@@ -54,6 +55,7 @@ const FAILED_TICKET_STATUS = 716070007
 const PROCESSING_TICKET_STATUS = 716070005
 const TRANSFERRING_BUILDING_STATUS = 716070002
 const COMPLETED_STATUS = 716070008
+const OWNER_RECORD_CREATED_BOT_STATUS = 396620003
 
 const BOT_STATUS_FAILURE_REASONS: Record<number, string> = {
   396620005: 'Seller information could not be retrieved from the source system.',
@@ -370,6 +372,9 @@ export function ClosingTicketDetailsPage({
   const isReadOnly =
     Number(record?.cr7de_ticketstatus) === TRANSFERRING_BUILDING_STATUS ||
     Number(record?.cr7de_ticketstatus) === COMPLETED_STATUS
+  const isFullyCompleted =
+    Number(record?.cr7de_ticketstatus) === COMPLETED_STATUS &&
+    Number(record?.cr109_botstatus) === OWNER_RECORD_CREATED_BOT_STATUS
 
   const workflowTabs = [
     { key: 'details' as const, label: 'Closing Details' },
@@ -377,6 +382,9 @@ export function ClosingTicketDetailsPage({
     ...(!isDraft ? [
       { key: 'charges' as const, label: 'Yardi Charges' },
       { key: 'newOwner' as const, label: 'New Owner Ticket' },
+    ] : []),
+    ...(isFullyCompleted ? [
+      { key: 'sendToATeam' as const, label: 'Send to AR Team' },
     ] : []),
   ]
 
@@ -571,6 +579,20 @@ export function ClosingTicketDetailsPage({
                 Number(record.cr7de_ticketstatus) === PROCESSING_TICKET_STATUS ||
                 isReadOnly
               }
+            />
+          )}
+
+          {activeTab === 'sendToATeam' && (
+            <SendToATeamTab
+              closingTicketId={record.cr7de_closingticketdetailsid}
+              ticketId={record.cr7de_ticketid ?? ''}
+              currentChequesDocumentName={
+                record.cr109_chequesdocument_name
+              }
+              currentBatchDocumentName={
+                record.cr109_batchdocument_name
+              }
+              onUploaded={refreshClosingRecord}
             />
           )}
         </WorkflowTabs>

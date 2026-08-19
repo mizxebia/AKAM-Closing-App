@@ -10,6 +10,23 @@
       "x-ms-dataverse-primary-id": "cr7de_closingticketdetailsid",
       "x-ms-dataverse-primary-name": "cr7de_ticketid",
       "properties": {
+        "cr109_batchdocument": {
+          "type": "string",
+          "title": "Batch Document",
+          "x-ms-dataverse-attribute": "cr109_batchdocument",
+          "x-ms-dataverse-type": "FileType",
+          "x-ms-schema-name": "cr109_BatchDocument",
+          "x-ms-read-only": true
+        },
+        "cr109_batchdocument_name": {
+          "type": "string",
+          "title": "cr109_batchdocument_name",
+          "x-ms-dataverse-attribute": "cr109_batchdocument_name",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_BatchDocument_Name",
+          "x-ms-read-only": true,
+          "maxLength": 200
+        },
         "cr109_botstatus": {
           "type": "string",
           "title": "Bot Status",
@@ -108,6 +125,23 @@
           "x-ms-dataverse-type": "StringType",
           "x-ms-schema-name": "cr109_Buyer2Name",
           "maxLength": 100
+        },
+        "cr109_chequesdocument": {
+          "type": "string",
+          "title": "Cheques Document",
+          "x-ms-dataverse-attribute": "cr109_chequesdocument",
+          "x-ms-dataverse-type": "FileType",
+          "x-ms-schema-name": "cr109_ChequesDocument",
+          "x-ms-read-only": true
+        },
+        "cr109_chequesdocument_name": {
+          "type": "string",
+          "title": "cr109_chequesdocument_name",
+          "x-ms-dataverse-attribute": "cr109_chequesdocument_name",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_ChequesDocument_Name",
+          "x-ms-read-only": true,
+          "maxLength": 200
         },
         "cr109_closingticketdetailspdf": {
           "type": "string",

@@ -18,6 +18,8 @@ export type ClosingTicketUploadColumnName =
   | 'cr109_rpttdocument'
   | 'cr109_closingticketdetailspdf'
   | 'cr109_newownerticketpdf'
+  | 'cr109_chequesdocument'
+  | 'cr109_batchdocument'
 
 const TABLE_NAME = 'cr7de_closingticketdetailses'
 const closingTicketTableName = TABLE_NAME

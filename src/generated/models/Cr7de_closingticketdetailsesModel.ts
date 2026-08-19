@@ -104,7 +104,11 @@ export interface Cr7de_closingticketdetailsesBase {
 }
 
 export interface Cr7de_closingticketdetailses extends Cr7de_closingticketdetailsesBase {
+  cr109_batchdocument?: string;
+  cr109_batchdocument_name?: string;
   cr109_botstatusname?: string;
+  cr109_chequesdocument?: string;
+  cr109_chequesdocument_name?: string;
   cr109_closingticketdetailspdf?: string;
   cr109_closingticketdetailspdf_name?: string;
   cr109_domecilechargesextractedname?: string;
@@ -150,4 +154,4 @@ export interface Cr7de_closingticketdetailses extends Cr7de_closingticketdetails
   owninguser?: object;
   _owninguser_value?: string;
 }
-export type Cr7de_closingticketdetailsesUploadColumnName = 'cr109_closingticketdetailspdf' | 'cr109_newownerticketpdf' | 'cr109_purchaseapplicationform' | 'cr109_rpttdocument';
+export type Cr7de_closingticketdetailsesUploadColumnName = 'cr109_batchdocument' | 'cr109_chequesdocument' | 'cr109_closingticketdetailspdf' | 'cr109_newownerticketpdf' | 'cr109_purchaseapplicationform' | 'cr109_rpttdocument';
