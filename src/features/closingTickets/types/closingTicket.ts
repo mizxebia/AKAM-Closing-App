@@ -68,6 +68,7 @@ export type ClosingTicketCreateInput = Partial<
     | 'cr109_botstatus'
     | 'cr109_buyer2name'
     | 'cr109_domecilepackageurl'
+    | 'cr109_emailmessage'
     | 'cr109_legalname'
     | 'cr109_locationofclosing'
     | 'cr109_packagetype'

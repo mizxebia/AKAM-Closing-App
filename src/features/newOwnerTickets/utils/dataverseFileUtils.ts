@@ -13,9 +13,14 @@ export type GeneratedClosingDocumentKey =
   | 'newOwnerTicketPdf'
   | 'closingTicketDetailsPdf'
 
+export type ArTeamDocumentKey =
+  | 'chequesDocument'
+  | 'batchDocument'
+
 export type ClosingTicketDocumentKey =
   | NewOwnerDocumentKey
   | GeneratedClosingDocumentKey
+  | ArTeamDocumentKey
 
 export interface NewOwnerDocumentDefinition {
   key: ClosingTicketDocumentKey
@@ -26,6 +31,8 @@ export interface NewOwnerDocumentDefinition {
     | 'cr109_newownerticketpdf_name'
     | 'cr109_purchaseapplicationform_name'
     | 'cr109_rpttdocument_name'
+    | 'cr109_chequesdocument_name'
+    | 'cr109_batchdocument_name'
 }
 
 export interface DataverseFilePreview {
@@ -96,6 +103,41 @@ export const GENERATED_CLOSING_DOCUMENTS:
       label: 'Invoice',
       columnName: 'cr109_closingticketdetailspdf',
       fileNameColumn: 'cr109_closingticketdetailspdf_name',
+    },
+  ]
+
+/**
+ * Documents shown on the "Send to AR Team" tab: the two manually-uploaded
+ * AR documents plus the two already-generated closing documents, offered
+ * as read-only attachments there (they're uploaded/generated from their
+ * own tabs, not from this one).
+ */
+export const AR_TEAM_DOCUMENTS:
+  readonly NewOwnerDocumentDefinition[] =
+  [
+    {
+      key: 'chequesDocument',
+      label: 'Cheques Document',
+      columnName: 'cr109_chequesdocument',
+      fileNameColumn: 'cr109_chequesdocument_name',
+    },
+    {
+      key: 'batchDocument',
+      label: 'Batch Document',
+      columnName: 'cr109_batchdocument',
+      fileNameColumn: 'cr109_batchdocument_name',
+    },
+    {
+      key: 'closingTicketDetailsPdf',
+      label: 'Invoice',
+      columnName: 'cr109_closingticketdetailspdf',
+      fileNameColumn: 'cr109_closingticketdetailspdf_name',
+    },
+    {
+      key: 'newOwnerTicketPdf',
+      label: 'New Owner Ticket',
+      columnName: 'cr109_newownerticketpdf',
+      fileNameColumn: 'cr109_newownerticketpdf_name',
     },
   ]
 

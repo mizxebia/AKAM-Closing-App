@@ -584,14 +584,7 @@ export function ClosingTicketDetailsPage({
 
           {activeTab === 'sendToATeam' && (
             <SendToATeamTab
-              closingTicketId={record.cr7de_closingticketdetailsid}
-              ticketId={record.cr7de_ticketid ?? ''}
-              currentChequesDocumentName={
-                record.cr109_chequesdocument_name
-              }
-              currentBatchDocumentName={
-                record.cr109_batchdocument_name
-              }
+              closingTicket={record}
               onUploaded={refreshClosingRecord}
             />
           )}

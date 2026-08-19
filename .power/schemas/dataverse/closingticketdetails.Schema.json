@@ -199,6 +199,14 @@
           "x-ms-schema-name": "cr109_DomecilePackageUrl",
           "maxLength": 100
         },
+        "cr109_emailmessage": {
+          "type": "string",
+          "title": "Email Message",
+          "x-ms-dataverse-attribute": "cr109_emailmessage",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_EmailMessage",
+          "maxLength": 100
+        },
         "cr109_legalname": {
           "type": "string",
           "title": "Legal Name",
