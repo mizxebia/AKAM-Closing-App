@@ -3,6 +3,7 @@ import {
   CheckCircle2,
   FileText,
   Info,
+  Save,
   Send,
 } from 'lucide-react'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
@@ -11,6 +12,8 @@ import {
   uploadClosingTicketFile,
 } from '../api/closingTicketsService'
 import type { ClosingTicketRecord } from '../types/closingTicket'
+import { formatClosingTicketDate } from '../utils/closingTicketFormatters'
+import { formatInvoiceCurrency } from '../../invoices/utils/invoiceFormatters'
 import {
   getChangeLogs,
   writeActionLog,
@@ -31,9 +34,11 @@ import {
 } from '../../newOwnerTickets/components/documentPreviewRenderer'
 
 const SEND_ACTION_LABEL = 'Send to AR Team'
+const SAVE_DRAFT_ACTION_LABEL = 'Save AR Draft'
 
 function buildSubjectLine(record: ClosingTicketRecord) {
   const parts = [
+    record.cr7de_ticketid,
     record.cr7de_buyertcode,
     record.cr7de_unitnumber
       ? `Unit ${record.cr7de_unitnumber}`
@@ -48,6 +53,36 @@ function buildSubjectLine(record: ClosingTicketRecord) {
   return parts.length > 0
     ? parts.join(' - ')
     : (record.cr7de_ticketid ?? 'Closing Documents')
+}
+
+// Default message body offered to the sender the first time this tab is
+// opened for a ticket — informative enough that AR can process the buyer's
+// ledger without needing to open the attachments first. Once a draft has
+// been saved (or the ticket has been sent), that saved text takes over.
+function buildPresetMessage(record: ClosingTicketRecord) {
+  const buyerNames = [record.cr7de_buyername, record.cr109_buyer2name]
+    .filter((name): name is string => Boolean(name && name.trim()))
+    .join(' & ')
+  const unitLabel = record.cr7de_unitnumber
+    ? `, Unit ${record.cr7de_unitnumber}`
+    : ''
+
+  return `Hello AR Team,
+
+Please find attached the closing documents for the buyer transaction detailed below. Kindly process the buyer's ledger accordingly.
+
+Buyer: ${buyerNames || '-'}
+Buyer T-Code: ${record.cr7de_buyertcode || '-'}
+Seller: ${record.cr7de_sellername || '-'}
+Building: ${record.cr7de_buildingname || '-'}${unitLabel}
+Closing Date: ${formatClosingTicketDate(record.cr7de_closingdate)}
+Sale Price: ${formatInvoiceCurrency(record.cr109_saleprice)}
+Ticket ID: ${record.cr7de_ticketid || '-'}
+
+The Cheques Document and Batch Document are attached for your reference. Please reach out if any additional information is required.
+
+Thank you,
+${record.cr7de_closingagentname || 'AKAM Closing Team'}`
 }
 
 interface AttachmentProps {
@@ -135,8 +170,6 @@ function Attachment({
               ? 'border-[#1E3A47] bg-[#1E3A47] text-white'
               : 'border-[#D5CBB8] text-[#1E3A47] hover:bg-[#F5F2EC]'
           }`}
-          onMouseEnter={() => onPreview(document.key)}
-          onFocus={() => onPreview(document.key)}
           onClick={() => onPreview(document.key)}
         >
           <Info className="size-3.5" />
@@ -183,10 +216,13 @@ export function SendToATeamTab({
   const [subject, setSubject] = useState(() =>
     buildSubjectLine(closingTicket)
   )
-  const [message, setMessage] = useState(
-    closingTicket.cr109_emailmessage ?? ''
+  const [message, setMessage] = useState(() =>
+    closingTicket.cr109_emailmessage?.trim()
+      ? closingTicket.cr109_emailmessage
+      : buildPresetMessage(closingTicket)
   )
   const [sending, setSending] = useState(false)
+  const [savingDraft, setSavingDraft] = useState(false)
   const [sendError, setSendError] = useState<string | null>(
     null
   )
@@ -304,6 +340,35 @@ export function SendToATeamTab({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [previewedDocument?.key, previewedFileName])
 
+  const handleSaveDraft = async () => {
+    setSavingDraft(true)
+    setSendError(null)
+
+    try {
+      await updateClosingTicket(closingTicketId, {
+        cr109_emailmessage: message,
+      })
+
+      writeActionLog({
+        ticketId,
+        tableName: 'cr7de_closingticketdetailses',
+        action: SAVE_DRAFT_ACTION_LABEL,
+        details: { subject, message },
+      })
+
+      toast.success('Draft saved to AR tab.')
+      await onUploaded()
+    } catch (err) {
+      setSendError(
+        err instanceof Error
+          ? err.message
+          : 'Unable to save draft.'
+      )
+    } finally {
+      setSavingDraft(false)
+    }
+  }
+
   const handleSend = async () => {
     setSending(true)
     setSendError(null)
@@ -348,7 +413,7 @@ export function SendToATeamTab({
   }
 
   return (
-    <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
+    <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_520px]">
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/60">
         {/* Outlook-style compose header */}
         <div className="border-b border-slate-100 px-5 py-3">
@@ -419,6 +484,16 @@ export function SendToATeamTab({
             {sending ? 'Sending…' : 'Send to AR Team'}
           </button>
 
+          <button
+            type="button"
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#1E3A47] px-4 text-sm font-semibold text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC] disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={savingDraft || sending}
+            onClick={() => void handleSaveDraft()}
+          >
+            <Save className="size-4" />
+            {savingDraft ? 'Saving…' : 'Save Draft'}
+          </button>
+
           {!loadingHistory && lastSent && (
             <span className="text-xs text-[#64748b]">
               Last sent by {lastSent.modifiedBy} on{' '}
@@ -434,16 +509,16 @@ export function SendToATeamTab({
         )}
       </div>
 
-      {/* Right-side preview pane — populated by hovering/clicking an
-          attachment's info icon, like the New Owner Ticket document panel. */}
-      <aside className="document-panel">
+      {/* Right-side preview pane — populated by clicking an attachment's
+          info icon, like the New Owner Ticket document panel. */}
+      <aside className="document-panel ar-document-panel">
         <div className="document-panel-inner">
           <div className="document-panel-header">
             <div>
               <p>Preview</p>
               <h3>
                 {previewedDocument?.label ??
-                  'Hover an attachment'}
+                  'Click an attachment to preview'}
               </h3>
             </div>
           </div>
