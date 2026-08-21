@@ -12,5 +12,6 @@ export const closingTicketTabs = [
   'Ready for Post Closing',
   'Validate Closings',
   'Failed',
+  'Sent to AR',
   'Completed',
 ] as const

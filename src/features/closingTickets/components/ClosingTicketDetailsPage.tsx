@@ -55,6 +55,7 @@ const FAILED_TICKET_STATUS = 716070007
 const PROCESSING_TICKET_STATUS = 716070005
 const TRANSFERRING_BUILDING_STATUS = 716070002
 const COMPLETED_STATUS = 716070008
+const SENT_TO_AR_STATUS = 396620001
 const OWNER_RECORD_CREATED_BOT_STATUS = 396620003
 
 const BOT_STATUS_FAILURE_REASONS: Record<number, string> = {
@@ -371,10 +372,13 @@ export function ClosingTicketDetailsPage({
   const isDraft = Number(record?.cr7de_ticketstatus) === 716070000
   const isReadOnly =
     Number(record?.cr7de_ticketstatus) === TRANSFERRING_BUILDING_STATUS ||
-    Number(record?.cr7de_ticketstatus) === COMPLETED_STATUS
+    Number(record?.cr7de_ticketstatus) === COMPLETED_STATUS ||
+    Number(record?.cr7de_ticketstatus) === SENT_TO_AR_STATUS
   const isFullyCompleted =
     Number(record?.cr7de_ticketstatus) === COMPLETED_STATUS &&
     Number(record?.cr109_botstatus) === OWNER_RECORD_CREATED_BOT_STATUS
+  const isSentToAR =
+    Number(record?.cr7de_ticketstatus) === SENT_TO_AR_STATUS
 
   const workflowTabs = [
     { key: 'details' as const, label: 'Closing Details' },
@@ -383,7 +387,7 @@ export function ClosingTicketDetailsPage({
       { key: 'charges' as const, label: 'Yardi Charges' },
       { key: 'newOwner' as const, label: 'New Owner Ticket' },
     ] : []),
-    ...(isFullyCompleted ? [
+    ...(isFullyCompleted || isSentToAR ? [
       { key: 'sendToATeam' as const, label: 'Send to AR Team' },
     ] : []),
   ]
@@ -518,7 +522,12 @@ export function ClosingTicketDetailsPage({
                 record={record}
                 onCancel={onBack}
                 onSaved={handleSaved}
-                isCompleted={Number(record.cr7de_ticketstatus) === COMPLETED_STATUS}
+                isCompleted={Number(record.cr7de_ticketstatus) === COMPLETED_STATUS || isSentToAR}
+                lockedMessage={
+                  isSentToAR
+                    ? 'Sent to AR — this ticket is locked.'
+                    : 'Completed Successfully — this ticket is locked.'
+                }
                 readOnly={
                   Number(record.cr7de_ticketstatus) === PROCESSING_TICKET_STATUS ||
                   isReadOnly
@@ -563,7 +572,7 @@ export function ClosingTicketDetailsPage({
               onClosingTicketRefresh={refreshClosingRecord}
               invoices={invoiceRecords}
               readOnly={isReadOnly}
-              isCompleted={Number(record.cr7de_ticketstatus) === COMPLETED_STATUS}
+              isCompleted={Number(record.cr7de_ticketstatus) === COMPLETED_STATUS || isSentToAR}
             />
           )}
 
@@ -574,7 +583,7 @@ export function ClosingTicketDetailsPage({
               onSaved={handleSaved}
               onGenerateTicket={handleGenerateNewOwnerTicket}
               generatingTicket={generatingNewOwnerTicket}
-              isCompleted={Number(record.cr7de_ticketstatus) === COMPLETED_STATUS}
+              isCompleted={Number(record.cr7de_ticketstatus) === COMPLETED_STATUS || isSentToAR}
               readOnly={
                 Number(record.cr7de_ticketstatus) === PROCESSING_TICKET_STATUS ||
                 isReadOnly
@@ -586,6 +595,7 @@ export function ClosingTicketDetailsPage({
             <SendToATeamTab
               closingTicket={record}
               onUploaded={refreshClosingRecord}
+              isSentToAR={isSentToAR}
             />
           )}
         </WorkflowTabs>

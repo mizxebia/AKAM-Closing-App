@@ -8,6 +8,7 @@ type StatusTone =
   | 'validate'
   | 'completed'
   | 'failed'
+  | 'sentToAR'
   | 'default'
 
 interface StatusBadgeProps {
@@ -45,6 +46,11 @@ const toneStyles: Record<StatusTone, CSSProperties> = {
     backgroundColor: '#FEF2F2',
     color: '#b91c1c',
     border: '1px solid #fecaca',
+  },
+  sentToAR: {
+    backgroundColor: '#EFF6FF',
+    color: '#1d4ed8',
+    border: '1px solid #93c5fd',
   },
   default: {
     backgroundColor: '#F1EFE8',

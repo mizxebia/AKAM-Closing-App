@@ -3,6 +3,7 @@ import {
   CheckCircle2,
   FileText,
   Info,
+  RotateCcw,
   Save,
   Send,
 } from 'lucide-react'
@@ -35,6 +36,25 @@ import {
 
 const SEND_ACTION_LABEL = 'Send to AR Team'
 const SAVE_DRAFT_ACTION_LABEL = 'Save AR Draft'
+const EMAIL_BODY_WARN_CHARS = 8_000
+
+// Converts plain textarea text → HTML for Dataverse/Power Automate.
+function plainToHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\n/g, '<br>')
+}
+
+// Reverses HTML stored in Dataverse back to plain text for the textarea.
+function htmlToPlain(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+}
 
 function buildSubjectLine(record: ClosingTicketRecord) {
   const parts = [
@@ -203,11 +223,13 @@ function Attachment({
 interface SendToATeamTabProps {
   closingTicket: ClosingTicketRecord
   onUploaded: () => void | Promise<void>
+  isSentToAR?: boolean
 }
 
 export function SendToATeamTab({
   closingTicket,
   onUploaded,
+  isSentToAR = false,
 }: SendToATeamTabProps) {
   const closingTicketId =
     closingTicket.cr7de_closingticketdetailsid
@@ -220,7 +242,7 @@ export function SendToATeamTab({
   )
   const [message, setMessage] = useState(() =>
     closingTicket.cr109_emailbody?.trim()
-      ? closingTicket.cr109_emailbody
+      ? htmlToPlain(closingTicket.cr109_emailbody)
       : buildPresetMessage(closingTicket)
   )
   const [sending, setSending] = useState(false)
@@ -235,7 +257,7 @@ export function SendToATeamTab({
   const [loadingHistory, setLoadingHistory] = useState(true)
 
   const [previewedKey, setPreviewedKey] =
-    useState<ClosingTicketDocumentKey | null>(null)
+    useState<ClosingTicketDocumentKey | null>('newOwnerTicketPdf')
   const [viewerState, setViewerState] =
     useState<ViewerState>('empty')
   const [filePreview, setFilePreview] =
@@ -349,7 +371,7 @@ export function SendToATeamTab({
     try {
       await updateClosingTicket(closingTicketId, {
         cr109_emailsubject: subject,
-        cr109_emailbody: message,
+        cr109_emailbody: plainToHtml(message),
       })
 
       writeActionLog({
@@ -379,7 +401,7 @@ export function SendToATeamTab({
     try {
       await updateClosingTicket(closingTicketId, {
         cr109_emailsubject: subject,
-        cr109_emailbody: message,
+        cr109_emailbody: plainToHtml(message),
       })
 
       writeActionLog({
@@ -419,6 +441,14 @@ export function SendToATeamTab({
   return (
     <section className="grid gap-4 lg:grid-cols-2">
       <div className="flex flex-col rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/60">
+        {isSentToAR && (
+          <div className="flex items-center gap-2 rounded-t-xl border-b border-emerald-100 bg-emerald-50 px-5 py-3">
+            <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
+            <p className="text-xs font-semibold text-emerald-700">
+              This ticket has already been sent to the AR Team. You can update the email and send again below.
+            </p>
+          </div>
+        )}
         {/* Outlook-style compose header */}
         <div className="border-b border-slate-100 px-5 py-3">
           <div className="flex items-center gap-2 border-b border-slate-100 py-2">
@@ -470,6 +500,16 @@ export function SendToATeamTab({
             value={message}
             onChange={(e) => setMessage(e.target.value)}
           />
+          <div className="mt-1 flex items-center justify-end gap-2">
+            {message.length > EMAIL_BODY_WARN_CHARS && (
+              <span className="text-[11px] font-medium text-amber-600">
+                Email is long — consider shortening it before sending.
+              </span>
+            )}
+            <span className={`text-[11px] ${message.length > EMAIL_BODY_WARN_CHARS ? 'text-amber-600 font-semibold' : 'text-slate-400'}`}>
+              {message.length.toLocaleString()} chars
+            </span>
+          </div>
         </div>
 
         <div className="mt-auto flex flex-wrap items-center gap-3 border-t border-slate-100 px-5 py-3">
@@ -484,8 +524,8 @@ export function SendToATeamTab({
             }
             onClick={() => void handleSend()}
           >
-            <Send className="size-4" />
-            {sending ? 'Sending…' : 'Send to AR Team'}
+            {isSentToAR ? <RotateCcw className="size-4" /> : <Send className="size-4" />}
+            {sending ? 'Sending…' : isSentToAR ? 'Send Again to AR' : 'Send to AR Team'}
           </button>
 
           <button

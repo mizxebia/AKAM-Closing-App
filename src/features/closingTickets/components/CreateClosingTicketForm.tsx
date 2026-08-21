@@ -68,6 +68,7 @@ interface EditClosingTicketFormProps {
   onSaved: () => Promise<void>
   readOnly?: boolean
   isCompleted?: boolean
+  lockedMessage?: string
 }
 
 const emptyFormState: ClosingTicketFormState = {
@@ -489,12 +490,14 @@ export function EditClosingTicketForm({
   onSaved,
   readOnly = false,
   isCompleted = false,
+  lockedMessage = 'Completed Successfully — this ticket is locked.',
 }: EditClosingTicketFormProps) {
   return (
     <ClosingTicketEditorForm
       mode="edit"
       readOnly={readOnly}
       isCompleted={isCompleted}
+      lockedMessage={lockedMessage}
       initialFormState={getRecordFormState(record)}
       initialFileNames={{
         cr109_purchaseapplicationform:
@@ -544,6 +547,7 @@ function ClosingTicketEditorForm({
   onSubmitAndClose,
   readOnly = false,
   isCompleted = false,
+  lockedMessage = 'Completed Successfully — this ticket is locked.',
 }: {
   mode: 'create' | 'edit'
   initialFormState: ClosingTicketFormState
@@ -563,6 +567,7 @@ function ClosingTicketEditorForm({
   onSubmitAndClose?: () => Promise<void>
   readOnly?: boolean
   isCompleted?: boolean
+  lockedMessage?: string
 }) {
   const [formState, setFormState] =
     useState<ClosingTicketFormState>(initialFormState)
@@ -858,7 +863,7 @@ function ClosingTicketEditorForm({
                 <circle cx="10" cy="10" r="9" fill="#0F6E56" opacity="0.15"/>
                 <path d="M6 10.5l3 3 5-6" stroke="#0F6E56" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              Completed Successfully — this ticket is locked.
+              {lockedMessage}
             </span>
           ) : (
             <ProcessingDots />

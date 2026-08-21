@@ -52,6 +52,10 @@ const statusDisplayByGeneratedLabel: Record<
     label: 'Failed',
     tone: 'failed',
   },
+  SenttoAR: {
+    label: 'Sent to AR',
+    tone: 'sentToAR',
+  },
   Completed: {
     label: 'Completed',
     tone: 'completed',

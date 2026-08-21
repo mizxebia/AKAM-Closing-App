@@ -36,6 +36,7 @@ export type ClosingTicketStatusLabel =
   | 'Ready for Post Closing'
   | 'Validate Closings'
   | 'Failed'
+  | 'Sent to AR'
   | 'Completed'
 
 export type ClosingTicketTab =
@@ -50,6 +51,7 @@ export type ClosingTicketStatusTone =
   | 'validate'
   | 'completed'
   | 'failed'
+  | 'sentToAR'
   | 'default'
 
 export type ClosingTicketStatusDisplay = {

@@ -17,7 +17,21 @@ export function renderDocumentViewer(
   if (viewerState === 'empty') {
     return (
       <div className="document-viewer-state">
-        <strong>No file present</strong>
+        <svg
+          width="40"
+          height="40"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+          style={{ opacity: 0.25, marginBottom: '10px' }}
+        >
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="#1E3A47" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <polyline points="14 2 14 8 20 8" stroke="#1E3A47" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        <strong style={{ color: '#1E3A47', opacity: 0.5, fontSize: '13px', fontWeight: 600 }}>No attachment selected</strong>
+        <span style={{ color: '#94a3b8', fontSize: '12px', marginTop: '4px', textAlign: 'center', maxWidth: '180px' }}>
+          Click the <strong style={{ fontWeight: 600 }}>ⓘ</strong> icon on an attachment to preview it here.
+        </span>
       </div>
     )
   }
