@@ -3,7 +3,7 @@ import {
   X, BookOpen, FileText, Loader2, ClipboardCheck,
   Upload, SearchCheck, BadgeCheck, CheckCircle2,
   Clock, AlertTriangle, Info, ChevronDown, ChevronUp,
-  Zap, ArrowRight, ReceiptText, UserPlus,
+  Zap, ArrowRight, ReceiptText, UserPlus, Mail,
 } from 'lucide-react'
 import { cn } from '../../../lib/utils'
 
@@ -11,7 +11,7 @@ import { cn } from '../../../lib/utils'
 
 type BadgeVariant = 'user' | 'desktop' | 'cloud'
 type OutcomeVariant = 'success' | 'failure'
-type HelpTab = 'quick' | 'process' | 'payments' | 'yardi' | 'newowner'
+type HelpTab = 'quick' | 'process' | 'payments' | 'yardi' | 'newowner' | 'sendtoar'
 
 interface StatusEntry { label: string; value: string }
 interface StepCardProps {
@@ -92,8 +92,23 @@ const STATUS_CARDS: StatusCard[] = [
   {
     status: 'Completed', color: '#059669', lightBg: '#ECFDF5', lightBorder: '#A7F3D0',
     icon: <CheckCircle2 size={16} />,
-    what: 'The new owner has been created in YARDI. This closing is done.',
-    action: 'Nothing — this closing is finished. 🎉',
+    what: 'The new owner has been created in YARDI. The Send to AR Team tab is now available — upload the Cheques & Batch documents and send the closing documents to the AR team.',
+    action: 'Open the Send to AR Team tab, review the pre-filled email, and click Send to AR Team.',
+    isUserAction: true, estimatedTime: 'Your action needed',
+    steps: [
+      'Open the Send to AR Team tab — it appears once the ticket reaches Completed status.',
+      'Upload the Cheques Document and Batch Document using the Replace / Upload buttons in the Attachments section.',
+      'Review the pre-filled subject and email body. Edit if needed.',
+      'Click "Send to AR Team" — the New Owner Ticket PDF is regenerated automatically, then the email is sent.',
+      'The ticket status changes to Sent to AR and the ticket locks for editing.',
+      'You can still resend from the same tab if needed — use "Send Again to AR".',
+    ],
+  },
+  {
+    status: 'Sent to AR', color: '#1d4ed8', lightBg: '#EFF6FF', lightBorder: '#93c5fd',
+    icon: <Mail size={16} />,
+    what: 'The closing documents have been emailed to the AR Team. The ticket is now fully read-only. You can still resend from the Send to AR Team tab if needed.',
+    action: 'Nothing — the closing is complete. If you need to resend, open the Send to AR Team tab and click "Send Again to AR".',
     isUserAction: false, estimatedTime: 'Done',
   },
   {
@@ -244,6 +259,12 @@ const BEHAVIOURS: BehaviourCard[] = [
     body: 'Once uploaded or generated, all documents are viewable directly in the document panel on the right side of the ticket.' },
   { icon: '💬', title: 'Ticket showing as Failed?',
     body: 'A banner at the top of the ticket will describe what went wrong. Review the details, make any necessary corrections, and reach out to the Xebia team — they will investigate and reset the status from the backend.' },
+  { icon: '📤', title: 'Send to AR Team tab — final step after Completed',
+    body: 'Once a ticket reaches Completed status, the Send to AR Team tab becomes available. Upload the Cheques and Batch documents, review the pre-filled email, and click "Send to AR Team". The app regenerates the New Owner Ticket PDF automatically, then triggers the email flow to the AR team. The ticket moves to Sent to AR and becomes read-only.' },
+  { icon: '🔁', title: 'Resending to AR — always possible',
+    body: 'If the email needs to be resent (e.g. updated attachment or corrected email body), open the Send to AR Team tab on any Sent to AR ticket. Update the subject or body if needed, then click "Send Again to AR". The New Owner Ticket is regenerated and the email is resent.' },
+  { icon: '📎', title: 'Four attachments are always included in the AR email',
+    body: 'The Send to AR email always includes four attachments: Cheques Document, Batch Document, Invoice PDF, and New Owner Ticket PDF. The Cheques and Batch documents must be manually uploaded via the Replace / Upload buttons in the Attachments section of the Send to AR Team tab. The Invoice and New Owner Ticket PDFs are generated automatically.' },
 ]
 
 function BehaviourCardItem({ card }: { card: BehaviourCard }) {
@@ -258,7 +279,7 @@ function BehaviourCardItem({ card }: { card: BehaviourCard }) {
 
 // ─── Workflow progress stepper ────────────────────────────────────────────────
 
-const PROGRESS_STEPS = ['Draft', 'Processing', 'Ready', 'Post Closing', 'Validation', 'Completed']
+const PROGRESS_STEPS = ['Draft', 'Processing', 'Ready', 'Post Closing', 'Validation', 'Completed', 'Sent to AR']
 
 function WorkflowProgress() {
   return (
@@ -711,6 +732,41 @@ function FlowchartContent() {
         <div className="rounded-xl border border-emerald-200 bg-white px-3 py-2 text-[11px] shrink-0">
           <div className="leading-relaxed"><span className="text-[9px] font-bold uppercase tracking-wide text-slate-400">Ticket Status </span><span className="font-semibold text-emerald-700">Completed</span></div>
           <div className="leading-relaxed"><span className="text-[9px] font-bold uppercase tracking-wide text-slate-400">Bot Status </span><span className="font-semibold text-emerald-700">OwnerRecordCreated</span></div>
+        </div>
+      </div>
+      <Arrow />
+
+      <PhaseHeader number="Phase 7" title="Send to AR Team" />
+      <Arrow />
+      <StepCard variant="user" stage="Stage 13a" title="Upload Cheques &amp; Batch Documents"
+        subtitle="In the Send to AR Team tab, upload the Cheques Document and Batch Document using the Replace / Upload buttons"
+        statuses={[{ label: 'Ticket Status', value: 'Completed' }]} />
+      <Arrow />
+      <StepCard variant="user" stage="Stage 13b" title="Review &amp; Send Email to AR Team"
+        subtitle='Review the pre-filled email subject and body, then click "Send to AR Team"'
+        statuses={[{ label: 'Trigger', value: 'User clicks Send to AR Team' }]} />
+      <Arrow short />
+      <NoteBox icon="⚙️" title="What happens on Send">
+        Two flows run in sequence:<br />
+        1. <strong>NSC_Generate_New_Owner_Ticket</strong> — regenerates the New Owner Ticket PDF with the latest data.<br />
+        2. <strong>NSC_Send_Email_To_AR</strong> — sends the email to the AR team with four attachments: Cheques Document, Batch Document, Invoice PDF, and New Owner Ticket PDF.
+      </NoteBox>
+      <Arrow short />
+      <DecisionRow
+        success={[{ label: 'Ticket Status', value: 'Sent to AR' }, { label: 'Email', value: 'Delivered to AR Team' }]}
+        failure={[{ label: 'Ticket Status', value: 'Unchanged' }, { label: 'Note', value: 'Error shown — retry' }]} />
+      <Arrow short />
+      <NoteBox icon="🔁" title="Re-sending">
+        The Send to AR Team tab stays accessible on <strong>Sent to AR</strong> tickets. Click <strong>&quot;Send Again to AR&quot;</strong> to resend with updated documents or an edited email body.
+      </NoteBox>
+      <Arrow short />
+      <div className="w-full rounded-2xl border-2 border-blue-300 bg-blue-50 px-5 py-4 flex items-center justify-between gap-4 shadow-sm">
+        <div>
+          <p className="text-[17px] font-bold text-blue-700">📨 Sent to AR Team</p>
+          <p className="text-[12px] text-blue-600 mt-0.5">Closing documents emailed to the AR team. Ticket is fully read-only.</p>
+        </div>
+        <div className="rounded-xl border border-blue-200 bg-white px-3 py-2 text-[11px] shrink-0">
+          <div className="leading-relaxed"><span className="text-[9px] font-bold uppercase tracking-wide text-slate-400">Ticket Status </span><span className="font-semibold text-blue-700">Sent to AR</span></div>
         </div>
       </div>
 
@@ -1204,6 +1260,124 @@ function NewOwnerTicketContent() {
   )
 }
 
+// ─── Send to AR Tab ───────────────────────────────────────────────────────────
+
+function SendToARContent() {
+  return (
+    <div className="space-y-5 max-w-2xl mx-auto">
+      {/* Page title */}
+      <div className="rounded-2xl border border-blue-200 bg-blue-50 px-5 py-4 flex items-start gap-3 shadow-sm">
+        <Mail size={20} className="text-blue-600 shrink-0 mt-0.5" />
+        <div>
+          <h2 className="text-[16px] font-bold text-blue-900 leading-tight">Send to AR Team — Final Step</h2>
+          <p className="text-[12px] text-blue-700 mt-1 leading-relaxed">
+            After the ticket reaches <strong>Completed</strong> status, the <em>Send to AR Team</em> tab becomes available.
+            Use it to review the email, upload any missing documents, and dispatch the closing package to the AR team.
+          </p>
+        </div>
+      </div>
+
+      {/* When does the tab appear? */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Availability</p>
+        <h3 className="text-[14px] font-bold text-slate-800">When does the Send to AR Team tab appear?</h3>
+        <p className="text-[12px] text-slate-600 leading-relaxed">
+          The tab is visible once the ticket status is either <strong>Completed</strong> or <strong>Sent to AR</strong>.
+          It is hidden on all earlier statuses.
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+            <p className="text-[11px] font-bold text-emerald-700 uppercase tracking-wide mb-1">Completed</p>
+            <p className="text-[12px] text-emerald-800 leading-relaxed">Tab is unlocked and editable. Upload documents and send the email.</p>
+          </div>
+          <div className="rounded-xl border border-blue-200 bg-blue-50 p-3">
+            <p className="text-[11px] font-bold text-blue-700 uppercase tracking-wide mb-1">Sent to AR</p>
+            <p className="text-[12px] text-blue-800 leading-relaxed">Tab is accessible for resending. The "Send Again to AR" button replaces the original Send button.</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Step-by-step guide */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Step-by-Step</p>
+        <h3 className="text-[14px] font-bold text-slate-800">How to send the closing package to the AR team</h3>
+        <ol className="space-y-3">
+          {[
+            { n: '1', title: 'Open the Send to AR Team tab', body: 'Navigate to the ticket and click the "Send to AR Team" tab. It appears after the New Owner Ticket tab once the ticket is Completed.' },
+            { n: '2', title: 'Upload Cheques & Batch Documents', body: 'In the Attachments section (top of the left panel), upload or replace the Cheques Document and Batch Document using the Replace / Upload buttons on each row. The Invoice and New Owner Ticket PDF are generated automatically and do not require manual upload.' },
+            { n: '3', title: 'Review the email subject', body: 'The subject is pre-filled. Edit it if needed. It is saved to the ticket as a draft whenever you click "Save Draft".' },
+            { n: '4', title: 'Review the email body', body: 'The body is pre-filled with closing details. Edit if needed. The character counter appears bottom-right — a warning shows at 8,000 characters. Click "Save Draft" at any time to preserve your edits.' },
+            { n: '5', title: 'Click "Send to AR Team"', body: 'The app first regenerates the New Owner Ticket PDF with the latest data (NSC_Generate_New_Owner_Ticket flow), then triggers the email flow (NSC_Send_Email_To_AR). Both run sequentially — if the first fails, the send is aborted.' },
+            { n: '6', title: 'Ticket locks as Sent to AR', body: 'On success, the ticket status changes to Sent to AR and becomes fully read-only. A green banner confirms the email was sent. An audit log entry is recorded.' },
+          ].map(s => (
+            <li key={s.n} className="flex gap-3">
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-[#1E3A47] text-white text-[11px] font-bold mt-0.5">{s.n}</span>
+              <div>
+                <p className="text-[13px] font-semibold text-slate-800 leading-snug">{s.title}</p>
+                <p className="text-[12px] text-slate-500 mt-0.5 leading-relaxed">{s.body}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      {/* Attachments */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Attachments</p>
+        <h3 className="text-[14px] font-bold text-slate-800">What is included in the email?</h3>
+        <p className="text-[12px] text-slate-500 leading-relaxed">Four documents are always attached. Two are auto-generated; two must be manually uploaded.</p>
+        <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+          <table className="w-full text-[12px] border-collapse bg-white">
+            <thead>
+              <tr className="bg-[#EDE8E0]">
+                <th className="px-4 py-2.5 text-left text-[9px] font-bold uppercase tracking-widest text-slate-500">Document</th>
+                <th className="px-4 py-2.5 text-left text-[9px] font-bold uppercase tracking-widest text-slate-500">Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { doc: 'Cheques Document', source: 'Manual upload — Replace / Upload button' },
+                { doc: 'Batch Document', source: 'Manual upload — Replace / Upload button' },
+                { doc: 'Invoice PDF', source: 'Auto-generated by NSC_Generate_Invoice flow' },
+                { doc: 'New Owner Ticket PDF', source: 'Regenerated automatically when you click Send to AR Team' },
+              ].map((r, i) => (
+                <tr key={i} className="border-t border-slate-100">
+                  <td className="px-4 py-2.5 font-semibold text-[#1E3A47]">{r.doc}</td>
+                  <td className="px-4 py-2.5 text-slate-600">{r.source}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Resending */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Resending</p>
+        <h3 className="text-[14px] font-bold text-slate-800">Sending again after Sent to AR</h3>
+        <p className="text-[12px] text-slate-600 leading-relaxed">
+          The Send to AR Team tab remains accessible on tickets in <strong>Sent to AR</strong> status. A green banner confirms the email was already sent.
+          You can edit the subject and body, replace the Cheques or Batch documents, then click <strong>"Send Again to AR"</strong> to trigger the full send sequence again.
+          Each resend regenerates the New Owner Ticket PDF and sends a fresh email to the AR team.
+        </p>
+      </div>
+
+      {/* Locked state */}
+      <div className="flex items-start gap-3 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-[12px] text-amber-800 leading-relaxed">
+        <AlertTriangle size={14} className="text-amber-500 shrink-0 mt-0.5" />
+        <div>
+          <strong>Sent to AR tickets are locked.</strong> All tabs except Send to AR Team become read-only once the ticket is in Sent to AR status.
+          You can edit the email subject and body within the Send to AR Team tab, but no other ticket fields can be changed.
+        </div>
+      </div>
+
+      <p className="text-center text-[11px] text-slate-400 pt-2">
+        Send to AR Team Guide &nbsp;·&nbsp; AKAM Associates &nbsp;·&nbsp; Closing Management System
+      </p>
+    </div>
+  )
+}
+
 // ─── Public modal ─────────────────────────────────────────────────────────────
 
 interface HelpCentreModalProps { open: boolean; onClose: () => void }
@@ -1226,6 +1400,7 @@ export function HelpCentreModal({ open, onClose }: HelpCentreModalProps) {
     { key: 'payments', icon: <ReceiptText size={13} />,    label: 'Payments',         sub: 'Invoice & ledger guide' },
     { key: 'yardi',    icon: <BadgeCheck size={13} />,     label: 'Yardi Charges',    sub: 'Charges, Move & Partial' },
     { key: 'newowner', icon: <UserPlus size={13} />,       label: 'New Owner Ticket', sub: 'Buyers, Sellers & Occupancy' },
+    { key: 'sendtoar', icon: <Mail size={13} />,           label: 'Send to AR',       sub: 'AR email & final step' },
   ]
 
   return (
@@ -1307,6 +1482,7 @@ export function HelpCentreModal({ open, onClose }: HelpCentreModalProps) {
           {activeTab === 'payments' && <PaymentsContent />}
           {activeTab === 'yardi'    && <YardiChargesContent />}
           {activeTab === 'newowner' && <NewOwnerTicketContent />}
+          {activeTab === 'sendtoar' && <SendToARContent />}
         </div>
       </div>
     </div>

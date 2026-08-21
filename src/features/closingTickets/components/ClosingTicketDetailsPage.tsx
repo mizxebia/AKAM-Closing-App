@@ -27,6 +27,7 @@ import type { ClosingTicketRecord } from '../types/closingTicket'
 import {
   NSC_Generate_InvoiceService,
   NSC_Generate_New_Owner_TicketService,
+  NSC_Send_Email_To_ARService,
 } from '../../../generated'
 import { EditClosingTicketForm } from './CreateClosingTicketForm'
 import { InvoiceDocumentViewer } from './InvoiceDocumentViewer'
@@ -312,6 +313,46 @@ export function ClosingTicketDetailsPage({
     }
   }, [record?.cr7de_ticketid, refreshClosingRecord])
 
+  const handleSendToAR = useCallback(async () => {
+    const currentTicketId = record?.cr7de_ticketid?.trim()
+    if (!currentTicketId) {
+      setError('This ticket does not have a Ticket ID — cannot send to AR.')
+      return
+    }
+
+    try {
+      // Step 1 — regenerate New Owner Ticket before sending.
+      const nowResult = await NSC_Generate_New_Owner_TicketService.Run({
+        text: currentTicketId,
+      })
+      if (!nowResult.success) {
+        throw new Error(
+          nowResult.error?.message || 'New Owner Ticket regeneration failed.'
+        )
+      }
+      if (nowResult.data?.status?.trim().toLowerCase() === 'failed') {
+        throw new Error('New Owner Ticket flow returned Failed.')
+      }
+
+      // Step 2 — trigger the Send to AR email flow.
+      const sendResult = await NSC_Send_Email_To_ARService.Run({
+        text: currentTicketId,
+      })
+      if (!sendResult.success) {
+        throw new Error(
+          sendResult.error?.message || 'Send to AR flow failed.'
+        )
+      }
+      if (sendResult.data?.status?.trim().toLowerCase() === 'failed') {
+        throw new Error('Send to AR flow returned Failed.')
+      }
+
+      await refreshClosingRecord()
+    } catch (err) {
+      throw err
+    }
+  }, [record?.cr7de_ticketid, refreshClosingRecord])
+
   const renderPageActions = () => {
     const domecileUrl = record?.cr109_domecilepackageurl
       ? record.cr109_domecilepackageurl
@@ -400,7 +441,7 @@ export function ClosingTicketDetailsPage({
             <p className="font-semibold uppercase" style={{ fontSize: '10px', letterSpacing: '0.14em', color: '#b89a5a' }}>
               Closing Workspace
             </p>
-            <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '22px', fontWeight: 700, fontStyle: 'italic', color: '#1E3A47', letterSpacing: '-0.3px' }}>
+            <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '22px', fontWeight: 700, color: '#1E3A47', letterSpacing: '-0.3px', fontVariantNumeric: 'lining-nums tabular-nums' }}>
               {record?.cr7de_ticketid ?? 'Closing Details'}
             </h1>
           </div>
@@ -596,6 +637,7 @@ export function ClosingTicketDetailsPage({
               closingTicket={record}
               onUploaded={refreshClosingRecord}
               isSentToAR={isSentToAR}
+              onSendToAR={handleSendToAR}
             />
           )}
         </WorkflowTabs>

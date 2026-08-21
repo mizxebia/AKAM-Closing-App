@@ -224,12 +224,14 @@ interface SendToATeamTabProps {
   closingTicket: ClosingTicketRecord
   onUploaded: () => void | Promise<void>
   isSentToAR?: boolean
+  onSendToAR: () => Promise<void>
 }
 
 export function SendToATeamTab({
   closingTicket,
   onUploaded,
   isSentToAR = false,
+  onSendToAR,
 }: SendToATeamTabProps) {
   const closingTicketId =
     closingTicket.cr7de_closingticketdetailsid
@@ -395,14 +397,23 @@ export function SendToATeamTab({
   }
 
   const handleSend = async () => {
+    const currentTicketId = closingTicket.cr7de_ticketid?.trim()
+    if (!currentTicketId) {
+      setSendError('This ticket does not have a Ticket ID — cannot send.')
+      return
+    }
+
     setSending(true)
     setSendError(null)
 
     try {
+      // Persist latest subject + body before triggering flows.
       await updateClosingTicket(closingTicketId, {
         cr109_emailsubject: subject,
         cr109_emailbody: plainToHtml(message),
       })
+
+      await onSendToAR()
 
       writeActionLog({
         ticketId,
