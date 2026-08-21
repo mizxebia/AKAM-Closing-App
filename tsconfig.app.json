@@ -28,5 +28,5 @@
     "noUncheckedSideEffectImports": true
   },
   "include": ["src"],
-  "exclude": ["src/components/ui"]
+  "exclude": ["src/components/ui", "src/**/*.test.ts", "src/**/*.test.tsx", "src/test"]
 }

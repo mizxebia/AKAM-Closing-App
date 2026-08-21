@@ -24,7 +24,9 @@ export const Cr7de_closingticketdetailsescr109_botstatus = {
   396620017: 'FailedSellerDetailsUpdate',
   396620018: 'FailedCreateNewOwner',
   396620019: 'FailedRPTTExtraction',
-  396620020: 'RPTTExtracted'
+  396620020: 'RPTTExtracted',
+  396620022: 'SentToAR',
+  396620023: 'FailedtoSendtoAR'
 } as const;
 export type Cr7de_closingticketdetailsescr109_botstatus = keyof typeof Cr7de_closingticketdetailsescr109_botstatus;
 export const Cr7de_closingticketdetailsescr109_packagetype = {
@@ -48,7 +50,8 @@ export const Cr7de_closingticketdetailsescr7de_ticketstatus = {
   716070001: 'ValidateClosings',
   716070002: 'TransferringBuilding',
   716070007: 'Failed',
-  716070008: 'Completed'
+  716070008: 'Completed',
+  396620001: 'SenttoAR'
 } as const;
 export type Cr7de_closingticketdetailsescr7de_ticketstatus = keyof typeof Cr7de_closingticketdetailsescr7de_ticketstatus;
 export const Cr7de_closingticketdetailsesstatecode = {
@@ -67,7 +70,8 @@ export interface Cr7de_closingticketdetailsesBase {
   cr109_buyer2name?: string;
   cr109_domecilechargesextracted?: boolean;
   cr109_domecilepackageurl?: string;
-  cr109_emailmessage?: string;
+  cr109_emailbody?: string;
+  cr109_emailsubject?: string;
   cr109_legalname?: string;
   cr109_locationofclosing?: string;
   cr109_packagetype?: Cr7de_closingticketdetailsescr109_packagetype;

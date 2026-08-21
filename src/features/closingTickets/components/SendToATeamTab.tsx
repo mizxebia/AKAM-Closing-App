@@ -214,11 +214,13 @@ export function SendToATeamTab({
   const ticketId = closingTicket.cr7de_ticketid ?? ''
 
   const [subject, setSubject] = useState(() =>
-    buildSubjectLine(closingTicket)
+    closingTicket.cr109_emailsubject?.trim()
+      ? closingTicket.cr109_emailsubject
+      : buildSubjectLine(closingTicket)
   )
   const [message, setMessage] = useState(() =>
-    closingTicket.cr109_emailmessage?.trim()
-      ? closingTicket.cr109_emailmessage
+    closingTicket.cr109_emailbody?.trim()
+      ? closingTicket.cr109_emailbody
       : buildPresetMessage(closingTicket)
   )
   const [sending, setSending] = useState(false)
@@ -346,7 +348,8 @@ export function SendToATeamTab({
 
     try {
       await updateClosingTicket(closingTicketId, {
-        cr109_emailmessage: message,
+        cr109_emailsubject: subject,
+        cr109_emailbody: message,
       })
 
       writeActionLog({
@@ -356,7 +359,7 @@ export function SendToATeamTab({
         details: { subject, message },
       })
 
-      toast.success('Draft saved to AR tab.')
+      toast.success('Draft Saved')
       await onUploaded()
     } catch (err) {
       setSendError(
@@ -375,7 +378,8 @@ export function SendToATeamTab({
 
     try {
       await updateClosingTicket(closingTicketId, {
-        cr109_emailmessage: message,
+        cr109_emailsubject: subject,
+        cr109_emailbody: message,
       })
 
       writeActionLog({
@@ -413,8 +417,8 @@ export function SendToATeamTab({
   }
 
   return (
-    <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_520px]">
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/60">
+    <section className="grid gap-4 lg:grid-cols-2">
+      <div className="flex flex-col rounded-xl border border-slate-200 bg-white shadow-sm shadow-slate-200/60">
         {/* Outlook-style compose header */}
         <div className="border-b border-slate-100 px-5 py-3">
           <div className="flex items-center gap-2 border-b border-slate-100 py-2">
@@ -435,15 +439,6 @@ export function SendToATeamTab({
               onChange={(e) => setSubject(e.target.value)}
             />
           </div>
-        </div>
-
-        <div className="px-5 py-3">
-          <textarea
-            className="min-h-[120px] w-full resize-y rounded-md border border-transparent px-1 py-1 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 hover:border-slate-200 focus:border-[#1E3A47] focus:bg-white"
-            placeholder="Write a message for the AR Team (optional)…"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-          />
         </div>
 
         <div className="border-t border-slate-100 px-5 py-3">
@@ -468,7 +463,16 @@ export function SendToATeamTab({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 border-t border-slate-100 px-5 py-3">
+        <div className="flex flex-1 flex-col border-t border-slate-100 px-5 py-3">
+          <textarea
+            className="flex-1 w-full resize-none rounded-md border border-transparent px-1 py-1 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 hover:border-slate-200 focus:border-[#1E3A47] focus:bg-white"
+            placeholder="Write a message for the AR Team (optional)…"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          />
+        </div>
+
+        <div className="mt-auto flex flex-wrap items-center gap-3 border-t border-slate-100 px-5 py-3">
           <button
             type="button"
             className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#1E3A47] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#152d38] disabled:cursor-not-allowed disabled:opacity-50"

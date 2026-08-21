@@ -55,7 +55,9 @@
             "Failed Seller Details Update",
             "Failed Create New Owner",
             "Failed RPTT Extraction",
-            "RPTT Extracted"
+            "RPTT Extracted",
+            "Sent To AR",
+            "Failed to Send to AR"
           ],
           "x-ms-enum-values": [
             396620004,
@@ -79,9 +81,13 @@
             396620017,
             396620018,
             396620019,
-            396620020
+            396620020,
+            396620022,
+            396620023
           ],
           "Color": [
+            null,
+            null,
             null,
             null,
             null,
@@ -199,12 +205,20 @@
           "x-ms-schema-name": "cr109_DomecilePackageUrl",
           "maxLength": 100
         },
-        "cr109_emailmessage": {
+        "cr109_emailbody": {
           "type": "string",
-          "title": "Email Message",
-          "x-ms-dataverse-attribute": "cr109_emailmessage",
+          "title": "Email Body",
+          "x-ms-dataverse-attribute": "cr109_emailbody",
+          "x-ms-dataverse-type": "MemoType",
+          "x-ms-schema-name": "cr109_EmailBody",
+          "maxLength": 1048576
+        },
+        "cr109_emailsubject": {
+          "type": "string",
+          "title": "Email Subject",
+          "x-ms-dataverse-attribute": "cr109_emailsubject",
           "x-ms-dataverse-type": "StringType",
-          "x-ms-schema-name": "cr109_EmailMessage",
+          "x-ms-schema-name": "cr109_EmailSubject",
           "maxLength": 100
         },
         "cr109_legalname": {
@@ -559,7 +573,8 @@
             "Validate Closings",
             "Transferring Building",
             "Failed",
-            "Completed"
+            "Completed",
+            "Sent to AR"
           ],
           "x-ms-enum-values": [
             716070000,
@@ -569,9 +584,11 @@
             716070001,
             716070002,
             716070007,
-            716070008
+            716070008,
+            396620001
           ],
           "Color": [
+            null,
             null,
             null,
             null,
