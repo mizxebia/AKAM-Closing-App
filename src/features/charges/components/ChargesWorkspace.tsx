@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Plus, RotateCw, Save, Zap } from 'lucide-react'
+import { Plus, RotateCw, Save } from 'lucide-react'
 import { useAutoClear } from '../../../hooks/useAutoClear'
 import { toast } from '../../../components/feedback/toastStore'
 import {
@@ -31,7 +31,6 @@ import type {
   ScheduledChargeUpdateInput,
   SellerLedgerRecord,
   UnpaidChargeRecord,
-  UnpaidChargeUpdateInput,
 } from '../types/charges'
 import type { InvoiceRecord } from '../../invoices/types/invoice'
 import { getUnconfirmedScheduledCharges } from '../utils/scheduledChargeValidation'
@@ -118,19 +117,6 @@ function createScheduledDraft(
   }
 }
 
-function buildUnpaidPayload(
-  draft: UnpaidChargeDraft
-): UnpaidChargeUpdateInput {
-  return {
-    cr109_amount: normalizeText(draft.cr109_amount),
-    cr109_chargecode: normalizeText(draft.cr109_chargecode),
-    cr109_date: draft.cr109_date || undefined,
-    cr109_move: draft.cr109_move ?? false,
-    cr109_notes: normalizeText(draft.cr109_notes),
-    cr109_partiallypaid: draft.cr109_partiallypaid ?? false,
-  }
-}
-
 function buildScheduledPayload(
   draft: ScheduledChargeDraft
 ): ScheduledChargeUpdateInput {
@@ -199,7 +185,7 @@ function BooleanPill({
           ? 'charge-boolean-pill charge-boolean-pill-active'
           : 'charge-boolean-pill'
       }
-      style={disabled ? { opacity: 0.4, pointerEvents: 'none', cursor: 'not-allowed' } : undefined}
+      style={disabled ? { opacity: 0.7, pointerEvents: 'none', cursor: 'default' } : undefined}
     >
       <input
         type="checkbox"
@@ -213,19 +199,9 @@ function BooleanPill({
 }
 
 function UnpaidChargesTable({
-  ticketId,
   records,
-  savingId,
-  onSaved,
-  onSavingChange,
-  readOnly = false,
 }: {
-  ticketId?: string
   records: UnpaidChargeRecord[]
-  savingId: string | null
-  onSaved: () => Promise<void> | void
-  onSavingChange: (id: string | null) => void
-  readOnly?: boolean
 }) {
   const initialDrafts = useMemo(
     () =>
@@ -238,10 +214,6 @@ function UnpaidChargesTable({
     [records]
   )
   const [drafts, setDrafts] = useState(initialDrafts)
-  const [saveError, setSaveError] = useState<string | null>(
-    null
-  )
-  useAutoClear(saveError, setSaveError, 8000)
 
   useEffect(() => {
     setDrafts(initialDrafts)
@@ -260,105 +232,17 @@ function UnpaidChargesTable({
     }))
   }
 
-  const saveAll = async () => {
-    const changedIds = Object.keys(drafts).filter(
-      (id) =>
-        JSON.stringify(drafts[id]) !==
-        JSON.stringify(initialDrafts[id])
-    )
-    if (changedIds.length === 0) {
-      return
-    }
-
-    onSavingChange('all-unpaid')
-    setSaveError(null)
-    try {
-      const failures: string[] = []
-
-      for (const id of changedIds) {
-        const prev = records.find(
-          (r) => r.crc5c_unpaidchargesid === id
-        )
-        try {
-          const updated = await updateUnpaidCharge(
-            id,
-            buildUnpaidPayload(drafts[id]),
-            { ticketId: ticketId ?? '', oldRecord: prev as UnpaidChargeRecord }
-          )
-          try {
-            await syncBuyerLedgerWithUnpaidCharge(
-              prev as UnpaidChargeRecord,
-              updated
-            )
-          } catch (syncErr) {
-            // don't fail the whole batch for ledger sync issues; collect and continue
-            failures.push(
-              `Ledger sync failed for ${id}: ${
-                syncErr instanceof Error
-                  ? syncErr.message
-                  : String(syncErr)
-              }`
-            )
-          }
-        } catch (err) {
-          failures.push(
-            `Save failed for ${id}: ${
-              err instanceof Error ? err.message : String(err)
-            }`
-          )
-        }
-      }
-
-      if (failures.length > 0) {
-        setSaveError(
-          `Completed with ${failures.length} error(s). ${failures[0]}`
-        )
-      } else {
-        toast.success('Unpaid charges saved.')
-      }
-
-      await onSaved()
-    } catch (err) {
-      setSaveError(
-        err instanceof Error
-          ? err.message
-          : 'Unable to save unpaid charges.'
-      )
-    } finally {
-      onSavingChange(null)
-    }
-  }
-
   return (
     <ChargeTableShell
       title="Unpaid Charges"
       subtitle={`${records.length} records`}
-      headerActions={
-        !readOnly && (
-        <button
-          className="charge-save-button"
-          type="button"
-          onClick={saveAll}
-          disabled={savingId === 'all-unpaid'}
-        >
-          <Save className="size-4" />
-          {savingId === 'all-unpaid' ? 'Saving' : 'Save All'}
-        </button>
-        )
-      }
     >
-      {saveError && (
-        <div className="dataverse-charge-save-error">
-          {saveError}
-        </div>
-      )}
       <div className="cg-table dataverse-unpaid-cg">
         <div className="cg-header-row">
           <div className="cg-cell">Charge Code</div>
           <div className="cg-cell">Date</div>
           <div className="cg-cell cg-cell--right">Amount</div>
           <div className="cg-cell cg-cell--center">Partially Paid</div>
-          <div className="cg-cell cg-cell--center">Move</div>
           <div className="cg-cell">Notes</div>
         </div>
         {records.map((record) => {
@@ -366,22 +250,19 @@ function UnpaidChargesTable({
           return (
             <div className="cg-data-row" key={record.crc5c_unpaidchargesid}>
               <div className="cg-cell">
-                <input className="cg-input" value={draft.cr109_chargecode} disabled={readOnly} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_chargecode: e.target.value })} />
+                <input className="cg-input" value={draft.cr109_chargecode} disabled={true} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_chargecode: e.target.value })} />
               </div>
               <div className="cg-cell">
-                <input className="cg-input cg-input--date" type="date" value={draft.cr109_date} disabled={readOnly} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_date: e.target.value })} />
+                <input className="cg-input cg-input--date" type="date" value={draft.cr109_date} disabled={true} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_date: e.target.value })} />
               </div>
               <div className="cg-cell cg-cell--right">
-                <input className="cg-input cg-input--amount" inputMode="decimal" value={draft.cr109_amount} disabled={readOnly} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_amount: e.target.value })} />
+                <input className="cg-input cg-input--amount" inputMode="decimal" value={draft.cr109_amount} disabled={true} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_amount: e.target.value })} />
               </div>
               <div className="cg-cell cg-cell--center">
-                <BooleanPill checked={Boolean(draft.cr109_partiallypaid)} label="Partial" onChange={(checked) => !readOnly && updateDraft(record.crc5c_unpaidchargesid, { cr109_partiallypaid: checked })} />
-              </div>
-              <div className="cg-cell cg-cell--center">
-                <BooleanPill checked={Boolean(draft.cr109_move)} label="Move" disabled={Boolean(draft.cr109_partiallypaid)} onChange={(checked) => !readOnly && updateDraft(record.crc5c_unpaidchargesid, { cr109_move: checked })} />
+                <BooleanPill checked={Boolean(draft.cr109_partiallypaid)} label="Partial" disabled={true} onChange={() => {}} />
               </div>
               <div className="cg-cell cg-cell--notes">
-                <input className="cg-input" value={draft.cr109_notes} disabled={readOnly} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_notes: e.target.value })} />
+                <input className="cg-input" value={draft.cr109_notes} disabled={true} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_notes: e.target.value })} />
               </div>
             </div>
           )
@@ -1472,7 +1353,8 @@ export function ChargesWorkspace({
   useAutoClear(autoMoveError, setAutoMoveError, 8000)
   useAutoClear(autoMoveSuccess, setAutoMoveSuccess, 5000)
 
-  const showAutoMove =
+  // Retained for future use; button is intentionally hidden
+  const _showAutoMove =
     !readOnly &&
     (botStatus === BOT_STATUS_YARDI_CHARGES_FETCHED ||
       botStatus === BOT_STATUS_YARDI_CHARGES_UPDATED) &&
@@ -1482,7 +1364,7 @@ export function ChargesWorkspace({
     scheduledCharges
   )
 
-  const handleAutoMove = async () => {
+  const _handleAutoMove = async () => {
     if (!ticketId || !closingTicketId) return
     setAutoMoving(true)
     setAutoMoveError(null)
@@ -1532,6 +1414,9 @@ export function ChargesWorkspace({
       setAutoMoving(false)
     }
   }
+  // Reference retained logic so noUnusedLocals does not flag them
+  void _showAutoMove
+  void _handleAutoMove
 
   return (
     <div className="dataverse-charges-workspace">
@@ -1554,18 +1439,7 @@ export function ChargesWorkspace({
               Syncing
             </span>
           )}
-          {showAutoMove && (
-            <button
-              type="button"
-              className="auto-move-charges-btn"
-              onClick={handleAutoMove}
-              disabled={autoMoving}
-              title="Automatically mark matching paid charges for Move"
-            >
-              <Zap className="size-4" />
-              {autoMoving ? 'Processing...' : 'Auto Move Charges'}
-            </button>
-          )}
+          {/* Auto Move Charges button hidden; logic retained for programmatic use */}
           <button
             type="button"
             onClick={onRefresh}
@@ -1645,12 +1519,7 @@ export function ChargesWorkspace({
             </section>
           ) : (
             <UnpaidChargesTable
-              ticketId={ticketId}
               records={unpaidCharges}
-              savingId={savingId}
-              onSaved={onRefresh}
-              onSavingChange={setSavingId}
-              readOnly={readOnly || autoMoving}
             />
           )}
 

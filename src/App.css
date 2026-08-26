@@ -2877,9 +2877,9 @@ body {
   --cg-cols: 0.8fr 1.1fr 1.1fr 0.9fr 1fr 0.8fr 0.7fr;
 }
 
-/* Unpaid Charges grid — proportional, fits container with no overflow */
+/* Unpaid Charges grid — 5 cols: ~15% / ~20% / ~15% / ~20% / ~30% */
 .dataverse-unpaid-cg {
-  --cg-cols: 0.8fr 1fr 0.9fr 1.1fr 1fr 2fr;
+  --cg-cols: 0.75fr 1fr 0.75fr 1fr 1.5fr;
 }
 
 /* ── Shared grid table styles ── */
@@ -2908,7 +2908,7 @@ body {
 
 .cg-data-row {
   border-bottom: 1px solid #E8E0D7;
-  min-height: 72px;
+  min-height: 56px;
   transition: background 140ms ease;
 }
 
@@ -2945,7 +2945,7 @@ body {
 
 .cg-cell--right {
   justify-content: flex-end;
-  padding-right: 16px;
+  padding-right: 10px;
 }
 
 .cg-cell--center {
@@ -2953,9 +2953,8 @@ body {
 }
 
 .cg-cell--notes {
-  /* Notes expands and wraps */
   overflow: visible;
-  align-items: flex-start;
+  align-items: center;
 }
 
 /* Date columns: date input + calendar icon sit as a flex row
@@ -2997,6 +2996,15 @@ body {
   outline: none;
 }
 
+/* Normalise disabled inputs so all browsers render them identically */
+.cg-input:disabled {
+  -webkit-text-fill-color: #1E3A47;
+  opacity: 1;
+  color: #1E3A47;
+  cursor: default;
+  pointer-events: none;
+}
+
 .cg-input--date {
   /* Override browser's default min-width for date inputs */
   min-width: 0;
@@ -3006,6 +3014,8 @@ body {
 
 .cg-input--amount {
   text-align: right;
+  /* Remove right padding so number text aligns with the header label */
+  padding-right: 0;
 }
 
 .dataverse-ledger-table {
