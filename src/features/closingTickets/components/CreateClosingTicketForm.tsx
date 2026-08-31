@@ -74,6 +74,7 @@ interface EditClosingTicketFormProps {
 const emptyFormState: ClosingTicketFormState = {
   cr109_botstatus: '',
   cr109_buyer2name: '',
+  cr109_buyerunitnumber: '',
   cr109_domecilepackageurl: '',
   cr109_legalname: '',
   cr109_locationofclosing: '99 Park Avenue, 14th Floor, New York, NY 10014',
@@ -127,6 +128,7 @@ function getRecordFormState(
   return {
     cr109_botstatus: record.cr109_botstatus ?? '',
     cr109_buyer2name: record.cr109_buyer2name ?? '',
+    cr109_buyerunitnumber: record.cr109_buyerunitnumber ?? '',
     cr109_domecilepackageurl:
       record.cr109_domecilepackageurl ?? '',
     cr109_legalname: record.cr109_legalname ?? '',
@@ -288,6 +290,9 @@ function buildPayload(
       formState.cr109_botstatus || undefined,
     cr109_buyer2name: normalizeText(
       formState.cr109_buyer2name
+    ),
+    cr109_buyerunitnumber: normalizeText(
+      formState.cr109_buyerunitnumber
     ),
     cr109_domecilepackageurl: normalizeText(
       formState.cr109_domecilepackageurl
@@ -1263,6 +1268,21 @@ function ClosingTicketEditorForm({
                 }
               />
             </FormField>
+
+            {formState.cr109_packagetype === COOP_TRANSFER_PACKAGE_TYPE && (
+              <FormField label="Buyer Unit Number">
+                <input
+                  value={formState.cr109_buyerunitnumber}
+                  onChange={(event) =>
+                    updateField(
+                      'cr109_buyerunitnumber',
+                      event.target.value
+                    )
+                  }
+                  placeholder="e.g. 4A"
+                />
+              </FormField>
+            )}
             </div>
           </section>
         )}

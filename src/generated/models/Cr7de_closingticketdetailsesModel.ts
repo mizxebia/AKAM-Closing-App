@@ -68,6 +68,7 @@ export type Cr7de_closingticketdetailsesstatuscode = keyof typeof Cr7de_closingt
 export interface Cr7de_closingticketdetailsesBase {
   cr109_botstatus?: Cr7de_closingticketdetailsescr109_botstatus;
   cr109_buyer2name?: string;
+  cr109_buyerunitnumber?: string;
   cr109_domecilechargesextracted?: boolean;
   cr109_domecilepackageurl?: string;
   cr109_emailbody?: string;

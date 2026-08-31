@@ -260,8 +260,7 @@ export const dataSourcesInfo = {
             "name": "body",
             "in": "body",
             "required": true,
-            "type": "string",
-            "format": "binary"
+            "type": "object"
           }
         ],
         "responseInfo": {
@@ -569,8 +568,7 @@ export const dataSourcesInfo = {
             "name": "body",
             "in": "body",
             "required": true,
-            "type": "string",
-            "format": "binary"
+            "type": "object"
           }
         ],
         "responseInfo": {
@@ -614,8 +612,7 @@ export const dataSourcesInfo = {
             "name": "body",
             "in": "body",
             "required": true,
-            "type": "string",
-            "format": "binary"
+            "type": "object"
           }
         ],
         "responseInfo": {
@@ -653,8 +650,7 @@ export const dataSourcesInfo = {
             "name": "body",
             "in": "body",
             "required": true,
-            "type": "string",
-            "format": "binary"
+            "type": "object"
           }
         ],
         "responseInfo": {
@@ -692,8 +688,7 @@ export const dataSourcesInfo = {
             "name": "body",
             "in": "body",
             "required": true,
-            "type": "string",
-            "format": "binary"
+            "type": "object"
           }
         ],
         "responseInfo": {
@@ -725,8 +720,7 @@ export const dataSourcesInfo = {
             "name": "body",
             "in": "body",
             "required": true,
-            "type": "string",
-            "format": "binary"
+            "type": "object"
           }
         ],
         "responseInfo": {
@@ -1072,8 +1066,7 @@ export const dataSourcesInfo = {
             "name": "body",
             "in": "body",
             "required": true,
-            "type": "string",
-            "format": "binary"
+            "type": "object"
           }
         ],
         "responseInfo": {
@@ -1229,8 +1222,7 @@ export const dataSourcesInfo = {
             "name": "body",
             "in": "body",
             "required": true,
-            "type": "string",
-            "format": "binary"
+            "type": "object"
           }
         ],
         "responseInfo": {
@@ -1512,8 +1504,7 @@ export const dataSourcesInfo = {
             "name": "maxFileCount",
             "in": "query",
             "required": false,
-            "type": "integer",
-            "format": "int32"
+            "type": "integer"
           },
           {
             "name": "x-ms-operation-context",
@@ -1557,8 +1548,7 @@ export const dataSourcesInfo = {
             "name": "maxFileCount",
             "in": "query",
             "required": false,
-            "type": "integer",
-            "format": "int32"
+            "type": "integer"
           },
           {
             "name": "simulate",
@@ -1602,8 +1592,7 @@ export const dataSourcesInfo = {
             "name": "maxFileCount",
             "in": "query",
             "required": false,
-            "type": "integer",
-            "format": "int32"
+            "type": "integer"
           },
           {
             "name": "x-ms-operation-context",
@@ -1647,8 +1636,7 @@ export const dataSourcesInfo = {
             "name": "maxFileCount",
             "in": "query",
             "required": false,
-            "type": "integer",
-            "format": "int32"
+            "type": "integer"
           },
           {
             "name": "simulate",
@@ -1802,8 +1790,7 @@ export const dataSourcesInfo = {
             "name": "top",
             "in": "query",
             "required": false,
-            "type": "integer",
-            "format": "int32"
+            "type": "integer"
           }
         ],
         "responseInfo": {
@@ -1972,8 +1959,7 @@ export const dataSourcesInfo = {
             "name": "maxFileCount",
             "in": "query",
             "required": false,
-            "type": "integer",
-            "format": "int32"
+            "type": "integer"
           }
         ],
         "responseInfo": {
@@ -2017,8 +2003,7 @@ export const dataSourcesInfo = {
             "name": "maxFileCount",
             "in": "query",
             "required": false,
-            "type": "integer",
-            "format": "int32"
+            "type": "integer"
           }
         ],
         "responseInfo": {

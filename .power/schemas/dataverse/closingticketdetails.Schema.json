@@ -132,6 +132,14 @@
           "x-ms-schema-name": "cr109_Buyer2Name",
           "maxLength": 100
         },
+        "cr109_buyerunitnumber": {
+          "type": "string",
+          "title": "Buyer Unit Number",
+          "x-ms-dataverse-attribute": "cr109_buyerunitnumber",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_BuyerUnitNumber",
+          "maxLength": 100
+        },
         "cr109_chequesdocument": {
           "type": "string",
           "title": "Cheques Document",

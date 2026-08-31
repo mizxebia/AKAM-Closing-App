@@ -69,6 +69,7 @@ export type ClosingTicketCreateInput = Partial<
     Cr7de_closingticketdetailses,
     | 'cr109_botstatus'
     | 'cr109_buyer2name'
+    | 'cr109_buyerunitnumber'
     | 'cr109_domecilepackageurl'
     | 'cr109_emailbody'
     | 'cr109_emailsubject'
@@ -106,6 +107,7 @@ export type ClosingTicketUpdateInput =
 export type ClosingTicketFormState = {
   cr109_botstatus: '' | Cr7de_closingticketdetailsescr109_botstatus
   cr109_buyer2name: string
+  cr109_buyerunitnumber: string
   cr109_domecilepackageurl: string
   cr109_legalname: string
   cr109_locationofclosing: string
