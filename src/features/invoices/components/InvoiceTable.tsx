@@ -11,6 +11,7 @@ import {
   getInvoiceGroupKey,
 } from '../utils/invoiceFormatters'
 import { InvoiceRow } from './InvoiceRow'
+import { RichNotesEditor } from './RichNotesEditor'
 
 interface InvoiceTableProps {
   records: InvoiceRecord[]
@@ -323,13 +324,12 @@ export function InvoiceTable({
           <label className="invoice-notes-label" htmlFor="invoice-notes">
             Notes
           </label>
-          <textarea
+          <RichNotesEditor
             id="invoice-notes"
-            className="invoice-notes-textarea"
             rows={3}
             placeholder="Add notes for this invoice..."
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={setNotes}
             disabled={readOnly}
           />
           {notesChanged && !readOnly && (

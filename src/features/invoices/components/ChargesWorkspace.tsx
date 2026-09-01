@@ -13,6 +13,7 @@ import type {
 } from '../types/invoice'
 import { InvoiceTable } from './InvoiceTable'
 import { ChargeEntryRow } from './ChargeEntryRow'
+import { RichNotesEditor } from './RichNotesEditor'
 import { useAutoClear } from '../../../hooks/useAutoClear'
 
 interface ChargesWorkspaceProps {
@@ -76,16 +77,11 @@ function toInvoicePayload(
   row: InvoiceChargeFormRow,
   ticketId: string,
   index: number,
-  notes?: string
 ): InvoiceCreateInput {
   return {
-    // Dataverse lookup/link usage: generated schema exposes cr7de_ticketid
-    // as the parent relationship value, so each invoice row is created with
-    // the current parent closing Ticket ID.
     cr7de_ticketid: ticketId,
     cr109_dueatclosing:
       row.cr109_dueatclosing || undefined,
-    cr109_notes: normalizeText(notes || ''),
     cr7de_amount: normalizeAmount(row.cr7de_amount),
     cr7de_chequenumber: normalizeText(
       row.cr7de_chequenumber
@@ -205,7 +201,7 @@ export function ChargesWorkspace({
     try {
       for (const [index, row] of rows.entries()) {
         await createInvoiceDetail(
-          toInvoicePayload(row, ticketId, index, notes)
+          toInvoicePayload(row, ticketId, index)
         )
       }
 
@@ -385,13 +381,12 @@ export function ChargesWorkspace({
             <label className="invoice-notes-label" htmlFor="charge-notes">
               Notes
             </label>
-            <textarea
+            <RichNotesEditor
               id="charge-notes"
-              className="invoice-notes-textarea"
               rows={3}
               placeholder="Add notes for this invoice..."
               value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              onChange={setNotes}
             />
           </div>
         )}

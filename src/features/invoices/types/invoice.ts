@@ -30,7 +30,6 @@ export type InvoiceCreateInput = Partial<
   Pick<
     Cr7de_invoicedetailses,
     | 'cr109_dueatclosing'
-    | 'cr109_notes'
     | 'cr109_otherpayableto'
     | 'cr7de_amount'
     | 'cr7de_chequenumber'

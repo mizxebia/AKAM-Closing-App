@@ -2389,6 +2389,18 @@ body {
   border-color: #1E3A47;
 }
 
+.rich-notes-editor:empty::before {
+  content: attr(data-placeholder);
+  color: #9CA3AF;
+  pointer-events: none;
+}
+
+.rich-notes-editor {
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .invoice-state {
   padding: 18px;
   color: #4B5563;
