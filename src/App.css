@@ -2064,6 +2064,35 @@ body {
   min-height: 640px;
 }
 
+/* Send to AR Team tab — email body editor. contentEditable (not a
+   textarea) so the generated section tables render as real HTML. */
+.ar-email-body-editor {
+  flex: 1 1 auto;
+  min-height: 220px;
+  max-height: 560px;
+  overflow-y: auto;
+  border-radius: 6px;
+  padding: 6px;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: #1E3A47;
+  outline: none;
+}
+
+.ar-email-body-editor:empty::before {
+  content: attr(data-placeholder);
+  color: #9CA3AF;
+  pointer-events: none;
+}
+
+.ar-email-body-editor table {
+  margin-bottom: 14px;
+}
+
+.ar-email-body-editor p {
+  margin: 0 0 10px;
+}
+
 .document-preview-frame {
   width: 100%;
   height: 100%;

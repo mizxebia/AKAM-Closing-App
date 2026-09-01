@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   CheckCircle2,
   FileText,
   Info,
+  RefreshCw,
   RotateCcw,
   Save,
   Send,
@@ -15,6 +16,10 @@ import {
 import type { ClosingTicketRecord } from '../types/closingTicket'
 import { formatClosingTicketDate } from '../utils/closingTicketFormatters'
 import { formatInvoiceCurrency } from '../../invoices/utils/invoiceFormatters'
+import {
+  Cr7de_closingticketdetailsescr109_packagetype,
+  Cr7de_closingticketdetailsescr109_transactiontypedeal,
+} from '../../../generated/models/Cr7de_closingticketdetailsesModel'
 import {
   getChangeLogs,
   writeActionLog,
@@ -33,32 +38,35 @@ import {
   renderDocumentViewer,
   type ViewerState,
 } from '../../newOwnerTickets/components/documentPreviewRenderer'
+import { getNewOwnerTicketByTicketId } from '../../newOwnerTickets/api/newOwnerTicketService'
+import type { NewOwnerTicketRecord } from '../../newOwnerTickets/types/newOwnerTicket'
 
 const SEND_ACTION_LABEL = 'Send to AR Team'
 const SAVE_DRAFT_ACTION_LABEL = 'Save AR Draft'
+const REGENERATE_ACTION_LABEL = 'Regenerate AR Email'
 const EMAIL_BODY_WARN_CHARS = 8_000
 
-// Converts plain textarea text → HTML for Dataverse/Power Automate.
-function plainToHtml(text: string): string {
-  return text
+function escapeHtml(value: string): string {
+  return value
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/\n/g, '<br>')
 }
 
-// Reverses HTML stored in Dataverse back to plain text for the textarea.
-function htmlToPlain(html: string): string {
+// Rough visible-text length of a stored HTML body — used only to flag an
+// unusually long email, since message.length would otherwise count markup.
+function estimatePlainTextLength(html: string): number {
   return html
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim().length
 }
 
 function buildSubjectLine(record: ClosingTicketRecord) {
   const parts = [
     record.cr7de_ticketid,
+    record.cr7de_nyccode,
     record.cr7de_buyertcode,
     record.cr7de_unitnumber
       ? `Unit ${record.cr7de_unitnumber}`
@@ -75,34 +83,235 @@ function buildSubjectLine(record: ClosingTicketRecord) {
     : (record.cr7de_ticketid ?? 'Closing Documents')
 }
 
-// Default message body offered to the sender the first time this tab is
-// opened for a ticket — informative enough that AR can process the buyer's
-// ledger without needing to open the attachments first. Once a draft has
-// been saved (or the ticket has been sent), that saved text takes over.
-function buildPresetMessage(record: ClosingTicketRecord) {
-  const buyerNames = [record.cr7de_buyername, record.cr109_buyer2name]
-    .filter((name): name is string => Boolean(name && name.trim()))
-    .join(' & ')
-  const unitLabel = record.cr7de_unitnumber
-    ? `, Unit ${record.cr7de_unitnumber}`
-    : ''
+const PACKAGE_TYPE_LABELS: Record<string, string> = {
+  condo_sale: 'Condo Sale',
+  coop_sale: 'Co-op Sale',
+  coop_transfer: 'Co-op Transfer',
+}
 
-  return `Hello AR Team,
+const TRANSACTION_TYPE_LABELS: Record<string, string> = {
+  AllCash: 'All Cash',
+  Financing: 'Financing',
+  Transfer: 'Transfer',
+  TrustTransfer: 'Trust Transfer',
+}
 
-Please find attached the closing documents for the buyer transaction detailed below. Kindly process the buyer's ledger accordingly.
+function formatPackageType(
+  value: ClosingTicketRecord['cr109_packagetype']
+): string | null {
+  if (value === undefined || value === null) return null
+  const raw = Cr7de_closingticketdetailsescr109_packagetype[value]
+  return raw ? (PACKAGE_TYPE_LABELS[raw] ?? raw) : null
+}
 
-Buyer: ${buyerNames || '-'}
-Buyer T-Code: ${record.cr7de_buyertcode || '-'}
-Seller: ${record.cr7de_sellername || '-'}
-Building: ${record.cr7de_buildingname || '-'}${unitLabel}
-Closing Date: ${formatClosingTicketDate(record.cr7de_closingdate)}
-Sale Price: ${formatInvoiceCurrency(record.cr109_saleprice)}
-Ticket ID: ${record.cr7de_ticketid || '-'}
+function formatTransactionType(
+  value: ClosingTicketRecord['cr109_transactiontypedeal']
+): string | null {
+  if (value === undefined || value === null) return null
+  const raw = Cr7de_closingticketdetailsescr109_transactiontypedeal[value]
+  return raw ? (TRANSACTION_TYPE_LABELS[raw] ?? raw) : null
+}
 
-The Cheques Document and Batch Document are attached for your reference. Please reach out if any additional information is required.
+type FieldRow = { label: string; value: string }
 
-Thank you,
-${record.cr7de_closingagentname || 'AKAM Closing Team'}`
+// A label/value pair, omitted entirely when every candidate source is
+// empty — keeps each table limited to whatever is actually on record.
+function row(
+  label: string,
+  ...candidates: Array<string | null | undefined>
+): FieldRow | null {
+  for (const candidate of candidates) {
+    if (candidate && candidate.trim()) {
+      return { label, value: candidate.trim() }
+    }
+  }
+  return null
+}
+
+// Renders one bordered, inline-styled section table matching the layout of
+// the source closing-request ticket (a title bar over label/value rows).
+// Inline styles are required, not just cosmetic — this HTML is stored
+// verbatim as the email body and sent through Outlook/Power Automate,
+// neither of which honor an external stylesheet.
+function renderSectionTable(title: string, rows: FieldRow[]): string {
+  if (!rows.length) return ''
+
+  const bodyRows = rows
+    .map(
+      ({ label, value }) => `<tr>
+        <td style="width:36%;padding:7px 10px;border:1px solid #D5CBB8;background:#F8F5EF;font-size:11px;font-weight:700;color:#4B5563;text-transform:uppercase;letter-spacing:0.04em;vertical-align:top;">${escapeHtml(label)}</td>
+        <td style="padding:7px 10px;border:1px solid #D5CBB8;font-size:13px;color:#1E3A47;">${escapeHtml(value)}</td>
+      </tr>`
+    )
+    .join('')
+
+  return `<table style="width:100%;border-collapse:collapse;margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;">
+    <tr>
+      <td colspan="2" style="padding:8px 10px;border:1px solid #1E3A47;background:#1E3A47;color:#F5F2EC;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">${escapeHtml(title)}</td>
+    </tr>
+    ${bodyRows}
+  </table>`
+}
+
+// Default message body offered the first time this tab is opened for a
+// ticket (and whenever "Regenerate" is used). Property/closing fields come
+// from the closing ticket; seller & buyer contact details come from the
+// linked New Owner Ticket, since that's the record that actually stores
+// them. SSNs are never read here, so they can never end up in an email.
+function buildPresetMessageHtml(
+  closingTicket: ClosingTicketRecord,
+  newOwnerTicket: NewOwnerTicketRecord | null
+): string {
+  const propertyLine = [
+    closingTicket.cr7de_nyccode,
+    closingTicket.cr7de_buildingaddress ||
+      closingTicket.cr7de_buildingname,
+  ]
+    .filter((part): part is string => Boolean(part && part.trim()))
+    .join(' - ')
+
+  const closingRows = [
+    row('Ticket ID', closingTicket.cr7de_ticketid),
+    row('Property Number/Address', propertyLine),
+    row(
+      'Address (If Property has Multiple Addresses)',
+      newOwnerTicket?.cr7de_address
+    ),
+    row(
+      'Unit Number',
+      closingTicket.cr7de_unitnumber,
+      newOwnerTicket?.cr7de_unit
+    ),
+    row(
+      'Closing Date',
+      closingTicket.cr7de_closingdate
+        ? formatClosingTicketDate(closingTicket.cr7de_closingdate)
+        : null,
+      newOwnerTicket?.cr7de_closingdate
+        ? formatClosingTicketDate(newOwnerTicket.cr7de_closingdate)
+        : null
+    ),
+    row(
+      'Sales Price',
+      closingTicket.cr109_saleprice
+        ? formatInvoiceCurrency(closingTicket.cr109_saleprice)
+        : null,
+      newOwnerTicket?.cr109_purchaseprice
+        ? formatInvoiceCurrency(newOwnerTicket.cr109_purchaseprice)
+        : null
+    ),
+    row('Location of Closing', closingTicket.cr109_locationofclosing),
+    row('Legal Name', closingTicket.cr109_legalname),
+    row('Package Type', formatPackageType(closingTicket.cr109_packagetype)),
+    row(
+      'Transaction Type',
+      formatTransactionType(closingTicket.cr109_transactiontypedeal)
+    ),
+    row(
+      'Shares/% Ownership',
+      closingTicket.cr109_shares,
+      newOwnerTicket?.cr109_shares
+    ),
+  ].filter((r): r is FieldRow => Boolean(r))
+
+  const sellerRows = [
+    row(
+      "Seller's Name",
+      closingTicket.cr7de_sellername,
+      newOwnerTicket?.cr7de_sellername
+    ),
+    row(
+      "Seller's T-Code",
+      closingTicket.cr7de_sellertcode,
+      newOwnerTicket?.cr7de_sellertcode
+    ),
+    row("Seller's Contact Number", newOwnerTicket?.cr7de_sellercontactnumber),
+    row("Seller's Contact Email", newOwnerTicket?.cr7de_sellercontactemail),
+    row(
+      'Forwarding Address for Seller',
+      newOwnerTicket?.cr7de_forwardingaddressforseller
+    ),
+    row('Seller 2 Name', closingTicket.cr109_seller2name),
+  ].filter((r): r is FieldRow => Boolean(r))
+
+  const buyerRows = [
+    row(
+      'New Primary Owner Name',
+      closingTicket.cr7de_buyername,
+      newOwnerTicket?.cr7de_newprimaryownername
+    ),
+    row('Primary Contact Number', newOwnerTicket?.cr7de_primaryphonenumber),
+    row('Primary Owner Email', newOwnerTicket?.cr7de_primaryowneremail),
+    row(
+      'New Secondary Owner Name',
+      closingTicket.cr109_buyer2name,
+      newOwnerTicket?.cr7de_newsecondaryownername
+    ),
+    row('Secondary Phone #', newOwnerTicket?.cr7de_secondaryphonenumber),
+    row('Secondary Owner Email', newOwnerTicket?.cr7de_secondaryowneremail),
+    row('Buyer T-Code', closingTicket.cr7de_buyertcode),
+  ].filter((r): r is FieldRow => Boolean(r))
+
+  const notes = closingTicket.cr7de_notes?.trim()
+
+  return `<p>Hello AR Team,</p>
+<p>Please find attached the closing documents for the transaction below. Kindly process the buyer's ledger accordingly.</p>
+${renderSectionTable('Closing Details', closingRows)}
+${renderSectionTable('Seller', sellerRows)}
+${renderSectionTable('Buyer', buyerRows)}
+${notes ? `<p><strong>Notes:</strong> ${escapeHtml(notes)}</p>` : ''}
+<p>The Cheques Document and Batch Document are attached for your reference. Please reach out if any additional information is required.</p>
+<p>Thank you,<br>${escapeHtml(closingTicket.cr7de_closingagentname || 'AKAM Closing Team')}</p>`
+}
+
+interface ArEmailBodyEditorProps {
+  value: string
+  onChange: (html: string) => void
+  disabled?: boolean
+}
+
+// Controlled contentEditable div — the email body needs real <table>
+// markup (see renderSectionTable above), which a plain <textarea> can't
+// display. Follows the same ref + "did this change come from us" guard as
+// RichNotesEditor so external updates (loading a draft, Regenerate) don't
+// fight the caret while someone is mid-edit.
+function ArEmailBodyEditor({
+  value,
+  onChange,
+  disabled = false,
+}: ArEmailBodyEditorProps) {
+  const ref = useRef<HTMLDivElement>(null)
+  const internalUpdate = useRef(false)
+
+  useEffect(() => {
+    if (internalUpdate.current) {
+      internalUpdate.current = false
+      return
+    }
+    if (ref.current && ref.current.innerHTML !== value) {
+      ref.current.innerHTML = value
+    }
+  }, [value])
+
+  const handleInput = useCallback(() => {
+    if (!ref.current) return
+    internalUpdate.current = true
+    onChange(ref.current.innerHTML)
+  }, [onChange])
+
+  return (
+    <div
+      ref={ref}
+      className="ar-email-body-editor"
+      contentEditable={!disabled}
+      role="textbox"
+      aria-multiline="true"
+      aria-label="Email body for the AR Team"
+      data-placeholder="Write a message for the AR Team (optional)…"
+      onInput={handleInput}
+      suppressContentEditableWarning
+    />
+  )
 }
 
 interface AttachmentProps {
@@ -244,11 +453,18 @@ export function SendToATeamTab({
   )
   const [message, setMessage] = useState(() =>
     closingTicket.cr109_emailbody?.trim()
-      ? htmlToPlain(closingTicket.cr109_emailbody)
-      : buildPresetMessage(closingTicket)
+      ? closingTicket.cr109_emailbody
+      : buildPresetMessageHtml(closingTicket, null)
+  )
+  // Tracks whether the preset should keep refreshing itself once the New
+  // Owner Ticket record (seller/buyer contact details) finishes loading.
+  // A saved draft, or any edit the sender makes, opts out of that refresh.
+  const messageIsUserOwned = useRef(
+    Boolean(closingTicket.cr109_emailbody?.trim())
   )
   const [sending, setSending] = useState(false)
   const [savingDraft, setSavingDraft] = useState(false)
+  const [regenerating, setRegenerating] = useState(false)
   const [sendError, setSendError] = useState<string | null>(
     null
   )
@@ -257,6 +473,11 @@ export function SendToATeamTab({
     createdOn: string
   } | null>(null)
   const [loadingHistory, setLoadingHistory] = useState(true)
+
+  const [newOwnerTicket, setNewOwnerTicket] =
+    useState<NewOwnerTicketRecord | null>(null)
+  const [newOwnerTicketLoaded, setNewOwnerTicketLoaded] =
+    useState(false)
 
   const [previewedKey, setPreviewedKey] =
     useState<ClosingTicketDocumentKey | null>('newOwnerTicketPdf')
@@ -314,6 +535,39 @@ export function SendToATeamTab({
     }
   }, [ticketId])
 
+  // Seller/buyer contact fields (phone, email, forwarding address) live on
+  // the linked New Owner Ticket record, not the closing ticket itself.
+  useEffect(() => {
+    let isMounted = true
+
+    async function loadNewOwnerTicket() {
+      setNewOwnerTicketLoaded(false)
+      try {
+        const record = await getNewOwnerTicketByTicketId(ticketId)
+        if (isMounted) setNewOwnerTicket(record)
+      } catch {
+        // Non-critical — the preset still works with closing-ticket fields.
+      } finally {
+        if (isMounted) setNewOwnerTicketLoaded(true)
+      }
+    }
+
+    void loadNewOwnerTicket()
+
+    return () => {
+      isMounted = false
+    }
+  }, [ticketId])
+
+  // Once the New Owner Ticket record arrives, refresh the preset so it
+  // picks up seller/buyer contact details — but only while nobody has
+  // saved a draft or started typing yet.
+  useEffect(() => {
+    if (!newOwnerTicketLoaded || messageIsUserOwned.current) return
+    setMessage(buildPresetMessageHtml(closingTicket, newOwnerTicket))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [newOwnerTicketLoaded, newOwnerTicket])
+
   // Fetches whichever attachment is currently being previewed. Keyed on
   // the document's filename (not the whole closingTicket object) so an
   // unrelated save elsewhere doesn't re-trigger a redundant re-fetch.
@@ -366,6 +620,48 @@ export function SendToATeamTab({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [previewedDocument?.key, previewedFileName])
 
+  const handleMessageChange = useCallback((html: string) => {
+    messageIsUserOwned.current = true
+    setMessage(html)
+  }, [])
+
+  const handleRegenerate = async () => {
+    setRegenerating(true)
+    setSendError(null)
+
+    try {
+      const newSubject = buildSubjectLine(closingTicket)
+      const newBody = buildPresetMessageHtml(closingTicket, newOwnerTicket)
+
+      messageIsUserOwned.current = true
+      setSubject(newSubject)
+      setMessage(newBody)
+
+      await updateClosingTicket(closingTicketId, {
+        cr109_emailsubject: newSubject,
+        cr109_emailbody: newBody,
+      })
+
+      writeActionLog({
+        ticketId,
+        tableName: 'cr7de_closingticketdetailses',
+        action: REGENERATE_ACTION_LABEL,
+        details: { subject: newSubject },
+      })
+
+      toast.success('Email regenerated and saved.')
+      await onUploaded()
+    } catch (err) {
+      setSendError(
+        err instanceof Error
+          ? err.message
+          : 'Unable to regenerate the email.'
+      )
+    } finally {
+      setRegenerating(false)
+    }
+  }
+
   const handleSaveDraft = async () => {
     setSavingDraft(true)
     setSendError(null)
@@ -373,14 +669,14 @@ export function SendToATeamTab({
     try {
       await updateClosingTicket(closingTicketId, {
         cr109_emailsubject: subject,
-        cr109_emailbody: plainToHtml(message),
+        cr109_emailbody: message,
       })
 
       writeActionLog({
         ticketId,
         tableName: 'cr7de_closingticketdetailses',
         action: SAVE_DRAFT_ACTION_LABEL,
-        details: { subject, message },
+        details: { subject },
       })
 
       toast.success('Draft Saved')
@@ -410,7 +706,7 @@ export function SendToATeamTab({
       // Persist latest subject + body before triggering flows.
       await updateClosingTicket(closingTicketId, {
         cr109_emailsubject: subject,
-        cr109_emailbody: plainToHtml(message),
+        cr109_emailbody: message,
       })
 
       await onSendToAR()
@@ -421,7 +717,6 @@ export function SendToATeamTab({
         action: SEND_ACTION_LABEL,
         details: {
           subject,
-          message,
           chequesDocument:
             closingTicket.cr109_chequesdocument_name,
           batchDocument: closingTicket.cr109_batchdocument_name,
@@ -448,6 +743,8 @@ export function SendToATeamTab({
       setSending(false)
     }
   }
+
+  const busy = sending || savingDraft || regenerating
 
   return (
     <section className="grid gap-4 lg:grid-cols-2">
@@ -505,20 +802,25 @@ export function SendToATeamTab({
         </div>
 
         <div className="flex flex-1 flex-col border-t border-slate-100 px-5 py-3">
-          <textarea
-            className="flex-1 w-full resize-none rounded-md border border-transparent px-1 py-1 text-sm text-slate-700 outline-none transition placeholder:text-slate-400 hover:border-slate-200 focus:border-[#1E3A47] focus:bg-white"
-            placeholder="Write a message for the AR Team (optional)…"
+          <ArEmailBodyEditor
             value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            onChange={handleMessageChange}
+            disabled={busy}
           />
           <div className="mt-1 flex items-center justify-end gap-2">
-            {message.length > EMAIL_BODY_WARN_CHARS && (
+            {estimatePlainTextLength(message) > EMAIL_BODY_WARN_CHARS && (
               <span className="text-[11px] font-medium text-amber-600">
                 Email is long — consider shortening it before sending.
               </span>
             )}
-            <span className={`text-[11px] ${message.length > EMAIL_BODY_WARN_CHARS ? 'text-amber-600 font-semibold' : 'text-slate-400'}`}>
-              {message.length.toLocaleString()} chars
+            <span
+              className={`text-[11px] ${
+                estimatePlainTextLength(message) > EMAIL_BODY_WARN_CHARS
+                  ? 'text-amber-600 font-semibold'
+                  : 'text-slate-400'
+              }`}
+            >
+              {estimatePlainTextLength(message).toLocaleString()} chars
             </span>
           </div>
         </div>
@@ -527,7 +829,7 @@ export function SendToATeamTab({
           <button
             type="button"
             className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#1E3A47] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#152d38] disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={!bothArDocumentsPresent || sending}
+            disabled={!bothArDocumentsPresent || busy}
             title={
               bothArDocumentsPresent
                 ? undefined
@@ -542,11 +844,22 @@ export function SendToATeamTab({
           <button
             type="button"
             className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#1E3A47] px-4 text-sm font-semibold text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC] disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={savingDraft || sending}
+            disabled={busy}
             onClick={() => void handleSaveDraft()}
           >
             <Save className="size-4" />
             {savingDraft ? 'Saving…' : 'Save Draft'}
+          </button>
+
+          <button
+            type="button"
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#D5CBB8] px-4 text-sm font-semibold text-[#4B5563] shadow-sm transition hover:bg-[#F5F2EC] disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={busy}
+            title="Rebuild the subject and email body from the latest closing ticket details and save them."
+            onClick={() => void handleRegenerate()}
+          >
+            <RefreshCw className="size-4" />
+            {regenerating ? 'Regenerating…' : 'Regenerate & Save'}
           </button>
 
           {!loadingHistory && lastSent && (
