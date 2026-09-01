@@ -209,8 +209,14 @@ export function ChargesWorkspace({
         )
       }
 
+      if (notes.trim()) {
+        await updateClosingTicket(closingTicketId, {
+          cr7de_notes: notes.trim(),
+        })
+      }
+
       resetForm()
-      setNotes('') // Clear notes after successful save
+      setNotes('')
       await onRefresh()
       setMessage('Payments saved successfully.')
     } catch (err) {

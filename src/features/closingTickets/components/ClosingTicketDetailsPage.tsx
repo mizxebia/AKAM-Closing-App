@@ -187,6 +187,14 @@ export function ClosingTicketDetailsPage({
     await onSaved()
   }, [recordId, onSaved])
 
+  const refreshInvoicesAndRecord = useCallback(async () => {
+    const [updatedRecord] = await Promise.all([
+      getClosingTicketById(recordId),
+      refreshInvoices(),
+    ])
+    setRecord(updatedRecord)
+  }, [recordId, refreshInvoices])
+
   const handleGenerateInvoice = useCallback(async () => {
     const currentTicketId = record?.cr7de_ticketid?.trim()
 
@@ -585,7 +593,7 @@ export function ClosingTicketDetailsPage({
               records={invoiceRecords}
               loading={invoicesLoading}
               error={invoicesError}
-              onRefresh={refreshInvoices}
+              onRefresh={refreshInvoicesAndRecord}
               onGenerateInvoice={handleGenerateInvoice}
               generatingInvoice={generatingInvoice}
               hasInvoicePdf={Boolean(

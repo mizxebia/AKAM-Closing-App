@@ -3,7 +3,7 @@ import {
   X, BookOpen, FileText, Loader2, ClipboardCheck,
   Upload, SearchCheck, BadgeCheck, CheckCircle2,
   Clock, AlertTriangle, Info, ChevronDown, ChevronUp,
-  Zap, ArrowRight, ReceiptText, UserPlus, Mail,
+  Zap, ArrowRight, ReceiptText, UserPlus, Mail, Download,
 } from 'lucide-react'
 import { cn } from '../../../lib/utils'
 
@@ -1382,8 +1382,19 @@ function SendToARContent() {
 
 interface HelpCentreModalProps { open: boolean; onClose: () => void }
 
+const tabLabels: Record<HelpTab, string> = {
+  quick: 'Quick Reference',
+  process: 'Process Overview',
+  payments: 'Payments',
+  yardi: 'Yardi Charges',
+  newowner: 'New Owner Ticket',
+  sendtoar: 'Send to AR',
+}
+
 export function HelpCentreModal({ open, onClose }: HelpCentreModalProps) {
   const [activeTab, setActiveTab] = useState<HelpTab>('quick')
+  const [downloading, setDownloading] = useState(false)
+  const contentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!open) return
@@ -1443,11 +1454,81 @@ export function HelpCentreModal({ open, onClose }: HelpCentreModalProps) {
                 <p className="text-[12px] text-slate-400 mt-0.5">Everything you need to complete a New Sales Closure.</p>
               </div>
             </div>
-            <button type="button" onClick={onClose}
-              className="flex size-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white/10 hover:text-white"
-              aria-label="Close Help Centre">
-              <X size={16} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={downloading}
+                onClick={() => {
+                  if (!contentRef.current) return
+                  setDownloading(true)
+
+                  const clone = contentRef.current.cloneNode(true) as HTMLElement
+
+                  // Resolve oklch → rgb via getComputedStyle and inline all visual styles
+                  const props = [
+                    'color', 'background-color', 'background', 'border-color',
+                    'border-top-color', 'border-bottom-color', 'border-left-color', 'border-right-color',
+                    'outline-color', 'box-shadow', 'text-shadow', 'fill', 'stroke',
+                    'font-family', 'font-size', 'font-weight', 'font-style', 'line-height',
+                    'letter-spacing', 'text-align', 'text-transform', 'text-decoration',
+                    'padding', 'margin', 'border', 'border-radius',
+                    'display', 'flex-direction', 'align-items', 'justify-content', 'gap', 'flex-wrap',
+                    'width', 'max-width', 'min-width',
+                    'white-space', 'word-break', 'opacity',
+                    'grid-template-columns', 'grid-template-rows', 'grid-gap',
+                  ]
+                  const walk = (src: Element, dest: Element) => {
+                    const cs = getComputedStyle(src)
+                    const el = dest as HTMLElement
+                    el.style.cssText = props.map(p => `${p}:${cs.getPropertyValue(p)}`).join(';')
+                    // Ensure nothing is clipped — full content flows onto pages
+                    el.style.overflow = 'visible'
+                    el.style.height = 'auto'
+                    el.style.maxHeight = 'none'
+                    for (let i = 0; i < src.children.length; i++) walk(src.children[i], dest.children[i])
+                  }
+                  walk(contentRef.current, clone)
+
+                  clone.querySelectorAll('svg').forEach(svg => {
+                    const span = document.createElement('span')
+                    svg.replaceWith(span)
+                  })
+
+                  // Use a hidden iframe so no new tab opens
+                  const iframe = document.createElement('iframe')
+                  iframe.style.cssText = 'position:fixed;width:0;height:0;border:none;left:-9999px'
+                  document.body.appendChild(iframe)
+                  const doc = iframe.contentDocument!
+                  doc.open()
+                  doc.write(`<!DOCTYPE html><html><head><meta charset="utf-8"/>
+                    <title>NSC — ${tabLabels[activeTab]}</title>
+                    <style>
+                      *, *::before, *::after { box-sizing: border-box; }
+                      body { margin: 20px; background: #fff; font-family: system-ui, -apple-system, sans-serif; }
+                      @page { size: A4; margin: 12mm; }
+                    </style>
+                  </head><body>${clone.outerHTML}</body></html>`)
+                  doc.close()
+
+                  const cleanup = () => { document.body.removeChild(iframe); setDownloading(false) }
+                  iframe.contentWindow!.onafterprint = cleanup
+                  setTimeout(() => {
+                    iframe.contentWindow!.print()
+                    setTimeout(cleanup, 1500)
+                  }, 300)
+                }}
+                className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[11px] font-medium text-[#C9A96E] transition hover:bg-white/10"
+                aria-label={`Download ${tabLabels[activeTab]} as PDF`}
+              >
+                {downloading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+                {downloading ? 'Saving…' : 'Download PDF'}
+              </button>
+              <button type="button" onClick={onClose}
+                className="flex size-8 items-center justify-center rounded-xl text-slate-400 transition hover:bg-white/10 hover:text-white"
+                aria-label="Close Help Centre">
+                <X size={16} />
+              </button>
+            </div>
           </div>
 
           {/* Tabs */}
@@ -1476,7 +1557,7 @@ export function HelpCentreModal({ open, onClose }: HelpCentreModalProps) {
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-6" ref={contentRef}>
           {activeTab === 'quick'    && <QuickReferenceContent />}
           {activeTab === 'process'  && <><Legend /><FlowchartContent /></>}
           {activeTab === 'payments' && <PaymentsContent />}
