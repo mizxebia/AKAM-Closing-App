@@ -342,7 +342,20 @@ export function ClosingTicketDetailsPage({
         throw new Error('New Owner Ticket flow returned Failed.')
       }
 
-      // Step 2 — trigger the Send to AR email flow.
+      // Step 2 — regenerate Invoice PDF before sending.
+      const invoiceResult = await NSC_Generate_InvoiceService.Run({
+        text: currentTicketId,
+      })
+      if (!invoiceResult.success) {
+        throw new Error(
+          invoiceResult.error?.message || 'Invoice generation failed.'
+        )
+      }
+      if (invoiceResult.data?.status?.trim().toLowerCase() === 'failed') {
+        throw new Error('Invoice generation flow returned Failed.')
+      }
+
+      // Step 3 — trigger the Send to AR email flow.
       const sendResult = await NSC_Send_Email_To_ARService.Run({
         text: currentTicketId,
       })

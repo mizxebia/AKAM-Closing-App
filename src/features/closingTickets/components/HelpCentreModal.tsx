@@ -99,7 +99,7 @@ const STATUS_CARDS: StatusCard[] = [
       'Open the Send to AR Team tab — it appears once the ticket reaches Completed status.',
       'Upload the Cheques Document and Batch Document using the Replace / Upload buttons in the Attachments section.',
       'Review the pre-filled subject and email body. Edit if needed.',
-      'Click "Send to AR Team" — the New Owner Ticket PDF is regenerated automatically, then the email is sent.',
+      'Click "Send to AR Team" — the New Owner Ticket PDF and Invoice PDF are both regenerated automatically, then the email is sent.',
       'The ticket status changes to Sent to AR and the ticket locks for editing.',
       'You can still resend from the same tab if needed — use "Send Again to AR".',
     ],
@@ -260,11 +260,11 @@ const BEHAVIOURS: BehaviourCard[] = [
   { icon: '💬', title: 'Ticket showing as Failed?',
     body: 'A banner at the top of the ticket will describe what went wrong. Review the details, make any necessary corrections, and reach out to the Xebia team — they will investigate and reset the status from the backend.' },
   { icon: '📤', title: 'Send to AR Team tab — final step after Completed',
-    body: 'Once a ticket reaches Completed status, the Send to AR Team tab becomes available. Upload the Cheques and Batch documents, review the pre-filled email, and click "Send to AR Team". The app regenerates the New Owner Ticket PDF automatically, then triggers the email flow to the AR team. The ticket moves to Sent to AR and becomes read-only.' },
+    body: 'Once a ticket reaches Completed status, the Send to AR Team tab becomes available. Upload the Cheques and Batch documents, review the pre-filled email, and click "Send to AR Team". The app regenerates the New Owner Ticket PDF and Invoice PDF automatically, then triggers the email flow to the AR team. The ticket moves to Sent to AR and becomes read-only.' },
   { icon: '🔁', title: 'Resending to AR — always possible',
-    body: 'If the email needs to be resent (e.g. updated attachment or corrected email body), open the Send to AR Team tab on any Sent to AR ticket. Update the subject or body if needed, then click "Send Again to AR". The New Owner Ticket is regenerated and the email is resent.' },
+    body: 'If the email needs to be resent (e.g. updated attachment or corrected email body), open the Send to AR Team tab on any Sent to AR ticket. Update the subject or body if needed, then click "Send Again to AR". Both PDFs are regenerated and the email is resent.' },
   { icon: '📎', title: 'Four attachments are always included in the AR email',
-    body: 'The Send to AR email always includes four attachments: Cheques Document, Batch Document, Invoice PDF, and New Owner Ticket PDF. The Cheques and Batch documents must be manually uploaded via the Replace / Upload buttons in the Attachments section of the Send to AR Team tab. The Invoice and New Owner Ticket PDFs are generated automatically.' },
+    body: 'The Send to AR email always includes four attachments: Cheques Document, Batch Document, Invoice PDF, and New Owner Ticket PDF. The Cheques and Batch documents must be manually uploaded via the Replace / Upload buttons in the Attachments section of the Send to AR Team tab. The Invoice and New Owner Ticket PDFs are regenerated automatically each time you send.' },
 ]
 
 function BehaviourCardItem({ card }: { card: BehaviourCard }) {
@@ -747,9 +747,10 @@ function FlowchartContent() {
         statuses={[{ label: 'Trigger', value: 'User clicks Send to AR Team' }]} />
       <Arrow short />
       <NoteBox icon="⚙️" title="What happens on Send">
-        Two flows run in sequence:<br />
+        Three flows run in sequence:<br />
         1. <strong>NSC_Generate_New_Owner_Ticket</strong> — regenerates the New Owner Ticket PDF with the latest data.<br />
-        2. <strong>NSC_Send_Email_To_AR</strong> — sends the email to the AR team with four attachments: Cheques Document, Batch Document, Invoice PDF, and New Owner Ticket PDF.
+        2. <strong>NSC_Generate_Invoice</strong> — regenerates the Invoice PDF with the latest payment data.<br />
+        3. <strong>NSC_Send_Email_To_AR</strong> — sends the email to the AR team with four attachments: Cheques Document, Batch Document, Invoice PDF, and New Owner Ticket PDF.
       </NoteBox>
       <Arrow short />
       <DecisionRow
@@ -823,6 +824,7 @@ const PAYMENT_FIELDS: FieldGuideRow[] = [
   { field: 'Payable To', what: 'Who receives the payment. Choose Building (the co-op/condo), AKAM Associates Inc., or Other. If Other is selected, a free-text field appears so you can specify the recipient.', required: true },
   { field: 'Cheque #', what: 'Optional. The cheque number associated with this payment, if applicable.' },
   { field: 'Applicable to Ledger', what: 'Controls whether this payment row is included when reconciling against the YARDI ledger. See details below.' },
+  { field: 'Notes', what: 'Optional. Shared across all payments on this ticket (stored on the closing ticket record). Supports Bold (Ctrl+B), Italic (Ctrl+I) and Underline (Ctrl+U) formatting via the toolbar. Limited to 4,000 characters and 9 lines.' },
 ]
 
 function PaymentsContent() {
@@ -838,7 +840,7 @@ function PaymentsContent() {
         </div>
         <div className="space-y-2.5">
           <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Steps</p>
-          {['Open the Invoice tab on the closing ticket.','Click "Add Payment" to add extra rows if you have more than one charge.','Fill in each row: Payment type, Paid By, Amount, and Payable To are required.','Optionally enter a Cheque # and set the Applicable to Ledger flag (see below).','Click "Save Payments" when done. Rows are saved together in one batch.','Once payments are saved, use "Generate Invoice" to produce the PDF.'].map((step, i) => (
+          {['Open the Invoice tab on the closing ticket.','Click "Add Payment" to add extra rows if you have more than one charge.','Fill in each row: Payment type, Paid By, Amount, and Payable To are required.','Optionally enter a Cheque # and set the Applicable to Ledger flag (see below).','Use the Notes field to add any additional context. The toolbar supports Bold, Italic, and Underline formatting. Notes are limited to 4,000 characters and 9 lines.','Click "Save Payments" when done. Rows and notes are saved together in one batch.','Once payments are saved, use "Generate Invoice" to produce the PDF.'].map((step, i) => (
             <div key={i} className="flex items-start gap-3">
               <div className="flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white mt-0.5" style={{ background: '#1E3A47' }}>{i + 1}</div>
               <p className="text-[12.5px] text-slate-700 leading-relaxed">{step}</p>
@@ -1307,7 +1309,7 @@ function SendToARContent() {
             { n: '2', title: 'Upload Cheques & Batch Documents', body: 'In the Attachments section (top of the left panel), upload or replace the Cheques Document and Batch Document using the Replace / Upload buttons on each row. The Invoice and New Owner Ticket PDF are generated automatically and do not require manual upload.' },
             { n: '3', title: 'Review the email subject', body: 'The subject is pre-filled. Edit it if needed. It is saved to the ticket as a draft whenever you click "Save Draft".' },
             { n: '4', title: 'Review the email body', body: 'The body is pre-filled with closing details. Edit if needed. The character counter appears bottom-right — a warning shows at 8,000 characters. Click "Save Draft" at any time to preserve your edits.' },
-            { n: '5', title: 'Click "Send to AR Team"', body: 'The app first regenerates the New Owner Ticket PDF with the latest data (NSC_Generate_New_Owner_Ticket flow), then triggers the email flow (NSC_Send_Email_To_AR). Both run sequentially — if the first fails, the send is aborted.' },
+            { n: '5', title: 'Click "Send to AR Team"', body: 'Three flows run in sequence: (1) NSC_Generate_New_Owner_Ticket regenerates the New Owner Ticket PDF, (2) NSC_Generate_Invoice regenerates the Invoice PDF, (3) NSC_Send_Email_To_AR sends the email. If any step fails, the send is aborted.' },
             { n: '6', title: 'Ticket locks as Sent to AR', body: 'On success, the ticket status changes to Sent to AR and becomes fully read-only. A green banner confirms the email was sent. An audit log entry is recorded.' },
           ].map(s => (
             <li key={s.n} className="flex gap-3">
@@ -1338,8 +1340,8 @@ function SendToARContent() {
               {[
                 { doc: 'Cheques Document', source: 'Manual upload — Replace / Upload button' },
                 { doc: 'Batch Document', source: 'Manual upload — Replace / Upload button' },
-                { doc: 'Invoice PDF', source: 'Auto-generated by NSC_Generate_Invoice flow' },
-                { doc: 'New Owner Ticket PDF', source: 'Regenerated automatically when you click Send to AR Team' },
+                { doc: 'Invoice PDF', source: 'Regenerated by NSC_Generate_Invoice during the Send sequence' },
+                { doc: 'New Owner Ticket PDF', source: 'Regenerated by NSC_Generate_New_Owner_Ticket during the Send sequence' },
               ].map((r, i) => (
                 <tr key={i} className="border-t border-slate-100">
                   <td className="px-4 py-2.5 font-semibold text-[#1E3A47]">{r.doc}</td>
@@ -1358,7 +1360,7 @@ function SendToARContent() {
         <p className="text-[12px] text-slate-600 leading-relaxed">
           The Send to AR Team tab remains accessible on tickets in <strong>Sent to AR</strong> status. A green banner confirms the email was already sent.
           You can edit the subject and body, replace the Cheques or Batch documents, then click <strong>"Send Again to AR"</strong> to trigger the full send sequence again.
-          Each resend regenerates the New Owner Ticket PDF and sends a fresh email to the AR team.
+          Each resend regenerates both the New Owner Ticket PDF and Invoice PDF, then sends a fresh email to the AR team.
         </p>
       </div>
 

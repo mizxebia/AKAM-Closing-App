@@ -53,11 +53,6 @@ export function RichNotesEditor({
     if (!ref.current) return
     const text = ref.current.innerText.replace(/\n$/,'')
     if (text.length > MAX_CHARS) {
-      // Truncate and restore caret at the limit
-      const sel = window.getSelection()
-      const range = sel?.getRangeAt(0)
-      const caretOffset = range?.startOffset ?? 0
-      ref.current.innerHTML = ref.current.innerHTML
       document.execCommand('undo')
       setCharCount(MAX_CHARS)
       return

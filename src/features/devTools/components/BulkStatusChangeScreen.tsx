@@ -190,7 +190,9 @@ export function BulkStatusChangeScreen({
               setTicketStatus(Number(e.target.value))
             }
           >
-            {TICKET_STATUS_OPTIONS.map((option) => (
+            {TICKET_STATUS_OPTIONS
+              .filter((option) => option.value !== 716070004)
+              .map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
