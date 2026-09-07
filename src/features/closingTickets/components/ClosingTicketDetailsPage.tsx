@@ -47,6 +47,7 @@ import {
 } from '../../devScreenshots'
 import {
   AppLogsViewer,
+  DeleteClosingPanel,
   ManualDocumentUpload,
   StatusOverridePanel,
 } from '../../devTools'
@@ -186,6 +187,14 @@ export function ClosingTicketDetailsPage({
     setRecord(updatedRecord)
     await onSaved()
   }, [recordId, onSaved])
+
+  const handleClosingDeleted = useCallback(async () => {
+    // The record no longer exists — refresh the dashboard's list so the
+    // deleted ticket disappears, then navigate away instead of trying to
+    // refetch a record that's now gone.
+    await onSaved()
+    onBack()
+  }, [onSaved, onBack])
 
   const refreshInvoicesAndRecord = useCallback(async () => {
     const [updatedRecord] = await Promise.all([
@@ -547,6 +556,15 @@ export function ClosingTicketDetailsPage({
                   : undefined
               }
               onUpdated={refreshClosingRecord}
+            />
+
+            <hr className="my-3 border-[#e2e8f0]" />
+
+            <DeleteClosingPanel
+              closingTicketId={record.cr7de_closingticketdetailsid}
+              ticketId={ticketId}
+              record={record}
+              onDeleted={handleClosingDeleted}
             />
           </section>
 

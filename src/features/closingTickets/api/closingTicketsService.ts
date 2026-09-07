@@ -164,6 +164,30 @@ export async function uploadClosingTicketFile(
   }
 }
 
+/**
+ * Permanently deletes a closing ticket record. Irreversible — callers
+ * are responsible for their own confirmation gate (this app requires
+ * Developer Mode plus a re-entered password before calling this).
+ *
+ * @param oldRecord - The full record snapshot, captured before deletion
+ *   so the audit log can retain what was deleted (the record no longer
+ *   exists to fetch afterward).
+ */
+export async function deleteClosingTicket(
+  id: string,
+  oldRecord: ClosingTicketRecord
+): Promise<void> {
+  await Cr7de_closingticketdetailsesService.delete(id)
+
+  writeChangeLog({
+    ticketId: oldRecord.cr7de_ticketid ?? id,
+    tableName: TABLE_NAME,
+    operation: 'delete',
+    oldData: oldRecord as unknown as Record<string, unknown>,
+    newData: null,
+  })
+}
+
 export async function deleteClosingTicketFile(
   id: string,
   columnName: ClosingTicketUploadColumnName

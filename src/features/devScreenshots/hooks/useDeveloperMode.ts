@@ -38,6 +38,13 @@ function markUnlockedThisSession() {
   }
 }
 
+// Lets other developer-only, destructive actions (e.g. deleting a closing)
+// require the same password as a per-action re-confirmation, without
+// exporting the raw password string itself.
+export function verifyDeveloperModePassword(password: string): boolean {
+  return password === DEVELOPER_MODE_PASSWORD
+}
+
 export function useDeveloperMode() {
   const { userEmail } = useCurrentUser()
   const [enabled, setEnabled] = useState(false)
