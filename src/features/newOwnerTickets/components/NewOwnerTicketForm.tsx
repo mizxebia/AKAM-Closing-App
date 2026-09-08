@@ -465,6 +465,12 @@ const BUYER_2_ADDRESS_FIELDS: EditableNewOwnerTicketField[] = [
   'cr109_buyer2zip',
 ]
 
+// No Buyer 2 on the ticket means there's no one to mail an address to.
+function hasBuyer2Name(name: string) {
+  const trimmed = name.trim()
+  return trimmed !== '' && trimmed.toUpperCase() !== 'N/A'
+}
+
 export function NewOwnerTicketForm({
   formState,
   errors,
@@ -495,7 +501,8 @@ export function NewOwnerTicketForm({
     }
     if (
       BUYER_2_ADDRESS_FIELDS.includes(field.name) &&
-      formState.cr109_purchaser2occupancy === 'Absent'
+      formState.cr109_purchaser2occupancy === 'Absent' &&
+      hasBuyer2Name(formState.cr7de_newsecondaryownername)
     ) {
       return true
     }

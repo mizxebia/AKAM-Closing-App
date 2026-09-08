@@ -262,6 +262,16 @@ export function normalizeText(value: string) {
   return trimmedValue === '' ? undefined : trimmedValue
 }
 
+// No Buyer 2 on the ticket means there's no one to mail an address to.
+function hasBuyer2Name(name: string) {
+  return !isBlankOrNA(name)
+}
+
+function isBlankOrNA(value: string) {
+  const trimmed = value.trim()
+  return trimmed === '' || trimmed.toUpperCase() === 'N/A'
+}
+
 // Name/SSN/address/city/state/zip fields fall back to 'N/A' when left blank,
 // since Dataverse and downstream documents expect a value in these fields.
 // Buyer 1/2 address-group fields are the exception: while the matching
@@ -278,7 +288,8 @@ export function toPayload(
   const buyer1AddressRequired =
     formState.cr109_purchaser1occupancy === 'Absent'
   const buyer2AddressRequired =
-    formState.cr109_purchaser2occupancy === 'Absent'
+    formState.cr109_purchaser2occupancy === 'Absent' &&
+    hasBuyer2Name(formState.cr7de_newsecondaryownername)
 
   const payload: NewOwnerTicketInput = {
     cr109_additional_occupants1name: normalizeText(
@@ -508,20 +519,23 @@ export function validateForm(
     }
   }
 
-  if (formState.cr109_purchaser2occupancy === 'Absent') {
-    if (!formState.cr109_buyer2address.trim()) {
+  if (
+    formState.cr109_purchaser2occupancy === 'Absent' &&
+    hasBuyer2Name(formState.cr7de_newsecondaryownername)
+  ) {
+    if (isBlankOrNA(formState.cr109_buyer2address)) {
       errors.cr109_buyer2address =
         'Required when Buyer 2 Occupancy is Absent.'
     }
-    if (!formState.cr109_buyer2city.trim()) {
+    if (isBlankOrNA(formState.cr109_buyer2city)) {
       errors.cr109_buyer2city =
         'Required when Buyer 2 Occupancy is Absent.'
     }
-    if (!formState.cr109_buyer2state.trim()) {
+    if (isBlankOrNA(formState.cr109_buyer2state)) {
       errors.cr109_buyer2state =
         'Required when Buyer 2 Occupancy is Absent.'
     }
-    if (!formState.cr109_buyer2zip.trim()) {
+    if (isBlankOrNA(formState.cr109_buyer2zip)) {
       errors.cr109_buyer2zip =
         'Required when Buyer 2 Occupancy is Absent.'
     }
