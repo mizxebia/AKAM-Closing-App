@@ -100,7 +100,7 @@ export function ScreenshotGallery({
       {!loading && !error && screenshots.length === 0 && (
         <div className="flex items-center gap-2 rounded-lg border border-dashed border-[#e2e8f0] px-4 py-6 text-sm text-[#64748b]">
           <ImageOff className="size-4" />
-          No bot screenshots found for this ticket.
+          No screenshots are present for this ticket.
         </div>
       )}
 

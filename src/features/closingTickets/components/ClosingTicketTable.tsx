@@ -19,7 +19,7 @@ import {
   getClosingTicketStatusDisplay,
 } from '../utils/closingTicketFormatters'
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 15
 
 type CreatedSortDirection = 'desc' | 'asc'
 

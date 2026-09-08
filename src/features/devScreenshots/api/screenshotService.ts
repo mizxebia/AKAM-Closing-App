@@ -59,9 +59,19 @@ export async function findTicketScreenshots(
   )
 
   if (!result.success) {
+    const error = result.error
+    const status = error && 'status' in error ? error.status : undefined
+    const message = error?.message ?? ''
+
+    // The bot only creates a ticket's screenshot folder once it captures
+    // its first screenshot — a missing folder just means none exist yet,
+    // not a real failure, so don't surface it as an error.
+    if (status === 404 || /folder not found/i.test(message)) {
+      return []
+    }
+
     throw new Error(
-      result.error?.message ||
-        'Failed to search the screenshot folder.'
+      message || 'Failed to search the screenshot folder.'
     )
   }
 

@@ -153,6 +153,21 @@ function renderSectionTable(title: string, rows: FieldRow[]): string {
   </table>`
 }
 
+// Notes get their own bordered block (same visual language as the section
+// tables) instead of a table row, since they're free-form prose rather than
+// a fixed label/value pair. `notesHtml` is inserted as-is, not escaped —
+// see the call site for why.
+function renderNotesBlock(notesHtml: string): string {
+  return `<table style="width:100%;border-collapse:collapse;margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;">
+    <tr>
+      <td style="padding:8px 10px;border:1px solid #1E3A47;background:#1E3A47;color:#F5F2EC;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;">Notes</td>
+    </tr>
+    <tr>
+      <td style="padding:10px 12px;border:1px solid #D5CBB8;font-size:13px;color:#1E3A47;line-height:1.5;">${notesHtml}</td>
+    </tr>
+  </table>`
+}
+
 // Default message body offered the first time this tab is opened for a
 // ticket (and whenever "Regenerate" is used). Property/closing fields come
 // from the closing ticket; seller & buyer contact details come from the
@@ -252,6 +267,10 @@ function buildPresetMessageHtml(
     row('Buyer T-Code', closingTicket.cr7de_buyertcode),
   ].filter((r): r is FieldRow => Boolean(r))
 
+  // cr7de_notes is stored as rich-text HTML (produced by a contentEditable
+  // notes field elsewhere in the app — <div> per line, <b> for emphasis),
+  // not plain text. Render it as-is rather than escaping it, otherwise the
+  // tags themselves show up as literal text instead of formatting the note.
   const notes = closingTicket.cr7de_notes?.trim()
 
   return `<p>Hello AR Team,</p>
@@ -259,7 +278,7 @@ function buildPresetMessageHtml(
 ${renderSectionTable('Closing Details', closingRows)}
 ${renderSectionTable('Seller', sellerRows)}
 ${renderSectionTable('Buyer', buyerRows)}
-${notes ? `<p><strong>Notes:</strong> ${escapeHtml(notes)}</p>` : ''}
+${notes ? renderNotesBlock(notes) : ''}
 <p>The Cheques Document and Batch Document are attached for your reference. Please reach out if any additional information is required.</p>
 <p>Thank you,<br>${escapeHtml(closingTicket.cr7de_closingagentname || 'AKAM Closing Team')}</p>`
 }
