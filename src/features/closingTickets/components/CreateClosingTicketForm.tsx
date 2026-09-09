@@ -419,8 +419,13 @@ function validateForm(
       'Enter a valid email address.'
   }
 
-  // When building is not on Domecile, a purchase application form is required.
-  if (formState.cr7de_buildingnotondomicile) {
+  // When building is not on Domecile, a purchase application form is
+  // required — except for Coop Transfer, where it's optional since there's
+  // no sale/purchase transaction to document.
+  if (
+    formState.cr7de_buildingnotondomicile &&
+    formState.cr109_packagetype !== COOP_TRANSFER_PACKAGE_TYPE
+  ) {
     const hasPendingForm =
       pendingFiles?.cr109_purchaseapplicationform instanceof File
     const hasUploadedForm = Boolean(
@@ -1465,7 +1470,11 @@ function ClosingTicketEditorForm({
                 <p>
                   This building is not on Domecile. The{' '}
                   <strong>Purchase Application Form</strong> must be
-                  uploaded manually — it is required before saving.
+                  uploaded manually
+                  {formState.cr109_packagetype ===
+                  COOP_TRANSFER_PACKAGE_TYPE
+                    ? ' — it is optional for Coop Transfer.'
+                    : ' — it is required before saving.'}{' '}
                   Once saved, the ticket will automatically move to{' '}
                   <strong>Processing</strong>.
                 </p>
@@ -1495,7 +1504,11 @@ function ClosingTicketEditorForm({
             <div className="form-grid">
             <FileUploadField
               label="Purchase Application Form"
-              required={formState.cr7de_buildingnotondomicile}
+              required={
+                formState.cr7de_buildingnotondomicile &&
+                formState.cr109_packagetype !==
+                  COOP_TRANSFER_PACKAGE_TYPE
+              }
               error={errors.cr7de_buildingnotondomicile}
               currentFileName={
                 pendingFiles.cr109_purchaseapplicationform

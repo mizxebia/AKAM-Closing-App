@@ -5,7 +5,7 @@ import {
   X,
 } from 'lucide-react'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
-import { LoadingSkeleton } from '../../../components/enterprise'
+import { LoadingSkeleton, StatusBadge } from '../../../components/enterprise'
 import {
   Sheet,
   SheetContent,
@@ -52,6 +52,9 @@ import {
   StatusOverridePanel,
 } from '../../devTools'
 import { writeActionLog } from '../../auditLog/api/auditLogService'
+import { getClosingTicketStatusDisplay } from '../utils/closingTicketFormatters'
+import { getBotStatusLabel } from '../../devTools/utils/statusOptions'
+import { formatGeneratedLabel } from '../../invoices/utils/invoiceFormatters'
 
 const FAILED_TICKET_STATUS = 716070007
 const PROCESSING_TICKET_STATUS = 716070005
@@ -471,9 +474,36 @@ export function ClosingTicketDetailsPage({
             <p className="font-semibold uppercase" style={{ fontSize: '10px', letterSpacing: '0.14em', color: '#b89a5a' }}>
               Closing Workspace
             </p>
-            <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '22px', fontWeight: 700, color: '#1E3A47', letterSpacing: '-0.3px', fontVariantNumeric: 'lining-nums tabular-nums' }}>
-              {record?.cr7de_ticketid ?? 'Closing Details'}
-            </h1>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '22px', fontWeight: 700, color: '#1E3A47', letterSpacing: '-0.3px', fontVariantNumeric: 'lining-nums tabular-nums' }}>
+                {record?.cr7de_ticketid ?? 'Closing Details'}
+              </h1>
+              {record && (
+                <StatusBadge
+                  label={
+                    getClosingTicketStatusDisplay(
+                      record.cr7de_ticketstatus
+                    ).label
+                  }
+                  tone={
+                    getClosingTicketStatusDisplay(
+                      record.cr7de_ticketstatus
+                    ).tone
+                  }
+                />
+              )}
+              {developerMode.enabled &&
+                record &&
+                record.cr109_botstatus !== undefined &&
+                String(record.cr109_botstatus).trim() !== '' && (
+                  <StatusBadge
+                    label={`Bot: ${formatGeneratedLabel(
+                      getBotStatusLabel(Number(record.cr109_botstatus))
+                    )}`}
+                    tone="default"
+                  />
+                )}
+            </div>
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             {renderPageActions()}

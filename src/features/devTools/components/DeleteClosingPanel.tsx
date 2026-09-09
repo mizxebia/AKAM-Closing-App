@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertCircle, KeyRound, Trash2 } from 'lucide-react'
+import { AlertCircle, Hash, Trash2 } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,11 @@ import {
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import { deleteClosingTicket } from '../../closingTickets/api/closingTicketsService'
 import type { ClosingTicketRecord } from '../../closingTickets/types/closingTicket'
-import { verifyDeveloperModePassword } from '../../devScreenshots'
+
+// Bypasses the Unit ID match entirely when typed exactly — an escape
+// hatch for closings with no Unit Number on file. Intentionally not
+// mentioned in the dialog copy.
+const ADMIN_OVERRIDE_CODE = 'admin@Miz'
 
 interface DeleteClosingPanelProps {
   closingTicketId: string
@@ -24,17 +28,19 @@ export function DeleteClosingPanel({
   onDeleted,
 }: DeleteClosingPanelProps) {
   const [confirmOpen, setConfirmOpen] = useState(false)
-  const [password, setPassword] = useState('')
-  const [passwordError, setPasswordError] = useState<
+  const [confirmationInput, setConfirmationInput] = useState('')
+  const [confirmError, setConfirmError] = useState<
     string | null
   >(null)
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const unitId = record.cr7de_unitnumber?.trim() ?? ''
+
   const closeDialog = () => {
     setConfirmOpen(false)
-    setPassword('')
-    setPasswordError(null)
+    setConfirmationInput('')
+    setConfirmError(null)
   }
 
   const handleSubmit = async (
@@ -42,12 +48,18 @@ export function DeleteClosingPanel({
   ) => {
     event.preventDefault()
 
-    if (!verifyDeveloperModePassword(password)) {
-      setPasswordError('Incorrect password.')
+    const trimmedInput = confirmationInput.trim()
+    const matchesUnit =
+      unitId.length > 0 &&
+      trimmedInput.toLowerCase() === unitId.toLowerCase()
+    const matchesOverride = trimmedInput === ADMIN_OVERRIDE_CODE
+
+    if (!matchesUnit && !matchesOverride) {
+      setConfirmError('Unit ID does not match this closing.')
       return
     }
 
-    setPasswordError(null)
+    setConfirmError(null)
     setDeleting(true)
     setError(null)
 
@@ -57,7 +69,7 @@ export function DeleteClosingPanel({
       await onDeleted()
     } catch (err) {
       setDeleting(false)
-      setPasswordError(null)
+      setConfirmError(null)
       setError(
         err instanceof Error
           ? err.message
@@ -71,7 +83,7 @@ export function DeleteClosingPanel({
       <p className="flex items-center gap-1.5 text-xs text-[#94a3b8]">
         <Trash2 className="size-3.5 shrink-0" />
         Permanently deletes this closing ticket and cannot be
-        undone. Requires the developer password to confirm.
+        undone. Requires typing the Unit ID to confirm.
       </p>
 
       <div>
@@ -120,8 +132,13 @@ export function DeleteClosingPanel({
               </strong>{' '}
               — {record.cr7de_buyername ?? 'no buyer'} at{' '}
               {record.cr7de_buildingname ?? 'unknown building'}
-              . This cannot be undone. Enter the developer
-              password to confirm.
+              . This cannot be undone. Type the Unit ID{' '}
+              {unitId ? (
+                <>
+                  (<strong className="text-[#1E3A47]">{unitId}</strong>)
+                </>
+              ) : null}{' '}
+              to confirm.
             </p>
           </div>
 
@@ -131,31 +148,34 @@ export function DeleteClosingPanel({
           >
             <label className="flex flex-col gap-1.5">
               <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#5F5E5A]">
-                Password
+                Unit ID
               </span>
               <div className="relative">
-                <KeyRound className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#B3AA98]" />
+                <Hash className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#B3AA98]" />
                 <input
-                  type="password"
+                  type="text"
                   autoFocus
-                  placeholder="••••••••"
+                  autoComplete="off"
+                  placeholder="e.g. 4B"
                   disabled={deleting}
                   className={`h-11 w-full rounded-lg border bg-white pl-9 pr-3 text-sm text-[#1E3A47] shadow-sm transition focus:outline-none focus:ring-2 disabled:opacity-60 ${
-                    passwordError
+                    confirmError
                       ? 'border-red-300 focus:border-red-400 focus:ring-red-100'
                       : 'border-[#D5CBB8] focus:border-[#1E3A47] focus:ring-[#1E3A47]/15'
                   }`}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={confirmationInput}
+                  onChange={(e) =>
+                    setConfirmationInput(e.target.value)
+                  }
                 />
               </div>
             </label>
 
-            {passwordError && (
+            {confirmError && (
               <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2">
                 <AlertCircle className="size-4 shrink-0 text-red-500" />
                 <p className="text-xs font-medium text-red-700">
-                  {passwordError}
+                  {confirmError}
                 </p>
               </div>
             )}
@@ -171,7 +191,7 @@ export function DeleteClosingPanel({
               </button>
               <button
                 type="submit"
-                disabled={deleting || !password}
+                disabled={deleting || !confirmationInput}
                 className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-red-600 px-4 text-xs font-semibold uppercase tracking-[0.06em] text-white shadow-sm transition hover:bg-red-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Trash2 className="size-3.5" />
