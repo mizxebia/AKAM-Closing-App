@@ -69,14 +69,30 @@ describe('validateForm', () => {
     expect(errors.cr109_buyer1zip).toBeDefined()
   })
 
-  it('requires the buyer 2 mailing address once occupancy is Absent', () => {
+  it('requires the buyer 2 mailing address once occupancy is Absent and there is a buyer 2', () => {
     const errors = validateForm(
-      baseFormState({ cr109_purchaser2occupancy: 'Absent' })
+      baseFormState({
+        cr109_purchaser2occupancy: 'Absent',
+        cr7de_newsecondaryownername: 'Jamie Buyer',
+      })
     )
     expect(errors.cr109_buyer2address).toBeDefined()
     expect(errors.cr109_buyer2city).toBeDefined()
     expect(errors.cr109_buyer2state).toBeDefined()
     expect(errors.cr109_buyer2zip).toBeDefined()
+  })
+
+  it('does not require the buyer 2 mailing address when there is no buyer 2', () => {
+    const errors = validateForm(
+      baseFormState({
+        cr109_purchaser2occupancy: 'Absent',
+        cr7de_newsecondaryownername: '',
+      })
+    )
+    expect(errors.cr109_buyer2address).toBeUndefined()
+    expect(errors.cr109_buyer2city).toBeUndefined()
+    expect(errors.cr109_buyer2state).toBeUndefined()
+    expect(errors.cr109_buyer2zip).toBeUndefined()
   })
 
   it('does not flag a buyer 1 Absent address that is actually filled in', () => {
@@ -166,6 +182,7 @@ describe('toPayload — blank name/SSN/address fields default to N/A', () => {
       baseFormState({
         cr109_purchaser1occupancy: 'Absent',
         cr109_purchaser2occupancy: 'Absent',
+        cr7de_newsecondaryownername: 'Jamie Buyer',
       }),
       false
     )

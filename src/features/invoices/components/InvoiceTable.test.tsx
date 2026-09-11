@@ -60,7 +60,14 @@ describe('InvoiceTable — existing invoice fixtures', () => {
     expect(
       screen.queryByRole('columnheader', { name: 'Actions' })
     ).not.toBeInTheDocument()
-    expect(screen.getByLabelText('Notes')).toBeDisabled()
+    // The notes field is a contentEditable <div>, not a native form
+    // control, so it can never carry the `disabled` IDL attribute that
+    // jest-dom's toBeDisabled() checks for — aria-disabled is the correct
+    // way to expose "disabled" for a custom widget like this one.
+    expect(screen.getByLabelText('Notes')).toHaveAttribute(
+      'aria-disabled',
+      'true'
+    )
   })
 
   it('only shows the Save Notes button once notes actually change', async () => {
@@ -72,7 +79,22 @@ describe('InvoiceTable — existing invoice fixtures', () => {
       screen.queryByRole('button', { name: /save notes/i })
     ).not.toBeInTheDocument()
 
-    await user.type(screen.getByLabelText('Notes'), ' more')
+    // user-event's caret tracking is built for <input>/<textarea>
+    // (selectionStart/selectionEnd); a contentEditable div has neither, so
+    // typing would otherwise land wherever jsdom's synthetic click defaults
+    // the caret to (the start of the content). Position the Selection at
+    // the end explicitly first, then type without letting a fresh click
+    // reset it.
+    const notesField = screen.getByLabelText('Notes')
+    notesField.focus()
+    const range = document.createRange()
+    range.selectNodeContents(notesField)
+    range.collapse(false)
+    const selection = window.getSelection()
+    selection?.removeAllRanges()
+    selection?.addRange(range)
+
+    await user.type(notesField, ' more', { skipClick: true })
 
     const saveButton = screen.getByRole('button', {
       name: /save notes/i,

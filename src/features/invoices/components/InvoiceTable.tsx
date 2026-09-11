@@ -321,11 +321,12 @@ export function InvoiceTable({
 
       {!loading && !error && records.length > 0 && (
         <div className="invoice-notes-edit-section">
-          <label className="invoice-notes-label" htmlFor="invoice-notes">
+          <label className="invoice-notes-label" id="invoice-notes-label">
             Notes
           </label>
           <RichNotesEditor
             id="invoice-notes"
+            labelledBy="invoice-notes-label"
             rows={3}
             placeholder="Add notes for this invoice..."
             value={notes}

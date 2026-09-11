@@ -378,11 +378,12 @@ export function ChargesWorkspace({
 
         {!hasExistingNotes && (
           <div className="invoice-notes-section">
-            <label className="invoice-notes-label" htmlFor="charge-notes">
+            <label className="invoice-notes-label" id="charge-notes-label">
               Notes
             </label>
             <RichNotesEditor
               id="charge-notes"
+              labelledBy="charge-notes-label"
               rows={3}
               placeholder="Add notes for this invoice..."
               value={notes}

@@ -10,6 +10,7 @@ import { LoadingSkeleton } from '../../../components/enterprise'
 import { updateClosingTicket } from '../../closingTickets/api/closingTicketsService'
 import { writeActionLog } from '../../auditLog/api/auditLogService'
 import type { ClosingTicketRecord } from '../../closingTickets/types/closingTicket'
+import { COOP_TRANSFER_PACKAGE_TYPE } from '../../closingTickets/utils/ticketCreation'
 import {
   getUnconfirmedScheduledCharges,
   type ScheduledChargeRecord,
@@ -553,6 +554,18 @@ export function NewOwnerTicketTab({
   readOnly = false,
   isCompleted = false,
 }: NewOwnerTicketTabProps) {
+  // Coop Transfer closings have no sale/purchase transaction to document,
+  // so the Purchase Application Form never exists for them — it's dropped
+  // from the document list entirely rather than just made optional.
+  const isCoopTransfer =
+    Number(closingTicket.cr109_packagetype) ===
+    COOP_TRANSFER_PACKAGE_TYPE
+  const applicableDocuments = isCoopTransfer
+    ? NEW_OWNER_DOCUMENTS.filter(
+        (doc) => doc.key !== 'purchaseApplicationForm'
+      )
+    : NEW_OWNER_DOCUMENTS
+
   const [record, setRecord] =
     useState<NewOwnerTicketRecord | null>(null)
   const [formState, setFormState] =
@@ -561,7 +574,7 @@ export function NewOwnerTicketTab({
     )
   const [selectedDocument, setSelectedDocument] =
     useState<ClosingTicketDocumentKey | null>(() =>
-      getDefaultDocument(closingTicket)
+      getDefaultDocument(closingTicket, applicableDocuments)
     )
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -706,7 +719,7 @@ export function NewOwnerTicketTab({
   const hasUnconfirmedScheduledCharges =
     getUnconfirmedScheduledCharges(scheduledCharges).length > 0
 
-  const missingDocuments = NEW_OWNER_DOCUMENTS.filter(
+  const missingDocuments = applicableDocuments.filter(
     (doc) => !hasDocument(closingTicket, doc)
   )
 
@@ -892,6 +905,7 @@ export function NewOwnerTicketTab({
 
           <DocumentViewerPanel
             closingTicket={closingTicket}
+            documents={applicableDocuments}
             selectedDocument={selectedDocument}
             onSelectDocument={setSelectedDocument}
           />

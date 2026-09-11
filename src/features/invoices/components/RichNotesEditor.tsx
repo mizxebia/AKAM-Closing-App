@@ -8,8 +8,24 @@ function countLines(el: HTMLElement) {
   return (el.innerHTML.match(/<br\s*\/?>/gi) || []).length + 1
 }
 
+// innerText requires a layout engine and isn't implemented in jsdom (tests
+// run there). textContent is a fine fallback for a character count — the
+// two differ only in whitespace/visibility handling, which doesn't matter
+// here.
+function getVisibleText(el: HTMLElement) {
+  return el.innerText ?? el.textContent ?? ''
+}
+
 interface RichNotesEditorProps {
   id?: string
+  /**
+   * Id of an external <label> element to associate via aria-labelledby.
+   * A <label for=...> can't target this element — per the HTML spec only
+   * form controls (input/textarea/select/...) are "labellable", and a
+   * contentEditable div isn't one — so `for`/`id` pairing silently fails
+   * for assistive tech and testing-library's getByLabelText alike.
+   */
+  labelledBy?: string
   value: string
   onChange: (html: string) => void
   placeholder?: string
@@ -19,6 +35,7 @@ interface RichNotesEditorProps {
 
 export function RichNotesEditor({
   id,
+  labelledBy,
   value,
   onChange,
   placeholder = 'Add notes for this invoice...',
@@ -33,6 +50,9 @@ export function RichNotesEditor({
   const [isUnderline, setIsUnderline] = useState(false)
 
   const updateActiveStates = useCallback(() => {
+    // queryCommandState is a legacy API jsdom (tests run there) doesn't
+    // implement — degrade to "no formatting active" rather than throwing.
+    if (typeof document.queryCommandState !== 'function') return
     setIsBold(document.queryCommandState('bold'))
     setIsItalic(document.queryCommandState('italic'))
     setIsUnderline(document.queryCommandState('underline'))
@@ -45,13 +65,13 @@ export function RichNotesEditor({
     }
     if (ref.current && ref.current.innerHTML !== value) {
       ref.current.innerHTML = value
-      setCharCount(ref.current.innerText.replace(/\n$/,'').length)
+      setCharCount(getVisibleText(ref.current).replace(/\n$/,'').length)
     }
   }, [value])
 
   const handleInput = useCallback(() => {
     if (!ref.current) return
-    const text = ref.current.innerText.replace(/\n$/,'')
+    const text = getVisibleText(ref.current).replace(/\n$/,'')
     if (text.length > MAX_CHARS) {
       document.execCommand('undo')
       setCharCount(MAX_CHARS)
@@ -87,7 +107,9 @@ export function RichNotesEditor({
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
     e.preventDefault()
     const text = e.clipboardData.getData('text/plain')
-    const currentLen = ref.current?.innerText.replace(/\n$/,'').length ?? 0
+    const currentLen = ref.current
+      ? getVisibleText(ref.current).replace(/\n$/, '').length
+      : 0
     let allowed = text.slice(0, MAX_CHARS - currentLen)
     const currentLineCount = ref.current ? countLines(ref.current) : 1
     const lines = allowed.split('\n')
@@ -149,6 +171,8 @@ export function RichNotesEditor({
         contentEditable={!disabled}
         role="textbox"
         aria-multiline="true"
+        aria-labelledby={labelledBy}
+        aria-disabled={disabled}
         aria-placeholder={placeholder}
         data-placeholder={placeholder}
         onInput={handleInput}
