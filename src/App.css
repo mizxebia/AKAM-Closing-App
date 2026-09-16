@@ -2011,22 +2011,20 @@ body {
 
 .document-panel-inner {
   overflow: hidden;
+  border-radius: 12px;
 }
 
 .document-panel-header {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  flex-direction: column;
+  gap: 6px;
   border-bottom: 1px solid #D5CBB8;
   padding: 8px 12px;
+  border-radius: 12px 12px 0 0;
 }
 
 .document-panel-filename {
   min-width: 0;
-  margin-left: auto;
-  text-align: right;
 }
 
 .document-panel-filename h3 {
@@ -2081,6 +2079,7 @@ body {
   min-height: 480px;
   overflow: hidden;
   background: #EDE8E0;
+  border-radius: 0 0 12px 12px;
 }
 
 /* Send to AR Team tab — larger preview pane so PDFs are legible without
