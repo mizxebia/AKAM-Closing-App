@@ -1,4 +1,11 @@
-import { Activity, CalendarDays, Files, Timer, Building2 } from 'lucide-react'
+import {
+  Activity,
+  CalendarDays,
+  Files,
+  Timer,
+  Building2,
+  CheckCircle2,
+} from 'lucide-react'
 import { StatCard } from '../../../components/enterprise'
 import {
   useClosingPipelineDurations,
@@ -52,6 +59,11 @@ export function ClosingTicketDashboard({
       !INACTIVE_STATUSES.includes(Number(record.cr7de_ticketstatus))
   ).length
 
+  const closingsDoneRecords = records.filter((record) => {
+    const status = Number(record.cr7de_ticketstatus)
+    return status === SENT_TO_AR_STATUS || status === COMPLETED_STATUS
+  }).length
+
   const currentMonthRecords = records.filter(
     (record) => {
       if (!record.createdon) {
@@ -86,7 +98,7 @@ export function ClosingTicketDashboard({
 
   return (
     <section
-      className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-5"
+      className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-6"
       aria-label="Closing ticket summary"
     >
       <StatCard
@@ -115,6 +127,15 @@ export function ClosingTicketDashboard({
         tone="emerald"
         trend="Needs attention"
         accentColor="#8B3A2A"
+      />
+      <StatCard
+        label="Closings Done"
+        value={closingsDoneRecords}
+        description="Sent to AR or Completed"
+        icon={CheckCircle2}
+        tone="emerald"
+        trend="Closed out"
+        accentColor="#1a7a52"
       />
       <StatCard
         label="Avg. Time to Close"
