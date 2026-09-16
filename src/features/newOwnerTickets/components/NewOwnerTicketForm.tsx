@@ -40,7 +40,10 @@ interface FieldConfig {
     | 'Ticket'
     | 'Buyer 1'
     | 'Buyer 2'
-    | 'Seller'
+    | 'Buyer 3'
+    | 'Seller 1'
+    | 'Seller 2'
+    | 'Seller 3'
     | 'Financial'
     | 'Occupants'
 }
@@ -215,96 +218,163 @@ const FIELD_CONFIGS = [
     kind: 'occupancy',
   },
   {
-    section: 'Seller',
+    section: 'Buyer 3',
+    name: 'cr109_buyer3',
+    label: 'Buyer 3 Name',
+  },
+  {
+    section: 'Buyer 3',
+    name: 'cr109_buyer3ssn',
+    label: 'Buyer 3 SSN/EIN',
+    kind: 'ssnein',
+  },
+  {
+    section: 'Buyer 3',
+    name: 'cr109_buyer3address',
+    label: 'Buyer 3 Address',
+  },
+  {
+    section: 'Buyer 3',
+    name: 'cr109_buyer3city',
+    label: 'Buyer 3 City',
+  },
+  {
+    section: 'Buyer 3',
+    name: 'cr109_buyer3state',
+    label: 'Buyer 3 State',
+  },
+  {
+    section: 'Buyer 3',
+    name: 'cr109_buyer3zip',
+    label: 'Buyer 3 ZIP',
+  },
+  {
+    section: 'Buyer 3',
+    name: 'cr109_buyer3occupancy',
+    label: 'Buyer 3 Occupancy',
+    kind: 'occupancy',
+  },
+  {
+    section: 'Seller 1',
     name: 'cr7de_sellername',
     label: 'Seller 1 Name',
   },
   {
-    section: 'Seller',
+    section: 'Seller 1',
     name: 'cr7de_sellerssnein',
     label: 'Seller 1 SSN/EIN',
   },
   {
-    section: 'Seller',
+    section: 'Seller 1',
     name: 'cr7de_sellertcode',
     label: 'Seller T-Code',
   },
   {
-    section: 'Seller',
+    section: 'Seller 1',
     name: 'cr7de_sellercontactemail',
     label: 'Seller Contact Email',
     kind: 'email',
   },
   {
-    section: 'Seller',
+    section: 'Seller 1',
     name: 'cr7de_sellercontactnumber',
     label: 'Seller Contact Number',
     kind: 'tel',
   },
   {
-    section: 'Seller',
+    section: 'Seller 1',
     name: 'cr109_seller1address',
     label: 'Seller 1 Address',
   },
   {
-    section: 'Seller',
+    section: 'Seller 1',
     name: 'cr109_seller1city',
     label: 'Seller 1 City',
   },
   {
-    section: 'Seller',
+    section: 'Seller 1',
     name: 'cr109_seller1state',
     label: 'Seller 1 State',
   },
   {
-    section: 'Seller',
+    section: 'Seller 1',
     name: 'cr109_seller1zip',
     label: 'Seller 1 ZIP',
   },
   {
-    section: 'Seller',
+    section: 'Seller 2',
     name: 'cr109_seller2name',
     label: 'Seller 2 Name',
   },
   {
-    section: 'Seller',
+    section: 'Seller 2',
     name: 'cr109_seller2ssnein',
     label: 'Seller 2 SSN/EIN',
   },
   {
-    section: 'Seller',
+    section: 'Seller 2',
     name: 'cr109_seller2address',
     label: 'Seller 2 Address',
   },
   {
-    section: 'Seller',
+    section: 'Seller 2',
     name: 'cr109_seller2city',
     label: 'Seller 2 City',
   },
   {
-    section: 'Seller',
+    section: 'Seller 2',
     name: 'cr109_seller2state',
     label: 'Seller 2 State',
   },
   {
-    section: 'Seller',
+    section: 'Seller 2',
     name: 'cr109_seller2zip',
     label: 'Seller 2 ZIP',
   },
   {
-    section: 'Seller',
+    section: 'Seller 3',
+    name: 'cr109_seller3',
+    label: 'Seller 3 Name',
+  },
+  {
+    section: 'Seller 3',
+    name: 'cr109_seller3ssn',
+    label: 'Seller 3 SSN/EIN',
+  },
+  {
+    section: 'Seller 3',
+    name: 'cr109_seller3address',
+    label: 'Seller 3 Address',
+  },
+  {
+    section: 'Seller 3',
+    name: 'cr109_seller3city',
+    label: 'Seller 3 City',
+  },
+  {
+    section: 'Seller 3',
+    name: 'cr109_seller3state',
+    label: 'Seller 3 State',
+  },
+  {
+    section: 'Seller 3',
+    name: 'cr109_seller3zip',
+    label: 'Seller 3 ZIP',
+  },
+  {
+    section: 'Seller 1',
     name: 'cr7de_forwardingaddressforseller',
     label: 'Forwarding Address For Seller',
     kind: 'textarea',
     wide: true,
   },
   {
-    section: 'Seller',
+    section: 'Seller 1',
     name: 'cr7de_paymentappliedtoselleraccount',
     label: 'Payment Applied To Seller Account',
   },
   {
-    section: 'Seller',
+    section: 'Seller 1',
     name: 'cr7de_selleraccountzerobalanceconfirmed',
     label: 'Seller Account Zero Balance Confirmed',
     kind: 'checkbox',
@@ -358,7 +428,10 @@ const SECTION_ORDER: FieldConfig['section'][] = [
   'Ticket',
   'Buyer 1',
   'Buyer 2',
-  'Seller',
+  'Buyer 3',
+  'Seller 1',
+  'Seller 2',
+  'Seller 3',
   'Financial',
   'Occupants',
 ]
@@ -465,8 +538,20 @@ const BUYER_2_ADDRESS_FIELDS: EditableNewOwnerTicketField[] = [
   'cr109_buyer2zip',
 ]
 
-// No Buyer 2 on the ticket means there's no one to mail an address to.
+const BUYER_3_ADDRESS_FIELDS: EditableNewOwnerTicketField[] = [
+  'cr109_buyer3address',
+  'cr109_buyer3city',
+  'cr109_buyer3state',
+  'cr109_buyer3zip',
+]
+
+// No Buyer 2/3 on the ticket means there's no one to mail an address to.
 function hasBuyer2Name(name: string) {
+  const trimmed = name.trim()
+  return trimmed !== '' && trimmed.toUpperCase() !== 'N/A'
+}
+
+function hasBuyer3Name(name: string) {
   const trimmed = name.trim()
   return trimmed !== '' && trimmed.toUpperCase() !== 'N/A'
 }
@@ -503,6 +588,13 @@ export function NewOwnerTicketForm({
       BUYER_2_ADDRESS_FIELDS.includes(field.name) &&
       formState.cr109_purchaser2occupancy === 'Absent' &&
       hasBuyer2Name(formState.cr7de_newsecondaryownername)
+    ) {
+      return true
+    }
+    if (
+      BUYER_3_ADDRESS_FIELDS.includes(field.name) &&
+      formState.cr109_buyer3occupancy === 'Absent' &&
+      hasBuyer3Name(formState.cr109_buyer3)
     ) {
       return true
     }

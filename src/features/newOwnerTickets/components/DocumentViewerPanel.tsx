@@ -201,18 +201,18 @@ export function DocumentViewerPanel({
 
         <div className="document-panel-header">
 
-          <div>
-            <p>Documents</p>
-
-            <h3>{fileName}</h3>
-          </div>
-
           <DocumentToggleButtons
             closingTicket={closingTicket}
             documents={documents}
             selectedDocument={selectedDocument}
             onSelectDocument={onSelectDocument}
           />
+
+          <div className="document-panel-filename">
+            <p>Documents</p>
+
+            <h3>{fileName}</h3>
+          </div>
 
         </div>
 

@@ -1,5 +1,13 @@
-import { useState } from 'react'
-import { Plus, RefreshCw, BookOpen, X } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  Plus,
+  RefreshCw,
+  BookOpen,
+  X,
+  ScrollText,
+  ListChecks,
+  FilePlus2,
+} from 'lucide-react'
 import akamLogo from '../../../assets/akam_logo.png'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import {
@@ -14,8 +22,13 @@ import {
   SheetHeader,
   SheetTitle,
 } from '../../../components/ui/sheet'
-import { closingTicketColumns } from '../constants/closingTicketColumns'
+import {
+  botStatusColumn,
+  closingTicketColumns,
+  failureReasonColumn,
+} from '../constants/closingTicketColumns'
 import { useClosingTicketFilters } from '../hooks/useClosingTicketFilters'
+import { getTicketIdsWithScheduledCharges } from '../../charges/api/chargesService'
 import { useClosingTickets } from '../hooks/useClosingTickets'
 import { ClosingTicketDashboard } from './ClosingTicketDashboard'
 import { ClosingTicketFilters } from './ClosingTicketFilters'
@@ -139,13 +152,82 @@ export function ClosingTicketPage() {
 
   const { userName, userId } = useCurrentUser()
 
+  // Yardi charges live in a separate Dataverse table, not on the closing
+  // ticket record itself, so the developer-mode "Yardi Charges" dashboard
+  // filter needs this bulk ticket-id lookup loaded once — only fetched
+  // when Developer Mode is actually on, since regular users never see
+  // the filter that needs it.
+  const [ticketIdsWithCharges, setTicketIdsWithCharges] =
+    useState<Set<string>>(new Set())
+  useEffect(() => {
+    if (!developerMode.enabled) return
+    let isMounted = true
+    void getTicketIdsWithScheduledCharges()
+      .then((ids) => {
+        if (isMounted) setTicketIdsWithCharges(ids)
+      })
+      .catch(() => {
+        // Filter degrades to "no matches" rather than blocking the dashboard.
+      })
+    return () => {
+      isMounted = false
+    }
+  }, [developerMode.enabled])
+
   const {
     filters,
     filteredRecords,
     setStatus,
     setSearch,
+    setDocumentFilter,
+    setChargesFilter,
     clearFilters,
-  } = useClosingTicketFilters(records, { userName, userId })
+  } = useClosingTicketFilters(
+    records,
+    { userName, userId },
+    ticketIdsWithCharges
+  )
+
+  const isDashboardVisible =
+    !selectedRecordId && !bulkStatusScreenOpen && !bulkCreateScreenOpen
+
+  // The dashboard subtree unmounts while a details/bulk screen is open and
+  // remounts when the user navigates back — but useClosingTickets() lives
+  // up here, in the parent, so its one-time mount fetch doesn't rerun on
+  // that "back" navigation. Refresh explicitly whenever the dashboard
+  // becomes the visible view again, skipping the very first render (the
+  // hook's own mount effect already covers that).
+  const skipNextDashboardRefresh = useRef(true)
+  useEffect(() => {
+    if (!isDashboardVisible) return
+    if (skipNextDashboardRefresh.current) {
+      skipNextDashboardRefresh.current = false
+      return
+    }
+    void refresh()
+  }, [isDashboardVisible, refresh])
+
+  // Also refresh when the browser tab itself regains visibility (the user
+  // switched back from another tab/app) while the dashboard is the active
+  // view, so data doesn't go stale while the tab was in the background.
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible' && isDashboardVisible) {
+        void refresh()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () =>
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [isDashboardVisible, refresh])
+
+  const dashboardColumns = useMemo(
+    () =>
+      developerMode.enabled
+        ? [...closingTicketColumns, botStatusColumn, failureReasonColumn]
+        : closingTicketColumns,
+    [developerMode.enabled]
+  )
 
   const welcomeMessage = userName
     ? `Welcome, ${userName}!`
@@ -258,6 +340,7 @@ export function ClosingTicketPage() {
               <DeveloperModeToggle
                 enabled={developerMode.enabled}
                 onToggle={developerMode.toggle}
+                size="compact"
               />
               {developerMode.enabled && (
                 <>
@@ -266,6 +349,7 @@ export function ClosingTicketPage() {
                     type="button"
                     onClick={() => setLogsViewerOpen(true)}
                   >
+                    <ScrollText className="size-4" />
                     View Logs
                   </button>
                   <button
@@ -273,6 +357,7 @@ export function ClosingTicketPage() {
                     type="button"
                     onClick={() => setBulkStatusScreenOpen(true)}
                   >
+                    <ListChecks className="size-4" />
                     Bulk Status Change
                   </button>
                   <button
@@ -280,6 +365,7 @@ export function ClosingTicketPage() {
                     type="button"
                     onClick={() => setBulkCreateScreenOpen(true)}
                   >
+                    <FilePlus2 className="size-4" />
                     Bulk Create Closings
                   </button>
                 </>
@@ -325,6 +411,10 @@ export function ClosingTicketPage() {
                 filters={filters}
                 onStatusChange={setStatus}
                 onSearchChange={setSearch}
+                showDocumentFilter={developerMode.enabled}
+                onDocumentFilterChange={setDocumentFilter}
+                showChargesFilter={developerMode.enabled}
+                onChargesFilterChange={setChargesFilter}
               />
 
               {filteredRecords.length === 0 ? (
@@ -335,7 +425,7 @@ export function ClosingTicketPage() {
               ) : (
                 <ClosingTicketTable
                   records={filteredRecords}
-                  columns={closingTicketColumns}
+                  columns={dashboardColumns}
                   onRecordSelect={(recordId) => {
                     setCreateSuccessMessage(null)
                     setSelectedRecordId(recordId)

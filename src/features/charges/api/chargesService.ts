@@ -223,6 +223,36 @@ export async function getScheduledChargesByTicketId(
   return (response.data ?? []) as ScheduledChargeRecord[]
 }
 
+/**
+ * The set of ticket ids that have at least one Yardi (scheduled) charge
+ * record — a single bulk read rather than per-ticket lookups, since this
+ * is only used to power the developer-mode dashboard "Yardi Charges"
+ * present/missing filter across every visible ticket at once.
+ */
+export async function getTicketIdsWithScheduledCharges(): Promise<
+  Set<string>
+> {
+  const response = await Crc5c_copyscheduledchargesesService.getAll({
+    select: ['crc5c_ticketid'],
+  })
+
+  if (!response.success) {
+    throw new Error(
+      response.error?.message ||
+        'Failed to load scheduled charge ticket ids'
+    )
+  }
+
+  const ticketIds = new Set<string>()
+  for (const record of response.data ?? []) {
+    const ticketId = record.crc5c_ticketid?.trim()
+    if (ticketId) {
+      ticketIds.add(ticketId)
+    }
+  }
+  return ticketIds
+}
+
 export async function getSellerLedgersByTicketId(
   ticketId: string
 ): Promise<SellerLedgerRecord[]> {

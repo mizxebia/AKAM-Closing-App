@@ -42,7 +42,7 @@ describe('NewOwnerTicketForm', () => {
 
     expect(screen.getByText('Buyer 1')).toBeInTheDocument()
     expect(screen.getByText('Buyer 2')).toBeInTheDocument()
-    expect(screen.getByText('Seller')).toBeInTheDocument()
+    expect(screen.getByText('Seller 1')).toBeInTheDocument()
     expect(
       screen.getByDisplayValue('Alex Buyer')
     ).toBeInTheDocument()

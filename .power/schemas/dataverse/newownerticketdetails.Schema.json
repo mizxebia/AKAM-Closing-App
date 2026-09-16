@@ -114,6 +114,62 @@
           "x-ms-schema-name": "cr109_Buyer2ZIP",
           "maxLength": 100
         },
+        "cr109_buyer3": {
+          "type": "string",
+          "title": "Buyer 3",
+          "x-ms-dataverse-attribute": "cr109_buyer3",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_Buyer3",
+          "maxLength": 1000
+        },
+        "cr109_buyer3address": {
+          "type": "string",
+          "title": "Buyer 3 Address",
+          "x-ms-dataverse-attribute": "cr109_buyer3address",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_Buyer3Address",
+          "maxLength": 100
+        },
+        "cr109_buyer3city": {
+          "type": "string",
+          "title": "Buyer 3 City",
+          "x-ms-dataverse-attribute": "cr109_buyer3city",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_Buyer3City",
+          "maxLength": 100
+        },
+        "cr109_buyer3occupancy": {
+          "type": "string",
+          "title": "Buyer 3 Occupancy",
+          "x-ms-dataverse-attribute": "cr109_buyer3occupancy",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_Buyer3Occupancy",
+          "maxLength": 100
+        },
+        "cr109_buyer3ssn": {
+          "type": "string",
+          "title": "Buyer 3 SSN",
+          "x-ms-dataverse-attribute": "cr109_buyer3ssn",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_Buyer3SSN",
+          "maxLength": 100
+        },
+        "cr109_buyer3state": {
+          "type": "string",
+          "title": "Buyer 3 State",
+          "x-ms-dataverse-attribute": "cr109_buyer3state",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_Buyer3State",
+          "maxLength": 100
+        },
+        "cr109_buyer3zip": {
+          "type": "string",
+          "title": "Buyer 3 ZIP",
+          "x-ms-dataverse-attribute": "cr109_buyer3zip",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_Buyer3ZIP",
+          "maxLength": 100
+        },
         "cr109_lendersname": {
           "type": "string",
           "title": "Lenders Name",
@@ -280,6 +336,54 @@
           "x-ms-dataverse-attribute": "cr109_seller2zip",
           "x-ms-dataverse-type": "StringType",
           "x-ms-schema-name": "cr109_Seller2ZIP",
+          "maxLength": 100
+        },
+        "cr109_seller3": {
+          "type": "string",
+          "title": "Seller 3",
+          "x-ms-dataverse-attribute": "cr109_seller3",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_Seller3",
+          "maxLength": 100
+        },
+        "cr109_seller3address": {
+          "type": "string",
+          "title": "Seller 3 Address",
+          "x-ms-dataverse-attribute": "cr109_seller3address",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_Seller3Address",
+          "maxLength": 100
+        },
+        "cr109_seller3city": {
+          "type": "string",
+          "title": "Seller 3 City",
+          "x-ms-dataverse-attribute": "cr109_seller3city",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_Seller3City",
+          "maxLength": 100
+        },
+        "cr109_seller3ssn": {
+          "type": "string",
+          "title": "Seller 3 SSN",
+          "x-ms-dataverse-attribute": "cr109_seller3ssn",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_Seller3SSN",
+          "maxLength": 100
+        },
+        "cr109_seller3state": {
+          "type": "string",
+          "title": "Seller 3 State",
+          "x-ms-dataverse-attribute": "cr109_seller3state",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_Seller3State",
+          "maxLength": 100
+        },
+        "cr109_seller3zip": {
+          "type": "string",
+          "title": "Seller 3 ZIP",
+          "x-ms-dataverse-attribute": "cr109_seller3zip",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_Seller3ZIP",
           "maxLength": 100
         },
         "cr109_shares": {

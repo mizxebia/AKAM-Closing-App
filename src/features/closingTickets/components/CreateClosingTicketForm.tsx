@@ -74,6 +74,7 @@ interface EditClosingTicketFormProps {
 const emptyFormState: ClosingTicketFormState = {
   cr109_botstatus: '',
   cr109_buyer2name: '',
+  cr109_buyer3: '',
   cr109_buyerunitnumber: '',
   cr109_domecilepackageurl: '',
   cr109_legalname: '',
@@ -81,6 +82,7 @@ const emptyFormState: ClosingTicketFormState = {
   cr109_packagetype: '',
   cr109_saleprice: '',
   cr109_seller2name: '',
+  cr109_seller3: '',
   cr109_shares: '',
   cr109_transactiontypedeal: '',
   cr7de_buildingaddress: '',
@@ -128,6 +130,7 @@ function getRecordFormState(
   return {
     cr109_botstatus: record.cr109_botstatus ?? '',
     cr109_buyer2name: record.cr109_buyer2name ?? '',
+    cr109_buyer3: record.cr109_buyer3 ?? '',
     cr109_buyerunitnumber: record.cr109_buyerunitnumber ?? '',
     cr109_domecilepackageurl:
       record.cr109_domecilepackageurl ?? '',
@@ -138,6 +141,7 @@ function getRecordFormState(
     cr109_packagetype: record.cr109_packagetype ?? '',
     cr109_saleprice: record.cr109_saleprice ?? '',
     cr109_seller2name: record.cr109_seller2name ?? '',
+    cr109_seller3: record.cr109_seller3 ?? '',
     cr109_shares: record.cr109_shares ?? '',
     cr109_transactiontypedeal:
       record.cr109_transactiontypedeal ?? '',
@@ -291,6 +295,9 @@ function buildPayload(
     cr109_buyer2name: normalizeText(
       formState.cr109_buyer2name
     ),
+    cr109_buyer3: normalizeText(
+      formState.cr109_buyer3
+    ),
     cr109_buyerunitnumber: normalizeText(
       formState.cr109_buyerunitnumber
     ),
@@ -310,6 +317,9 @@ function buildPayload(
     ),
     cr109_seller2name: normalizeText(
       formState.cr109_seller2name
+    ),
+    cr109_seller3: normalizeText(
+      formState.cr109_seller3
     ),
     cr109_shares: normalizeText(formState.cr109_shares),
     cr109_transactiontypedeal:
@@ -1268,6 +1278,30 @@ function ClosingTicketEditorForm({
                 onChange={(event) =>
                   updateField(
                     'cr109_seller2name',
+                    event.target.value
+                  )
+                }
+              />
+            </FormField>
+
+            <FormField label="Buyer 3 Name">
+              <input
+                value={formState.cr109_buyer3}
+                onChange={(event) =>
+                  updateField(
+                    'cr109_buyer3',
+                    event.target.value
+                  )
+                }
+              />
+            </FormField>
+
+            <FormField label="Seller 3 Name">
+              <input
+                value={formState.cr109_seller3}
+                onChange={(event) =>
+                  updateField(
+                    'cr109_seller3',
                     event.target.value
                   )
                 }

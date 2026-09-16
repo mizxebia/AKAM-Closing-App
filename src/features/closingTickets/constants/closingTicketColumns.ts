@@ -34,3 +34,15 @@ export const closingTicketColumns: ClosingTicketColumn[] = [
     label: 'Last Modified',
   },
 ]
+
+/** Developer Mode only — appended to closingTicketColumns when enabled. */
+export const botStatusColumn: ClosingTicketColumn = {
+  key: 'cr109_botstatus',
+  label: 'Bot Status',
+}
+
+/** Developer Mode only — shows why a Failed ticket failed; blank otherwise. */
+export const failureReasonColumn: ClosingTicketColumn = {
+  key: 'failureReason',
+  label: 'Failure Reason',
+}

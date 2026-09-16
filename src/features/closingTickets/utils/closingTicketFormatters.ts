@@ -9,6 +9,7 @@ import type {
   TicketStatusOption,
 } from '../types/closingTicket'
 import { closingTicketTabs } from '../constants/closingTicketMetadata'
+import { getFailureReason } from './closingTicketFailureReasons'
 
 // The Power Apps SDK does not populate `createdbyname` on fetched records.
 // The display name is available at runtime via this OData annotation instead.
@@ -117,6 +118,12 @@ export function formatClosingTicketValue(
       return annotated.replace(/\s*#\s*$/, '').trim()
     }
     return '-'
+  }
+
+  // Synthetic, developer-mode-only column — not a real Dataverse field, so
+  // it can't be read via record[key] below.
+  if (key === 'failureReason') {
+    return getFailureReason(record) ?? '-'
   }
 
   const rawValue = record[key]

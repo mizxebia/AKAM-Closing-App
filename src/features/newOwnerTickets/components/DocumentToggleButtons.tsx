@@ -21,7 +21,7 @@ export function DocumentToggleButtons({
 }: DocumentToggleButtonsProps) {
   return (
     <div
-      className="flex gap-2 w-full"
+      className="flex flex-wrap shrink-0 gap-1.5"
       aria-label="Document preview selector"
     >
       {documents.map((document) => {
@@ -38,8 +38,8 @@ export function DocumentToggleButtons({
             type="button"
             className={
               isActive
-                ? 'flex-1 min-w-0 rounded-lg bg-slate-950 px-2 py-2 text-[0.7rem] font-semibold text-white shadow-sm text-center'
-                : 'flex-1 min-w-0 rounded-lg border border-slate-200 bg-white px-2 py-2 text-[0.7rem] font-semibold text-slate-600 text-center transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-300'
+                ? 'shrink-0 rounded-lg bg-slate-950 px-2.5 py-1 text-[0.7rem] font-semibold text-white shadow-sm text-center'
+                : 'shrink-0 rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-[0.7rem] font-semibold text-slate-600 text-center transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-300'
             }
             onClick={() =>
               onSelectDocument(document.key)

@@ -27,6 +27,13 @@ export interface Cr7de_newownerticketdetailsesBase {
   cr109_buyer2city?: string;
   cr109_buyer2state?: string;
   cr109_buyer2zip?: string;
+  cr109_buyer3?: string;
+  cr109_buyer3address?: string;
+  cr109_buyer3city?: string;
+  cr109_buyer3occupancy?: string;
+  cr109_buyer3ssn?: string;
+  cr109_buyer3state?: string;
+  cr109_buyer3zip?: string;
   cr109_lendersname?: string;
   cr109_nyccode?: string;
   cr109_primaryhomephonenumber?: string;
@@ -48,6 +55,12 @@ export interface Cr7de_newownerticketdetailsesBase {
   cr109_seller2ssnein?: string;
   cr109_seller2state?: string;
   cr109_seller2zip?: string;
+  cr109_seller3?: string;
+  cr109_seller3address?: string;
+  cr109_seller3city?: string;
+  cr109_seller3ssn?: string;
+  cr109_seller3state?: string;
+  cr109_seller3zip?: string;
   cr109_shares?: string;
   cr7de_address?: string;
   cr7de_alternatemailingaddress?: string;

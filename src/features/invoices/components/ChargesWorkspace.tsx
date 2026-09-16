@@ -24,10 +24,6 @@ interface ChargesWorkspaceProps {
   loading: boolean
   error: string | null
   onRefresh: () => Promise<void> | void
-  onGenerateInvoice?: () => Promise<void> | void
-  generatingInvoice?: boolean
-  hasInvoicePdf?: boolean
-  onViewInvoice?: () => void
   readOnly?: boolean
 }
 
@@ -126,10 +122,6 @@ export function ChargesWorkspace({
   loading,
   error,
   onRefresh,
-  onGenerateInvoice,
-  generatingInvoice,
-  hasInvoicePdf,
-  onViewInvoice,
   readOnly = false,
 }: ChargesWorkspaceProps) {
   const [rows, setRows] = useState<InvoiceChargeFormRow[]>(
@@ -412,14 +404,9 @@ export function ChargesWorkspace({
         loading={loading}
         error={error}
         closingTicketNotes={closingTicketNotes}
-        onRefresh={onRefresh}
         onSaveEdit={updateSavedCharge}
         onDelete={deleteCharge}
         onSaveNotes={handleSaveNotes}
-        onGenerateInvoice={onGenerateInvoice}
-        generatingInvoice={generatingInvoice}
-        hasInvoicePdf={hasInvoicePdf}
-        onViewInvoice={onViewInvoice}
         updatingId={updatingId}
         deletingId={deletingId}
         readOnly={readOnly}

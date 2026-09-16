@@ -15,6 +15,7 @@ export * as Crc5c_copyscheduledchargesesModel from './models/Crc5c_copyscheduled
 export * as Crc5c_manualchargesesModel from './models/Crc5c_manualchargesesModel';
 export * as Crc5c_sellerledgersModel from './models/Crc5c_sellerledgersModel';
 export * as Crc5c_unpaidchargesesModel from './models/Crc5c_unpaidchargesesModel';
+export * as MicrosoftDataverseModel from './models/MicrosoftDataverseModel';
 export * as NSC_Generate_InvoiceModel from './models/NSC_Generate_InvoiceModel';
 export * as NSC_Generate_New_Owner_TicketModel from './models/NSC_Generate_New_Owner_TicketModel';
 export * as NSC_Send_Email_To_ARModel from './models/NSC_Send_Email_To_ARModel';
@@ -31,6 +32,7 @@ export * from './services/Crc5c_copyscheduledchargesesService';
 export * from './services/Crc5c_manualchargesesService';
 export * from './services/Crc5c_sellerledgersService';
 export * from './services/Crc5c_unpaidchargesesService';
+export * from './services/MicrosoftDataverseService';
 export * from './services/NSC_Generate_InvoiceService';
 export * from './services/NSC_Generate_New_Owner_TicketService';
 export * from './services/NSC_Send_Email_To_ARService';

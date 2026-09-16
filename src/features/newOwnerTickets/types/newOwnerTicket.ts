@@ -21,6 +21,13 @@ export type EditableNewOwnerTicketField =
   | 'cr109_buyer2city'
   | 'cr109_buyer2state'
   | 'cr109_buyer2zip'
+  | 'cr109_buyer3'
+  | 'cr109_buyer3address'
+  | 'cr109_buyer3city'
+  | 'cr109_buyer3occupancy'
+  | 'cr109_buyer3ssn'
+  | 'cr109_buyer3state'
+  | 'cr109_buyer3zip'
   | 'cr109_lendersname'
   | 'cr109_nyccode'
   | 'cr109_primaryhomephonenumber'
@@ -42,6 +49,12 @@ export type EditableNewOwnerTicketField =
   | 'cr109_seller2ssnein'
   | 'cr109_seller2state'
   | 'cr109_seller2zip'
+  | 'cr109_seller3'
+  | 'cr109_seller3address'
+  | 'cr109_seller3city'
+  | 'cr109_seller3ssn'
+  | 'cr109_seller3state'
+  | 'cr109_seller3zip'
   | 'cr109_shares'
   | 'cr7de_address'
   | 'cr7de_alternatemailingaddress'
@@ -85,6 +98,13 @@ export type NewOwnerTicketFormState = {
   cr109_buyer2city: string
   cr109_buyer2state: string
   cr109_buyer2zip: string
+  cr109_buyer3: string
+  cr109_buyer3address: string
+  cr109_buyer3city: string
+  cr109_buyer3occupancy: string
+  cr109_buyer3ssn: string
+  cr109_buyer3state: string
+  cr109_buyer3zip: string
   cr109_lendersname: string
   cr109_nyccode: string
   cr109_primaryhomephonenumber: string
@@ -106,6 +126,12 @@ export type NewOwnerTicketFormState = {
   cr109_seller2ssnein: string
   cr109_seller2state: string
   cr109_seller2zip: string
+  cr109_seller3: string
+  cr109_seller3address: string
+  cr109_seller3city: string
+  cr109_seller3ssn: string
+  cr109_seller3state: string
+  cr109_seller3zip: string
   cr109_shares: string
   cr7de_address: string
   cr7de_alternatemailingaddress: string

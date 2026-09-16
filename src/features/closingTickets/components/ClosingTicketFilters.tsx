@@ -1,6 +1,6 @@
-import { Search } from 'lucide-react'
 import { SearchFilter } from '../../../components/filters/SearchFilter'
 import { closingTicketStatusOptions } from '../utils/closingTicketFormatters'
+import { CLOSING_DOCUMENT_FILTER_OPTIONS } from '../utils/closingTicketFilters'
 import type { ClosingTicketFilters } from '../types/closingTicket'
 
 interface ClosingTicketFiltersProps {
@@ -9,12 +9,24 @@ interface ClosingTicketFiltersProps {
     value: ClosingTicketFilters['status']
   ) => void
   onSearchChange: (value: string) => void
+  /** Developer Mode only — lets a developer find tickets missing/having a specific document. */
+  showDocumentFilter?: boolean
+  onDocumentFilterChange: (value: string) => void
+  /** Developer Mode only — lets a developer find tickets with/without Yardi charges. */
+  showChargesFilter?: boolean
+  onChargesFilterChange: (
+    value: ClosingTicketFilters['chargesFilter']
+  ) => void
 }
 
 export function ClosingTicketFilters({
   filters,
   onStatusChange,
   onSearchChange,
+  showDocumentFilter = false,
+  onDocumentFilterChange,
+  showChargesFilter = false,
+  onChargesFilterChange,
 }: ClosingTicketFiltersProps) {
   return (
     <section
@@ -52,17 +64,66 @@ export function ClosingTicketFilters({
         ))}
       </div>
 
-      <div className="grid gap-2">
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#4B5563]" />
-          <SearchFilter
-            id="closing-ticket-general-search"
-            label="Search closings"
-            placeholder="Search closings by ID, building, unit, status, buyer, seller..."
-            value={filters.search}
-            onChange={onSearchChange}
-          />
-        </div>
+      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end">
+        <SearchFilter
+          id="closing-ticket-general-search"
+          label="Search closings"
+          placeholder="Search closings by ID, building, unit, status, buyer, seller..."
+          value={filters.search}
+          onChange={onSearchChange}
+        />
+
+        {showDocumentFilter && (
+          <label
+            className="flex flex-col gap-1 text-xs font-medium text-[#5F5E5A]"
+            htmlFor="closing-ticket-document-filter"
+          >
+            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94a3b8]">
+              Documents
+            </span>
+            <select
+              id="closing-ticket-document-filter"
+              className="h-9 min-w-[220px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
+              value={filters.documentFilter}
+              onChange={(event) =>
+                onDocumentFilterChange(event.target.value)
+              }
+            >
+              <option value="">All documents</option>
+              {CLOSING_DOCUMENT_FILTER_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
+        {showChargesFilter && (
+          <label
+            className="flex flex-col gap-1 text-xs font-medium text-[#5F5E5A]"
+            htmlFor="closing-ticket-charges-filter"
+          >
+            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94a3b8]">
+              Yardi Charges
+            </span>
+            <select
+              id="closing-ticket-charges-filter"
+              className="h-9 min-w-[220px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
+              value={filters.chargesFilter}
+              onChange={(event) =>
+                onChargesFilterChange(
+                  event.target
+                    .value as ClosingTicketFilters['chargesFilter']
+                )
+              }
+            >
+              <option value="">All</option>
+              <option value="present">Has Yardi Charges</option>
+              <option value="missing">Missing Yardi Charges</option>
+            </select>
+          </label>
+        )}
       </div>
     </section>
   )

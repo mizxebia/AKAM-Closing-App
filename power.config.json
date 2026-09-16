@@ -74,6 +74,14 @@
       "dataSources": [
         "nsc_generate_invoice"
       ]
+    },
+    "00d7a9dc-3a8b-45cb-bbe7-61bf5031b8a5": {
+      "id": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps",
+      "displayName": "Microsoft Dataverse",
+      "dataSources": [
+        "commondataserviceforapps"
+      ],
+      "dataSets": {}
     }
   },
   "databaseReferences": {

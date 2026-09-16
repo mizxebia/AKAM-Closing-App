@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   CheckCircle2,
   FileText,
@@ -9,6 +10,7 @@ import {
   Send,
 } from 'lucide-react'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
+import { useTabBarActionsPortal } from './tabBarActionsPortal'
 import {
   updateClosingTicket,
   uploadClosingTicketFile,
@@ -242,10 +244,6 @@ function buildPresetMessageHtml(
     ),
     row("Seller's Contact Number", newOwnerTicket?.cr7de_sellercontactnumber),
     row("Seller's Contact Email", newOwnerTicket?.cr7de_sellercontactemail),
-    row(
-      'Forwarding Address for Seller',
-      newOwnerTicket?.cr7de_forwardingaddressforseller
-    ),
     row('Seller 2 Name', closingTicket.cr109_seller2name),
   ].filter((r): r is FieldRow => Boolean(r))
 
@@ -464,6 +462,8 @@ export function SendToATeamTab({
   const closingTicketId =
     closingTicket.cr7de_closingticketdetailsid
   const ticketId = closingTicket.cr7de_ticketid ?? ''
+
+  const actionsPortalNode = useTabBarActionsPortal()
 
   const [subject, setSubject] = useState(() =>
     closingTicket.cr109_emailsubject?.trim()
@@ -844,50 +844,53 @@ export function SendToATeamTab({
           </div>
         </div>
 
-        <div className="mt-auto flex flex-wrap items-center gap-3 border-t border-slate-100 px-5 py-3">
-          <button
-            type="button"
-            className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#1E3A47] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#152d38] disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={!bothArDocumentsPresent || busy}
-            title={
-              bothArDocumentsPresent
-                ? undefined
-                : 'Upload both the Cheques Document and Batch Document before sending.'
-            }
-            onClick={() => void handleSend()}
-          >
-            {isSentToAR ? <RotateCcw className="size-4" /> : <Send className="size-4" />}
-            {sending ? 'Sending…' : isSentToAR ? 'Send Again to AR' : 'Send to AR Team'}
-          </button>
+        {actionsPortalNode &&
+          createPortal(
+            <>
+              {!loadingHistory && lastSent && (
+                <span className="mr-1 hidden text-xs text-[#64748b] lg:inline">
+                  Last sent by {lastSent.modifiedBy} on{' '}
+                  {new Date(lastSent.createdOn).toLocaleString()}
+                </span>
+              )}
+              <button
+                type="button"
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#D5CBB8] bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#4B5563] shadow-sm transition hover:bg-[#F5F2EC] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={busy}
+                title="Rebuild the subject and email body from the latest closing ticket details and save them."
+                onClick={() => void handleRegenerate()}
+              >
+                <RefreshCw className="size-3.5" />
+                {regenerating ? 'Regenerating…' : 'Regenerate & Save'}
+              </button>
 
-          <button
-            type="button"
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#1E3A47] px-4 text-sm font-semibold text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC] disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={busy}
-            onClick={() => void handleSaveDraft()}
-          >
-            <Save className="size-4" />
-            {savingDraft ? 'Saving…' : 'Save Draft'}
-          </button>
+              <button
+                type="button"
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#1E3A47] bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={busy}
+                onClick={() => void handleSaveDraft()}
+              >
+                <Save className="size-3.5" />
+                {savingDraft ? 'Saving…' : 'Save Draft'}
+              </button>
 
-          <button
-            type="button"
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#D5CBB8] px-4 text-sm font-semibold text-[#4B5563] shadow-sm transition hover:bg-[#F5F2EC] disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={busy}
-            title="Rebuild the subject and email body from the latest closing ticket details and save them."
-            onClick={() => void handleRegenerate()}
-          >
-            <RefreshCw className="size-4" />
-            {regenerating ? 'Regenerating…' : 'Regenerate & Save'}
-          </button>
-
-          {!loadingHistory && lastSent && (
-            <span className="text-xs text-[#64748b]">
-              Last sent by {lastSent.modifiedBy} on{' '}
-              {new Date(lastSent.createdOn).toLocaleString()}
-            </span>
+              <button
+                type="button"
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#1E3A47] px-3 text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-sm transition hover:bg-[#152d38] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={!bothArDocumentsPresent || busy}
+                title={
+                  bothArDocumentsPresent
+                    ? undefined
+                    : 'Upload both the Cheques Document and Batch Document before sending.'
+                }
+                onClick={() => void handleSend()}
+              >
+                {isSentToAR ? <RotateCcw className="size-3.5" /> : <Send className="size-3.5" />}
+                {sending ? 'Sending…' : isSentToAR ? 'Send Again to AR' : 'Send to AR Team'}
+              </button>
+            </>,
+            actionsPortalNode
           )}
-        </div>
 
         {sendError && (
           <div className="px-5 pb-3">

@@ -4,6 +4,16 @@
   background: #F5F2EC;
 }
 
+/* Reserves the vertical scrollbar's width permanently, instead of only
+   when content is tall enough to need it. Without this, a page whose
+   height crosses the "needs a scrollbar" threshold while its content
+   changes (e.g. a save/refresh that grows or shrinks the page) causes
+   every `position: sticky`/`fixed` full-width element to jump sideways
+   by the scrollbar's width right as the scrollbar appears/disappears. */
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0;
   background: #F5F2EC;
@@ -1901,21 +1911,21 @@ body {
 }
 
 .new-owner-workflow-header p,
-.document-panel-header p {
+.document-panel-filename p {
   margin: 0;
   color: #4B5563;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
 
 .new-owner-workflow-header h3,
-.document-panel-header h3 {
-  margin: 4px 0 0;
+.document-panel-filename h3 {
+  margin: 2px 0 0;
   color: #1E3A47;
   font-family: 'Playfair Display', Georgia, serif;
-  font-size: 1.08rem;
+  font-size: 0.92rem;
   font-style: italic;
   line-height: 1.2;
 }
@@ -1944,7 +1954,7 @@ body {
 
 .new-owner-form {
   display: grid;
-  gap: 12px;
+  gap: 18px;
   padding: 14px;
 }
 
@@ -1986,9 +1996,16 @@ body {
   padding-top: 10px;
 }
 
+/* 190px clears the page's own sticky stack — the 48px TopNav plus the
+   ticket header + WorkflowTabBar row (sticky top-[48px], z-20) above this.
+   That stack's height is content-driven, not viewport-driven, so a fixed
+   value is more reliable here than a svh-based one: the previous
+   clamp(80px, 10svh, 168px) came in under the real stack height on most
+   screens, which let the sticky content start hiding behind the z-20 tab
+   bar instead of clearing it. */
 .document-panel {
   position: sticky;
-  top: clamp(80px, 10svh, 168px);
+  top: 190px;
   align-self: start;
 }
 
@@ -1997,13 +2014,22 @@ body {
 }
 
 .document-panel-header {
-  display: grid;
-  gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   border-bottom: 1px solid #D5CBB8;
-  padding: 14px;
+  padding: 8px 12px;
 }
 
-.document-panel-header h3 {
+.document-panel-filename {
+  min-width: 0;
+  margin-left: auto;
+  text-align: right;
+}
+
+.document-panel-filename h3 {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2051,7 +2077,7 @@ body {
 
 .document-preview-shell {
   position: relative;
-  height: clamp(480px, calc(100svh - 160px), 1080px);
+  height: clamp(480px, calc(100svh - 130px), 1080px);
   min-height: 480px;
   overflow: hidden;
   background: #EDE8E0;

@@ -1,8 +1,74 @@
 import { formatClosingTicketStatus, CREATED_BY_DISPLAY_ANNOTATION } from './closingTicketFormatters'
+import {
+  AR_TEAM_DOCUMENTS,
+  GENERATED_CLOSING_DOCUMENTS,
+  NEW_OWNER_DOCUMENTS,
+  hasDocument,
+  type NewOwnerDocumentDefinition,
+} from '../../newOwnerTickets/utils/dataverseFileUtils'
 import type {
   ClosingTicketFilters,
   ClosingTicketRecord,
 } from '../types/closingTicket'
+
+// The three document lists overlap (e.g. the Invoice PDF is both a
+// "generated closing document" and an "AR team document") — dedupe by key
+// so the dashboard's document filter offers each real document exactly once.
+const CLOSING_DOCUMENTS: NewOwnerDocumentDefinition[] = (() => {
+  const byKey = new Map<string, NewOwnerDocumentDefinition>()
+  for (const doc of [
+    ...NEW_OWNER_DOCUMENTS,
+    ...GENERATED_CLOSING_DOCUMENTS,
+    ...AR_TEAM_DOCUMENTS,
+  ]) {
+    if (!byKey.has(doc.key)) {
+      byKey.set(doc.key, doc)
+    }
+  }
+  return Array.from(byKey.values())
+})()
+
+/** Options for the developer-mode "Documents" filter dropdown. */
+export const CLOSING_DOCUMENT_FILTER_OPTIONS: {
+  value: string
+  label: string
+}[] = CLOSING_DOCUMENTS.flatMap((doc) => [
+  { value: `${doc.key}|present`, label: `Has ${doc.label}` },
+  { value: `${doc.key}|missing`, label: `Missing ${doc.label}` },
+])
+
+function matchesDocumentFilter(
+  record: ClosingTicketRecord,
+  documentFilter: string
+) {
+  if (!documentFilter) {
+    return true
+  }
+
+  const [key, presence] = documentFilter.split('|')
+  const document = CLOSING_DOCUMENTS.find((doc) => doc.key === key)
+
+  if (!document) {
+    return true
+  }
+
+  const present = hasDocument(record, document)
+  return presence === 'present' ? present : !present
+}
+
+function matchesChargesFilter(
+  record: ClosingTicketRecord,
+  chargesFilter: ClosingTicketFilters['chargesFilter'],
+  ticketIdsWithCharges: Set<string>
+) {
+  if (!chargesFilter) {
+    return true
+  }
+
+  const ticketId = record.cr7de_ticketid?.trim()
+  const present = !!ticketId && ticketIdsWithCharges.has(ticketId)
+  return chargesFilter === 'present' ? present : !present
+}
 
 const excludedSearchFields = new Set([
   'createdon',
@@ -87,11 +153,18 @@ function matchesStatus(
 export function filterClosingTickets(
   records: ClosingTicketRecord[],
   filters: ClosingTicketFilters,
-  currentUser?: { userName?: string | null; userId?: string | null }
+  currentUser?: { userName?: string | null; userId?: string | null },
+  ticketIdsWithCharges: Set<string> = new Set()
 ) {
   return records.filter(
     (record) =>
       matchesStatus(record, filters, currentUser) &&
-      matchesGeneralSearch(record, filters.search)
+      matchesGeneralSearch(record, filters.search) &&
+      matchesDocumentFilter(record, filters.documentFilter) &&
+      matchesChargesFilter(
+        record,
+        filters.chargesFilter,
+        ticketIdsWithCharges
+      )
   )
 }

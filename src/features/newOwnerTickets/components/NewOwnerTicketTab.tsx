@@ -4,7 +4,7 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { ClipboardList, UserPlus } from 'lucide-react'
+import { ClipboardList } from 'lucide-react'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import { LoadingSkeleton } from '../../../components/enterprise'
 import { updateClosingTicket } from '../../closingTickets/api/closingTicketsService'
@@ -41,7 +41,6 @@ interface NewOwnerTicketTabProps {
   scheduledCharges?: ScheduledChargeRecord[]
   onSaved: () => Promise<void>
   onGenerateTicket?: () => Promise<void>
-  generatingTicket?: boolean
   readOnly?: boolean
   isCompleted?: boolean
 }
@@ -116,6 +115,27 @@ export function getInitialFormState(
     cr109_buyer2zip: valueOrEmpty(
       record?.cr109_buyer2zip
     ),
+    cr109_buyer3: valueOrEmpty(
+      record?.cr109_buyer3 ?? closingTicket.cr109_buyer3
+    ),
+    cr109_buyer3address: valueOrEmpty(
+      record?.cr109_buyer3address
+    ),
+    cr109_buyer3city: valueOrEmpty(
+      record?.cr109_buyer3city
+    ),
+    cr109_buyer3occupancy: valueOrEmpty(
+      record?.cr109_buyer3occupancy
+    ) || 'Present',
+    cr109_buyer3ssn: valueOrEmpty(
+      record?.cr109_buyer3ssn
+    ),
+    cr109_buyer3state: valueOrEmpty(
+      record?.cr109_buyer3state
+    ),
+    cr109_buyer3zip: valueOrEmpty(
+      record?.cr109_buyer3zip
+    ),
     cr109_lendersname: valueOrEmpty(
       record?.cr109_lendersname
     ),
@@ -181,6 +201,24 @@ export function getInitialFormState(
     ),
     cr109_seller2zip: valueOrEmpty(
       record?.cr109_seller2zip
+    ),
+    cr109_seller3: valueOrEmpty(
+      record?.cr109_seller3 ?? closingTicket.cr109_seller3
+    ),
+    cr109_seller3address: valueOrEmpty(
+      record?.cr109_seller3address
+    ),
+    cr109_seller3city: valueOrEmpty(
+      record?.cr109_seller3city
+    ),
+    cr109_seller3ssn: valueOrEmpty(
+      record?.cr109_seller3ssn
+    ),
+    cr109_seller3state: valueOrEmpty(
+      record?.cr109_seller3state
+    ),
+    cr109_seller3zip: valueOrEmpty(
+      record?.cr109_seller3zip
     ),
     cr109_shares: valueOrEmpty(
       record?.cr109_shares ?? closingTicket.cr109_shares
@@ -263,8 +301,12 @@ export function normalizeText(value: string) {
   return trimmedValue === '' ? undefined : trimmedValue
 }
 
-// No Buyer 2 on the ticket means there's no one to mail an address to.
+// No Buyer 2/3 on the ticket means there's no one to mail an address to.
 function hasBuyer2Name(name: string) {
+  return !isBlankOrNA(name)
+}
+
+function hasBuyer3Name(name: string) {
   return !isBlankOrNA(name)
 }
 
@@ -291,6 +333,9 @@ export function toPayload(
   const buyer2AddressRequired =
     formState.cr109_purchaser2occupancy === 'Absent' &&
     hasBuyer2Name(formState.cr7de_newsecondaryownername)
+  const buyer3AddressRequired =
+    formState.cr109_buyer3occupancy === 'Absent' &&
+    hasBuyer3Name(formState.cr109_buyer3)
 
   const payload: NewOwnerTicketInput = {
     cr109_additional_occupants1name: normalizeText(
@@ -332,6 +377,23 @@ export function toPayload(
     cr109_buyer2zip: buyer2AddressRequired
       ? normalizeText(formState.cr109_buyer2zip)
       : normalizeOrNA(formState.cr109_buyer2zip),
+    cr109_buyer3: normalizeOrNA(formState.cr109_buyer3),
+    cr109_buyer3ssn: normalizeOrNA(formState.cr109_buyer3ssn),
+    cr109_buyer3occupancy: normalizeText(
+      formState.cr109_buyer3occupancy
+    ),
+    cr109_buyer3address: buyer3AddressRequired
+      ? normalizeText(formState.cr109_buyer3address)
+      : normalizeOrNA(formState.cr109_buyer3address),
+    cr109_buyer3city: buyer3AddressRequired
+      ? normalizeText(formState.cr109_buyer3city)
+      : normalizeOrNA(formState.cr109_buyer3city),
+    cr109_buyer3state: buyer3AddressRequired
+      ? normalizeText(formState.cr109_buyer3state)
+      : normalizeOrNA(formState.cr109_buyer3state),
+    cr109_buyer3zip: buyer3AddressRequired
+      ? normalizeText(formState.cr109_buyer3zip)
+      : normalizeOrNA(formState.cr109_buyer3zip),
     cr109_lendersname: normalizeText(
       formState.cr109_lendersname
     ),
@@ -392,6 +454,22 @@ export function toPayload(
     ),
     cr109_seller2zip: normalizeOrNA(
       formState.cr109_seller2zip
+    ),
+    cr109_seller3: normalizeOrNA(formState.cr109_seller3),
+    cr109_seller3ssn: normalizeOrNA(
+      formState.cr109_seller3ssn
+    ),
+    cr109_seller3address: normalizeOrNA(
+      formState.cr109_seller3address
+    ),
+    cr109_seller3city: normalizeOrNA(
+      formState.cr109_seller3city
+    ),
+    cr109_seller3state: normalizeOrNA(
+      formState.cr109_seller3state
+    ),
+    cr109_seller3zip: normalizeOrNA(
+      formState.cr109_seller3zip
     ),
     cr109_shares: normalizeText(formState.cr109_shares),
     cr7de_address: normalizeText(formState.cr7de_address),
@@ -542,6 +620,28 @@ export function validateForm(
     }
   }
 
+  if (
+    formState.cr109_buyer3occupancy === 'Absent' &&
+    hasBuyer3Name(formState.cr109_buyer3)
+  ) {
+    if (isBlankOrNA(formState.cr109_buyer3address)) {
+      errors.cr109_buyer3address =
+        'Required when Buyer 3 Occupancy is Absent.'
+    }
+    if (isBlankOrNA(formState.cr109_buyer3city)) {
+      errors.cr109_buyer3city =
+        'Required when Buyer 3 Occupancy is Absent.'
+    }
+    if (isBlankOrNA(formState.cr109_buyer3state)) {
+      errors.cr109_buyer3state =
+        'Required when Buyer 3 Occupancy is Absent.'
+    }
+    if (isBlankOrNA(formState.cr109_buyer3zip)) {
+      errors.cr109_buyer3zip =
+        'Required when Buyer 3 Occupancy is Absent.'
+    }
+  }
+
   return errors
 }
 
@@ -550,7 +650,6 @@ export function NewOwnerTicketTab({
   scheduledCharges = [],
   onSaved,
   onGenerateTicket,
-  generatingTicket,
   readOnly = false,
   isCompleted = false,
 }: NewOwnerTicketTabProps) {
@@ -809,38 +908,22 @@ export function NewOwnerTicketTab({
   return (
     <section className="grid gap-4">
       <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/60">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3">
-            <div className="grid size-10 place-items-center rounded-lg bg-blue-50 text-blue-600 ring-1 ring-blue-100">
-              <ClipboardList className="size-5" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Workflow Form
-              </p>
-              <h3 className="mt-1 text-lg font-semibold text-slate-950">
-                New Owner Ticket
-              </h3>
-              <span className="mt-1 block text-sm text-slate-500">
-                Linked to Closing Ticket{' '}
-                {closingTicket.cr7de_ticketid ?? 'current session'}
-              </span>
-            </div>
+        <div className="flex items-start gap-3">
+          <div className="grid size-10 place-items-center rounded-lg bg-blue-50 text-blue-600 ring-1 ring-blue-100">
+            <ClipboardList className="size-5" />
           </div>
-
-          {onGenerateTicket && (
-            <button
-              className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg bg-[#1E3A47] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#152d38] disabled:cursor-not-allowed disabled:opacity-50"
-              type="button"
-              onClick={onGenerateTicket}
-              disabled={generatingTicket}
-            >
-              <UserPlus className="size-4" />
-              {generatingTicket
-                ? 'Generating...'
-                : 'Generate New Owner Ticket'}
-            </button>
-          )}
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Workflow Form
+            </p>
+            <h3 className="mt-1 text-lg font-semibold text-slate-950">
+              New Owner Ticket
+            </h3>
+            <span className="mt-1 block text-sm text-slate-500">
+              Linked to Closing Ticket{' '}
+              {closingTicket.cr7de_ticketid ?? 'current session'}
+            </span>
+          </div>
         </div>
       </div>
 

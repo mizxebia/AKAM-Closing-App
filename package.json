@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
-    "@microsoft/power-apps-vite": "^1.0.2",
+    "@microsoft/power-apps-vite": "^1.0.13",
     "@playwright/experimental-ct-react": "^1.62.1",
     "@playwright/test": "^1.62.1",
     "@testing-library/jest-dom": "^7.0.1",

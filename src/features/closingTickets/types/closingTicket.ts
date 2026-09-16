@@ -17,6 +17,8 @@ export type ClosingTicketColumnKey =
   | 'cr7de_buildingname'
   | 'cr7de_unitnumber'
   | 'cr7de_ticketstatus'
+  | 'cr109_botstatus'
+  | 'failureReason'
   | 'createdon'
   | 'modifiedon'
   | 'createdbyname'
@@ -29,11 +31,25 @@ export type ClosingTicketColumn = {
 export type ClosingTicketFilters = {
   status: ClosingTicketTab
   search: string
+  /**
+   * Developer-mode-only "documents present" filter. Empty string means no
+   * filter; otherwise `"<documentKey>|present"` or `"<documentKey>|missing"`
+   * (see CLOSING_DOCUMENT_FILTER_OPTIONS in utils/closingTicketFilters.ts).
+   */
+  documentFilter: string
+  /**
+   * Developer-mode-only "Yardi charges present" filter. Charges are a
+   * separate Dataverse table (not a field on the closing ticket record),
+   * so matching this filter needs the bulk ticket-id set loaded alongside
+   * it — see ticketIdsWithCharges in filterClosingTickets.
+   */
+  chargesFilter: '' | 'present' | 'missing'
 }
 
 export type ClosingTicketStatusLabel =
   | 'Draft'
   | 'Ready for Post Closing'
+  | 'Post Closing'
   | 'Validate Closings'
   | 'Failed'
   | 'Sent to AR'
@@ -69,6 +85,7 @@ export type ClosingTicketCreateInput = Partial<
     Cr7de_closingticketdetailses,
     | 'cr109_botstatus'
     | 'cr109_buyer2name'
+    | 'cr109_buyer3'
     | 'cr109_buyerunitnumber'
     | 'cr109_domecilepackageurl'
     | 'cr109_emailbody'
@@ -78,6 +95,7 @@ export type ClosingTicketCreateInput = Partial<
     | 'cr109_packagetype'
     | 'cr109_saleprice'
     | 'cr109_seller2name'
+    | 'cr109_seller3'
     | 'cr109_shares'
     | 'cr109_transactiontypedeal'
     | 'cr7de_buildingaddress'
@@ -107,6 +125,7 @@ export type ClosingTicketUpdateInput =
 export type ClosingTicketFormState = {
   cr109_botstatus: '' | Cr7de_closingticketdetailsescr109_botstatus
   cr109_buyer2name: string
+  cr109_buyer3: string
   cr109_buyerunitnumber: string
   cr109_domecilepackageurl: string
   cr109_legalname: string
@@ -116,6 +135,7 @@ export type ClosingTicketFormState = {
     | Cr7de_closingticketdetailsescr109_packagetype
   cr109_saleprice: string
   cr109_seller2name: string
+  cr109_seller3: string
   cr109_shares: string
   cr109_transactiontypedeal:
     | ''

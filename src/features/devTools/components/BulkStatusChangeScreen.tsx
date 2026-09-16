@@ -32,8 +32,14 @@ export function BulkStatusChangeScreen({
   onBack,
   onApplied,
 }: BulkStatusChangeScreenProps) {
-  const { filters, filteredRecords, setStatus, setSearch } =
-    useClosingTicketFilters(records, { userName, userId })
+  const {
+    filters,
+    filteredRecords,
+    setStatus,
+    setSearch,
+    setDocumentFilter,
+    setChargesFilter,
+  } = useClosingTicketFilters(records, { userName, userId })
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
     new Set()
@@ -254,6 +260,9 @@ export function BulkStatusChangeScreen({
         filters={filters}
         onStatusChange={setStatus}
         onSearchChange={setSearch}
+        showDocumentFilter
+        onDocumentFilterChange={setDocumentFilter}
+        onChargesFilterChange={setChargesFilter}
       />
 
       {filteredRecords.length === 0 ? (

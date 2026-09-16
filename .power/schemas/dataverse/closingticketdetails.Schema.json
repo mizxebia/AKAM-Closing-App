@@ -132,6 +132,14 @@
           "x-ms-schema-name": "cr109_Buyer2Name",
           "maxLength": 100
         },
+        "cr109_buyer3": {
+          "type": "string",
+          "title": "Buyer 3",
+          "x-ms-dataverse-attribute": "cr109_buyer3",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_Buyer3",
+          "maxLength": 100
+        },
         "cr109_buyerunitnumber": {
           "type": "string",
           "title": "Buyer Unit Number",
@@ -344,6 +352,14 @@
           "x-ms-dataverse-attribute": "cr109_seller2name",
           "x-ms-dataverse-type": "StringType",
           "x-ms-schema-name": "cr109_Seller2Name",
+          "maxLength": 100
+        },
+        "cr109_seller3": {
+          "type": "string",
+          "title": "Seller 3",
+          "x-ms-dataverse-attribute": "cr109_seller3",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_Seller3",
           "maxLength": 100
         },
         "cr109_shares": {

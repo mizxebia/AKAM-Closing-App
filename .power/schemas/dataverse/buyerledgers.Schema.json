@@ -79,7 +79,7 @@
           "x-ms-dataverse-attribute": "cr109_description",
           "x-ms-dataverse-type": "StringType",
           "x-ms-schema-name": "cr109_Description",
-          "maxLength": 100
+          "maxLength": 4000
         },
         "cr109_index": {
           "type": "string",

@@ -7,7 +7,6 @@ interface NewOwnerTicketWorkspaceProps {
   scheduledCharges?: ScheduledChargeRecord[]
   onSaved: () => Promise<void>
   onGenerateTicket?: () => Promise<void>
-  generatingTicket?: boolean
   readOnly?: boolean
   isCompleted?: boolean
 }
@@ -17,7 +16,6 @@ export function NewOwnerTicketWorkspace({
   scheduledCharges = [],
   onSaved,
   onGenerateTicket,
-  generatingTicket,
   readOnly = false,
   isCompleted = false,
 }: NewOwnerTicketWorkspaceProps) {
@@ -27,7 +25,6 @@ export function NewOwnerTicketWorkspace({
       scheduledCharges={scheduledCharges}
       onSaved={onSaved}
       onGenerateTicket={onGenerateTicket}
-      generatingTicket={generatingTicket}
       readOnly={readOnly}
       isCompleted={isCompleted}
     />

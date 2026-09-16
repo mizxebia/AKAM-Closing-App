@@ -50,16 +50,6 @@ interface ChargesWorkspaceProps {
   onClosingTicketRefresh?: () => Promise<void>
   invoices?: InvoiceRecord[]
   readOnly?: boolean
-  isCompleted?: boolean
-}
-
-type UnpaidChargeDraft = {
-  cr109_amount: string
-  cr109_chargecode: string
-  cr109_date: string
-  cr109_move: boolean
-  cr109_notes: string
-  cr109_partiallypaid: boolean
 }
 
 type ScheduledChargeDraft = {
@@ -85,20 +75,6 @@ function getDateInputValue(value?: string) {
 function normalizeText(value: string) {
   const trimmedValue = value.trim()
   return trimmedValue === '' ? undefined : trimmedValue
-}
-
-function createUnpaidDraft(
-  record: UnpaidChargeRecord
-): UnpaidChargeDraft {
-  return {
-    cr109_amount: record.cr109_amount ?? '',
-    cr109_chargecode: record.cr109_chargecode ?? '',
-    cr109_date: getDateInputValue(record.cr109_date),
-    cr109_move: record.cr109_move ?? false,
-    cr109_notes: record.cr109_notes ?? '',
-    cr109_partiallypaid:
-      record.cr109_partiallypaid ?? false,
-  }
 }
 
 function createScheduledDraft(
@@ -195,80 +171,6 @@ function BooleanPill({
       />
       <span>{label}</span>
     </label>
-  )
-}
-
-function UnpaidChargesTable({
-  records,
-}: {
-  records: UnpaidChargeRecord[]
-}) {
-  const initialDrafts = useMemo(
-    () =>
-      Object.fromEntries(
-        records.map((record) => [
-          record.crc5c_unpaidchargesid,
-          createUnpaidDraft(record),
-        ])
-      ) as Record<string, UnpaidChargeDraft>,
-    [records]
-  )
-  const [drafts, setDrafts] = useState(initialDrafts)
-
-  useEffect(() => {
-    setDrafts(initialDrafts)
-  }, [initialDrafts])
-
-  const updateDraft = (
-    id: string,
-    changedFields: Partial<UnpaidChargeDraft>
-  ) => {
-    setDrafts((currentDrafts) => ({
-      ...currentDrafts,
-      [id]: {
-        ...currentDrafts[id],
-        ...changedFields,
-      },
-    }))
-  }
-
-  return (
-    <ChargeTableShell
-      title="Unpaid Charges"
-      subtitle={`${records.length} records`}
-    >
-      <div className="cg-table dataverse-unpaid-cg">
-        <div className="cg-header-row">
-          <div className="cg-cell">Charge Code</div>
-          <div className="cg-cell">Date</div>
-          <div className="cg-cell cg-cell--right">Amount</div>
-          <div className="cg-cell cg-cell--center">Partially Paid</div>
-          <div className="cg-cell">Notes</div>
-        </div>
-        {records.map((record) => {
-          const draft = drafts[record.crc5c_unpaidchargesid] ?? createUnpaidDraft(record)
-          return (
-            <div className="cg-data-row" key={record.crc5c_unpaidchargesid}>
-              <div className="cg-cell">
-                <input className="cg-input" value={draft.cr109_chargecode} disabled={true} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_chargecode: e.target.value })} />
-              </div>
-              <div className="cg-cell">
-                <input className="cg-input cg-input--date" type="date" value={draft.cr109_date} disabled={true} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_date: e.target.value })} />
-              </div>
-              <div className="cg-cell cg-cell--right">
-                <input className="cg-input cg-input--amount" inputMode="decimal" value={draft.cr109_amount} disabled={true} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_amount: e.target.value })} />
-              </div>
-              <div className="cg-cell cg-cell--center">
-                <BooleanPill checked={Boolean(draft.cr109_partiallypaid)} label="Partial" disabled={true} onChange={() => {}} />
-              </div>
-              <div className="cg-cell cg-cell--notes">
-                <input className="cg-input" value={draft.cr109_notes} disabled={true} onChange={(e) => updateDraft(record.crc5c_unpaidchargesid, { cr109_notes: e.target.value })} />
-              </div>
-            </div>
-          )
-        })}
-      </div>
-    </ChargeTableShell>
   )
 }
 
@@ -839,74 +741,6 @@ const INVOICE_GL_CODE_MAP: Record<number, string> = {
   396620058: 'workcap',
 }
 
-const INVOICE_TITLE_MAP: Record<number, string> = {
-  396620000: 'Adjournment Fee',
-  396620001: 'Admin Fee',
-  396620002: 'Air Conditioning Fee',
-  396620003: 'AKAM Processing Fee',
-  396620004: 'Appliance Fee',
-  396620005: 'Application Fee',
-  396620006: 'Arrears',
-  396620007: 'Assessment',
-  396620008: 'Assignment of Share',
-  396620009: 'Background Check',
-  396620010: 'Building Admin Fee',
-  396620011: 'Cable Charges',
-  396620012: 'Capital Assessment Fee',
-  396620013: 'Carpet Deposit',
-  396620014: 'Change of Occupancy',
-  396620015: 'Closing Fee (Non-Refundable)',
-  396620016: 'Contribution Fee (Non-Refundable)',
-  396620017: 'Contribution Reserves',
-  396620018: 'COOP Prospectus',
-  396620019: 'COOP Questionnaire',
-  396620020: 'Credit Report / Check',
-  396620021: 'Electric Fee',
-  396620022: 'Elevator Fee',
-  396620023: 'Energy Charge',
-  396620024: 'Escrow Maintenance',
-  396620025: 'Estate Review Fee',
-  396620026: 'Expediting Fee',
-  396620027: 'Flip Tax',
-  396620028: 'Guarantee Fee',
-  396620029: 'Inspection',
-  396620030: 'Legal Fee',
-  396620031: 'Lost Stock & Lease',
-  396620032: 'Maintenance Fees',
-  396620033: 'Major/Minor Alteration Fee',
-  396620034: 'Messenger',
-  396620035: 'Meter Fee',
-  396620036: 'Mortgage Questionnaire',
-  396620037: 'Move In/Out Deposit',
-  396620038: 'Move In/Out Fee',
-  396620039: 'Other',
-  396620040: 'Over-Time Fee',
-  396620041: 'Parking',
-  396620042: 'POA Fee',
-  396620043: 'Processing Fee',
-  396620044: 'Purchaser Fee (Transfer Fee)',
-  396620045: 'Real Estate Tax',
-  396620046: 'Recognition Agreement',
-  396620047: 'Repair Charge',
-  396620048: 'Resident Manager Contribution',
-  396620049: 'Security Deposit',
-  396620050: 'Service Fee',
-  396620051: 'Stock Transfer Fee',
-  396620052: 'Storage Unit',
-  396620053: 'Sublet Deposit',
-  396620054: 'Sublet Fee',
-  396620055: 'Transfer Fee',
-  396620056: 'Utilities',
-  396620057: 'Waiver Fee',
-  396620058: 'Working Capital',
-}
-
-function extractLedgerChargeCode(description?: string) {
-  if (!description) return ''
-  const [beforeDash] = description.split('-')
-  return beforeDash.trim().toLowerCase()
-}
-
 type LedgerDisplayRow = {
   id: string
   cr109_date?: string
@@ -914,7 +748,6 @@ type LedgerDisplayRow = {
   cr109_charges?: string
   cr109_payments?: string
   cr109_balance?: string
-  isInvoiceRow: boolean
 }
 
 function LedgerTable({
@@ -923,200 +756,51 @@ function LedgerTable({
   records,
   paymentsHeader,
   useRunningBalance = false,
-  invoices = [],
-  isSellerLedger,
-  isCompleted = false,
 }: {
   title: string
   subtitle: string
   records: Array<SellerLedgerRecord | BuyerLedgerRecord>
   paymentsHeader: string
   useRunningBalance?: boolean
-  invoices?: InvoiceRecord[]
-  isSellerLedger: boolean
-  isCompleted?: boolean
 }) {
-  const [checkWithInvoice, setCheckWithInvoice] =
-    useState(false)
-
   const displayedRows = useMemo((): LedgerDisplayRow[] => {
-    // Once the ticket is Completed, ledgers show the backend flow's final
-    // snapshot — invoice reconciliation no longer applies, regardless of
-    // local toggle state.
-    if (!checkWithInvoice || isCompleted) {
-      let runningBalance = 0
-      return records.map((record): LedgerDisplayRow => {
-        const id =
-          'crc5c_sellerledgerid' in record
-            ? record.crc5c_sellerledgerid
-            : record.crc5c_buyerledgerid
+    let runningBalance = 0
+    return records.map((record): LedgerDisplayRow => {
+      const id =
+        'crc5c_sellerledgerid' in record
+          ? record.crc5c_sellerledgerid
+          : record.crc5c_buyerledgerid
 
-        if (useRunningBalance) {
-          runningBalance +=
-            parseLedgerNumber(record.cr109_charges) -
-            parseLedgerNumber(record.cr109_payments)
-          return {
-            id,
-            cr109_date: record.cr109_date,
-            cr109_description: record.cr109_description,
-            cr109_charges: record.cr109_charges,
-            cr109_payments: record.cr109_payments,
-            cr109_balance: formatLedgerNumber(runningBalance),
-            isInvoiceRow: false,
-          }
-        }
-
+      if (useRunningBalance) {
+        runningBalance +=
+          parseLedgerNumber(record.cr109_charges) -
+          parseLedgerNumber(record.cr109_payments)
         return {
           id,
           cr109_date: record.cr109_date,
           cr109_description: record.cr109_description,
           cr109_charges: record.cr109_charges,
           cr109_payments: record.cr109_payments,
-          cr109_balance: record.cr109_balance,
-          isInvoiceRow: false,
+          cr109_balance: formatLedgerNumber(runningBalance),
         }
-      })
-    }
+      }
 
-    // -- Check with Invoice mode --
-    // Seller = paidby 716070000, Buyer = paidby 716070001
-    // Payable To: Building = 716070000 (only show Building invoices)
-    const targetPaidBy = isSellerLedger ? 716070000 : 716070001
-    const filteredInvoices = invoices.filter(
-      (inv) =>
-        Number(inv.cr7de_paidby) === targetPaidBy &&
-        !inv.cr7de_notapplicabletoledger &&
-        Number(inv.cr7de_payableto) === 716070000
-    )
-
-    const rows: LedgerDisplayRow[] = []
-    const usedIds = new Set<string>()
-
-    // Build rows: for each ledger record, append then inject matching invoices
-    records.forEach((record) => {
-      const id =
-        'crc5c_sellerledgerid' in record
-          ? record.crc5c_sellerledgerid
-          : record.crc5c_buyerledgerid
-
-      rows.push({
+      return {
         id,
         cr109_date: record.cr109_date,
         cr109_description: record.cr109_description,
         cr109_charges: record.cr109_charges,
         cr109_payments: record.cr109_payments,
         cr109_balance: record.cr109_balance,
-        isInvoiceRow: false,
-      })
-
-      const chargeCode = extractLedgerChargeCode(
-        record.cr109_description
-      )
-      if (chargeCode) {
-        filteredInvoices.forEach((inv) => {
-          if (usedIds.has(inv.cr7de_invoicedetailsid)) return
-          const glCode =
-            INVOICE_GL_CODE_MAP[
-              Number(inv.cr109_dueatclosing)
-            ]
-          if (glCode === chargeCode) {
-            rows.push({
-              id: inv.cr7de_invoicedetailsid,
-              cr109_date: inv.createdon,
-              cr109_description:
-                INVOICE_TITLE_MAP[
-                  Number(inv.cr109_dueatclosing)
-                ] ??
-                inv.cr109_dueatclosingname ??
-                'Invoice Payment',
-              cr109_charges: '',
-              cr109_payments: inv.cr7de_amount,
-              isInvoiceRow: true,
-            })
-            usedIds.add(inv.cr7de_invoicedetailsid)
-          }
-        })
       }
     })
-
-    // Append any unmatched invoices at the bottom
-    filteredInvoices.forEach((inv) => {
-      if (usedIds.has(inv.cr7de_invoicedetailsid)) return
-      rows.push({
-        id: inv.cr7de_invoicedetailsid,
-        cr109_date: inv.createdon,
-        cr109_description:
-          INVOICE_TITLE_MAP[Number(inv.cr109_dueatclosing)] ??
-          inv.cr109_dueatclosingname ??
-          'Invoice Payment',
-        cr109_charges: '',
-        cr109_payments: inv.cr7de_amount,
-        isInvoiceRow: true,
-      })
-      usedIds.add(inv.cr7de_invoicedetailsid)
-    })
-
-    // Recalculate running balance for all combined rows
-    let runningBalance = 0
-    rows.forEach((row) => {
-      runningBalance +=
-        parseLedgerNumber(row.cr109_charges) -
-        parseLedgerNumber(row.cr109_payments)
-      row.cr109_balance = formatLedgerNumber(runningBalance)
-    })
-
-    return rows
-  }, [
-    checkWithInvoice,
-    isCompleted,
-    records,
-    invoices,
-    isSellerLedger,
-    useRunningBalance,
-  ])
+  }, [records, useRunningBalance])
 
   return (
     <ChargeTableShell
       title={title}
       subtitle={subtitle}
       tableWrapClassName="dataverse-charge-table-wrap--no-scroll"
-      headerActions={
-        !isCompleted && (
-          <button
-            type="button"
-            onClick={() =>
-              setCheckWithInvoice((prev) => !prev)
-            }
-            style={{
-              display: 'inline-flex',
-              minHeight: '28px',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              borderRadius: '6px',
-              border: '1.5px solid #1E3A47',
-              background: checkWithInvoice
-                ? '#1E3A47'
-                : '#ffffff',
-              color: checkWithInvoice ? '#ffffff' : '#1E3A47',
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              fontSize: '0.72rem',
-              fontWeight: 800,
-              letterSpacing: '0.04em',
-              padding: '5px 10px',
-              textTransform: 'uppercase',
-              whiteSpace: 'nowrap',
-              transition:
-                'background 160ms ease, color 160ms ease',
-            }}
-          >
-            {checkWithInvoice
-              ? 'Hide Invoice Check'
-              : 'Check with Invoice'}
-          </button>
-        )
-      }
     >
       <table className="dataverse-charge-table dataverse-ledger-table">
         <thead>
@@ -1130,17 +814,7 @@ function LedgerTable({
         </thead>
         <tbody>
           {displayedRows.map((row, index) => (
-            <tr
-              key={row.id ?? `${title}-${index}`}
-              style={
-                row.isInvoiceRow
-                  ? {
-                      backgroundColor: '#F0FDF4',
-                      fontStyle: 'italic',
-                    }
-                  : undefined
-              }
-            >
+            <tr key={row.id ?? `${title}-${index}`}>
               <td>
                 {formatLedgerDate(row.cr109_date)}
               </td>
@@ -1160,47 +834,17 @@ function LedgerTable({
                     overflow: 'hidden',
                     whiteSpace: 'nowrap',
                     textOverflow: 'ellipsis',
-                    color: row.isInvoiceRow ? '#166534' : undefined,
                   }}>
                     {formatLedgerValue(
                       row.cr109_description
                     )}
                   </span>
-                  {row.isInvoiceRow && (
-                    <span
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        padding: '1px 6px',
-                        borderRadius: '9999px',
-                        fontSize: '8px',
-                        fontWeight: 800,
-                        backgroundColor: '#D1FAE5',
-                        color: '#065F46',
-                        fontStyle: 'normal',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        border: '1.5px solid #A7F3D0',
-                        flexShrink: 0,
-                      }}
-                    >
-                      Invoice
-                    </span>
-                  )}
                 </div>
               </td>
               <td className="dataverse-ledger-number-cell">
                 {formatLedgerValue(row.cr109_charges)}
               </td>
-              <td
-                className="dataverse-ledger-number-cell"
-                style={{
-                  color: row.isInvoiceRow
-                    ? '#166534'
-                    : undefined,
-                  fontWeight: row.isInvoiceRow ? 700 : undefined,
-                }}
-              >
+              <td className="dataverse-ledger-number-cell">
                 {formatLedgerValue(row.cr109_payments)}
               </td>
               <td className="dataverse-ledger-number-cell">
@@ -1344,7 +988,6 @@ export function ChargesWorkspace({
   onClosingTicketRefresh,
   invoices = [],
   readOnly = false,
-  isCompleted = false,
 }: ChargesWorkspaceProps) {
   const [savingId, setSavingId] = useState<string | null>(null)
   const [autoMoving, setAutoMoving] = useState(false)
@@ -1512,26 +1155,12 @@ export function ChargesWorkspace({
             />
           )}
 
-          {unpaidCharges.length === 0 ? (
-            <section className="dataverse-charge-empty">
-              No unpaid charge records were found for this
-              closing.
-            </section>
-          ) : (
-            <UnpaidChargesTable
-              records={unpaidCharges}
-            />
-          )}
-
           <div className="dataverse-ledger-grid">
             <LedgerTable
               title="Seller Ledger"
               subtitle={`${sellerLedgers.length} records`}
               records={sellerLedgers}
               paymentsHeader="Payments"
-              invoices={invoices}
-              isSellerLedger={true}
-              isCompleted={isCompleted}
             />
 
             <LedgerTable
@@ -1540,9 +1169,6 @@ export function ChargesWorkspace({
               records={buyerLedgers}
               paymentsHeader="Payment"
               useRunningBalance
-              invoices={invoices}
-              isSellerLedger={false}
-              isCompleted={isCompleted}
             />
           </div>
         </div>

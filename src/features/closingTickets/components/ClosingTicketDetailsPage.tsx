@@ -2,6 +2,11 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   ArrowLeft,
   AlertTriangle,
+  Eye,
+  Info,
+  ReceiptText,
+  RefreshCw,
+  UserPlus,
   X,
 } from 'lucide-react'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
@@ -13,6 +18,16 @@ import {
   SheetTitle,
   SheetDescription,
 } from '../../../components/ui/sheet'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../../../components/ui/alert-dialog'
 import {
   ChargesWorkspace as InvoiceWorkspace,
   useInvoices,
@@ -37,6 +52,7 @@ import {
   WorkflowTabBar,
   type WorkflowTabKey,
 } from './WorkflowTabs'
+import { TabBarActionsPortalProvider } from './tabBarActionsPortal'
 import { domecileLogoBase64, yardiLogoBase64 } from '../../../assets/logoData'
 import { useAutoClear } from '../../../hooks/useAutoClear'
 import {
@@ -55,31 +71,17 @@ import { writeActionLog } from '../../auditLog/api/auditLogService'
 import { getClosingTicketStatusDisplay } from '../utils/closingTicketFormatters'
 import { getBotStatusLabel } from '../../devTools/utils/statusOptions'
 import { formatGeneratedLabel } from '../../invoices/utils/invoiceFormatters'
+import { getFailureReason } from '../utils/closingTicketFailureReasons'
+import {
+  getMissingPartyNamesBannerMessage,
+  getMissingPartyNamesInvoiceWarning,
+} from '../utils/closingTicketPartyWarnings'
 
-const FAILED_TICKET_STATUS = 716070007
 const PROCESSING_TICKET_STATUS = 716070005
 const TRANSFERRING_BUILDING_STATUS = 716070002
 const COMPLETED_STATUS = 716070008
 const SENT_TO_AR_STATUS = 396620001
 const OWNER_RECORD_CREATED_BOT_STATUS = 396620003
-
-const BOT_STATUS_FAILURE_REASONS: Record<number, string> = {
-  396620005: 'Seller information could not be retrieved from the source system.',
-  396620008: 'The purchase application form failed to download.',
-  396620009: 'The Domicile dump could not be retrieved.',
-  396620012: 'YARDI charges could not be fetched.',
-  396620014: 'Purchase form data extraction failed.',
-  396620016: 'Purchase form could not be uploaded to OneDrive.',
-  396620017: 'Seller details update failed.',
-  396620018: 'New owner record could not be created.',
-  396620019: 'RPTT document extraction failed.',
-}
-
-function getFailureReason(record: ClosingTicketRecord): string | null {
-  if (Number(record.cr7de_ticketstatus) !== FAILED_TICKET_STATUS) return null
-  const botStatus = Number(record.cr109_botstatus)
-  return BOT_STATUS_FAILURE_REASONS[botStatus] ?? 'An unexpected error occurred during processing.'
-}
 
 interface ClosingTicketDetailsPageProps {
   recordId: string
@@ -466,8 +468,88 @@ export function ClosingTicketDetailsPage({
     ] : []),
   ]
 
+  // Tab-specific action buttons, rendered in the (already sticky)
+  // WorkflowTabBar itself rather than inside each tab's own content — that
+  // keeps them visible while scrolling a tab's form/table without needing
+  // a second, independently-positioned sticky element competing with the
+  // page's own sticky header for the same screen space.
+  const hasInvoicePdf = Boolean(
+    record?.cr109_closingticketdetailspdf ||
+      record?.cr109_closingticketdetailspdf_name
+  )
+
+  // The Send to AR Team tab's buttons live inside that tab's own
+  // self-contained component (it owns its own send/draft/regenerate state),
+  // so instead of lifting all of that up here it portals its controls into
+  // this DOM node once WorkflowTabBar hands it over via its ref callback.
+  const [actionsPortalNode, setActionsPortalNode] =
+    useState<HTMLDivElement | null>(null)
+
+  // Generate Invoice normally runs straight away — this only intercepts the
+  // click to confirm first when the buyer/seller name is missing, since the
+  // generated invoice depends on that data being right.
+  const [invoiceMissingNamesConfirmOpen, setInvoiceMissingNamesConfirmOpen] =
+    useState(false)
+
+  const handleGenerateInvoiceClick = useCallback(() => {
+    if (record && getMissingPartyNamesInvoiceWarning(record)) {
+      setInvoiceMissingNamesConfirmOpen(true)
+      return
+    }
+    void handleGenerateInvoice()
+  }, [record, handleGenerateInvoice])
+
+  const tabActions =
+    activeTab === 'invoice' && record ? (
+      <>
+        <button
+          type="button"
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#1E3A47] px-3 text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-sm transition hover:bg-[#152d38] disabled:cursor-not-allowed disabled:opacity-50"
+          onClick={handleGenerateInvoiceClick}
+          disabled={generatingInvoice || invoiceRecords.length === 0}
+        >
+          <ReceiptText className="size-3.5" />
+          {generatingInvoice
+            ? 'Generating…'
+            : hasInvoicePdf
+              ? 'Regenerate Invoice'
+              : 'Generate Invoice'}
+        </button>
+        {hasInvoicePdf && (
+          <button
+            type="button"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#C9A96E] bg-[#F5EFE0] px-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] transition hover:bg-[#EDE0C5]"
+            onClick={() => setInvoiceViewerOpen(true)}
+          >
+            <Eye className="size-3.5" />
+            View Invoice
+          </button>
+        )}
+        <button
+          type="button"
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#D5CBB8] bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] transition hover:bg-[#F5F2EC]"
+          onClick={() => void refreshInvoicesAndRecord()}
+        >
+          <RefreshCw className="size-3.5" />
+          Refresh
+        </button>
+      </>
+    ) : activeTab === 'newOwner' && record ? (
+      <button
+        type="button"
+        className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#1E3A47] px-3 text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-sm transition hover:bg-[#152d38] disabled:cursor-not-allowed disabled:opacity-50"
+        onClick={() => void handleGenerateNewOwnerTicket()}
+        disabled={generatingNewOwnerTicket}
+      >
+        <UserPlus className="size-3.5" />
+        {generatingNewOwnerTicket
+          ? 'Generating…'
+          : 'Generate New Owner Ticket'}
+      </button>
+    ) : null
+
   return (
-    <>
+    <TabBarActionsPortalProvider value={actionsPortalNode}>
       <div className="sticky top-[48px] z-20" style={{ background: '#ffffff', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
         <div className="flex items-center justify-between px-7 py-3 border-b border-[#e4e2dc]">
           <div>
@@ -513,6 +595,8 @@ export function ClosingTicketDetailsPage({
           tabs={workflowTabs}
           activeTab={activeTab}
           onTabChange={setActiveTab}
+          actions={tabActions}
+          actionsContainerRef={setActionsPortalNode}
         />
       </div>
 
@@ -539,6 +623,32 @@ export function ClosingTicketDetailsPage({
             </p>
             <p className="mt-0.5 text-sm" style={{ color: '#7C2D12' }}>
               {getFailureReason(record)}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {record && getMissingPartyNamesBannerMessage(record) && (
+        <div
+          className="flex items-start gap-3 rounded-xl border px-4 py-3"
+          style={{
+            background: '#FFFBEB',
+            borderColor: '#FDE68A',
+          }}
+        >
+          <Info
+            className="mt-0.5 shrink-0"
+            style={{ color: '#B45309', width: '18px', height: '18px' }}
+          />
+          <div>
+            <p
+              className="text-xs font-semibold uppercase tracking-wide"
+              style={{ color: '#B45309', letterSpacing: '0.08em' }}
+            >
+              Missing Information
+            </p>
+            <p className="mt-0.5 text-sm" style={{ color: '#78350F' }}>
+              {getMissingPartyNamesBannerMessage(record)}
             </p>
           </div>
         </div>
@@ -655,13 +765,6 @@ export function ClosingTicketDetailsPage({
               loading={invoicesLoading}
               error={invoicesError}
               onRefresh={refreshInvoicesAndRecord}
-              onGenerateInvoice={handleGenerateInvoice}
-              generatingInvoice={generatingInvoice}
-              hasInvoicePdf={Boolean(
-                record.cr109_closingticketdetailspdf ||
-                  record.cr109_closingticketdetailspdf_name
-              )}
-              onViewInvoice={() => setInvoiceViewerOpen(true)}
               readOnly={isReadOnly}
             />
           )}
@@ -682,7 +785,6 @@ export function ClosingTicketDetailsPage({
               onClosingTicketRefresh={refreshClosingRecord}
               invoices={invoiceRecords}
               readOnly={isReadOnly}
-              isCompleted={Number(record.cr7de_ticketstatus) === COMPLETED_STATUS || isSentToAR}
             />
           )}
 
@@ -692,7 +794,6 @@ export function ClosingTicketDetailsPage({
               scheduledCharges={scheduledCharges}
               onSaved={handleSaved}
               onGenerateTicket={handleGenerateNewOwnerTicket}
-              generatingTicket={generatingNewOwnerTicket}
               isCompleted={Number(record.cr7de_ticketstatus) === COMPLETED_STATUS || isSentToAR}
               readOnly={
                 Number(record.cr7de_ticketstatus) === PROCESSING_TICKET_STATUS ||
@@ -748,6 +849,32 @@ export function ClosingTicketDetailsPage({
         </Sheet>
       )}
 
+      <AlertDialog
+        open={invoiceMissingNamesConfirmOpen}
+        onOpenChange={setInvoiceMissingNamesConfirmOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Buyer/seller name missing</AlertDialogTitle>
+            <AlertDialogDescription>
+              {record && getMissingPartyNamesInvoiceWarning(record)}
+              <br />
+              <br />
+              Generate the invoice anyway?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => void handleGenerateInvoice()}
+              className="bg-[#1E3A47] text-white hover:bg-[#152d38]"
+            >
+              Generate Anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {developerMode.isAllowed && (
         <AppLogsViewer
           open={logsViewerOpen}
@@ -764,6 +891,6 @@ export function ClosingTicketDetailsPage({
           onCancel={developerMode.cancelPrompt}
         />
       )}
-    </>
+    </TabBarActionsPortalProvider>
   )
 }

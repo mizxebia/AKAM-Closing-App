@@ -5,7 +5,6 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
-import { motion } from 'framer-motion'
 import {
   SectionCard,
   StatusBadge as EnterpriseStatusBadge,
@@ -18,6 +17,9 @@ import {
   formatClosingTicketValue,
   getClosingTicketStatusDisplay,
 } from '../utils/closingTicketFormatters'
+import { getBotStatusLabel } from '../../devTools/utils/statusOptions'
+import { formatGeneratedLabel } from '../../invoices/utils/invoiceFormatters'
+import { getFailureReason } from '../utils/closingTicketFailureReasons'
 
 const PAGE_SIZE = 15
 
@@ -149,8 +151,8 @@ export function ClosingTicketTable({
           </thead>
 
           <tbody>
-            {pageRecords.map((record, index) => (
-              <motion.tr
+            {pageRecords.map((record) => (
+              <tr
                 key={record.cr7de_closingticketdetailsid}
                 className="cursor-pointer odd:bg-white even:bg-[#faf8f4] transition hover:bg-[#F5F2EC] focus:outline-none focus:ring-2 focus:ring-[#D5CBB8]"
                 style={{ height: '34px' }}
@@ -160,11 +162,6 @@ export function ClosingTicketTable({
                   )
                 }
                 tabIndex={0}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{
-                  delay: Math.min(index * 0.015, 0.15),
-                }}
                 onKeyDown={(event) => {
                   if (
                     event.key === 'Enter' ||
@@ -198,19 +195,33 @@ export function ClosingTicketTable({
                     />
                   </td>
                 )}
-                {columns.map((column, colIndex) => (
-                  <td
-                    key={column.key}
-                    className={`max-w-[220px] truncate px-4 py-1.5 text-xs text-[#4B5563] first:font-semibold first:text-[#1E3A47]${colIndex > 0 ? ' border-b border-[#EDE8E0]' : ''}`}
-                  >
-                    {column.key === 'cr7de_ticketstatus' ? (
-                      <StatusBadge record={record} />
-                    ) : (
-                      formatClosingTicketValue(record, column.key)
-                    )}
-                  </td>
-                ))}
-              </motion.tr>
+                {columns.map((column, colIndex) => {
+                  const failureReason =
+                    column.key === 'failureReason'
+                      ? getFailureReason(record)
+                      : null
+
+                  return (
+                    <td
+                      key={column.key}
+                      title={failureReason ?? undefined}
+                      className={`max-w-[220px] truncate px-4 py-1.5 text-xs text-[#4B5563] first:font-semibold first:text-[#1E3A47]${colIndex > 0 ? ' border-b border-[#EDE8E0]' : ''}`}
+                    >
+                      {column.key === 'cr7de_ticketstatus' ? (
+                        <StatusBadge record={record} />
+                      ) : column.key === 'cr109_botstatus' ? (
+                        <BotStatusBadge record={record} />
+                      ) : column.key === 'failureReason' ? (
+                        failureReason ?? (
+                          <span className="text-[#B0B5BC]">—</span>
+                        )
+                      ) : (
+                        formatClosingTicketValue(record, column.key)
+                      )}
+                    </td>
+                  )
+                })}
+              </tr>
             ))}
           </tbody>
         </table>
@@ -273,6 +284,28 @@ function StatusBadge({
     <EnterpriseStatusBadge
       label={status.label}
       tone={status.tone}
+    />
+  )
+}
+
+function BotStatusBadge({
+  record,
+}: {
+  record: ClosingTicketRecord
+}) {
+  if (
+    record.cr109_botstatus === undefined ||
+    String(record.cr109_botstatus).trim() === ''
+  ) {
+    return <span className="text-[#B0B5BC]">—</span>
+  }
+
+  return (
+    <EnterpriseStatusBadge
+      label={formatGeneratedLabel(
+        getBotStatusLabel(Number(record.cr109_botstatus))
+      )}
+      tone="default"
     />
   )
 }
