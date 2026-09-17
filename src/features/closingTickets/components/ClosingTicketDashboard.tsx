@@ -41,8 +41,8 @@ function formatDurationStat(
   const description = loading
     ? 'Calculating…'
     : stat.averageDays === null
-      ? 'No logged transitions (30d)'
-      : `From ${stat.sampleSize} ${noun}${stat.sampleSize === 1 ? '' : 's'} (30d)`
+      ? 'No data (30d)'
+      : `${stat.sampleSize} ${noun}${stat.sampleSize === 1 ? '' : 's'} · 30d`
 
   return { value, description }
 }
@@ -113,7 +113,7 @@ export function ClosingTicketDashboard({
       <StatCard
         label="This Month"
         value={currentMonthRecords}
-        description="Closings created"
+        description="New closings"
         icon={CalendarDays}
         tone="violet"
         trend="Current period"
@@ -131,7 +131,7 @@ export function ClosingTicketDashboard({
       <StatCard
         label="Closings Done"
         value={closingsDoneRecords}
-        description="Sent to AR or Completed"
+        description="AR + Completed"
         icon={CheckCircle2}
         tone="emerald"
         trend="Closed out"
@@ -152,7 +152,7 @@ export function ClosingTicketDashboard({
         description={yardiOwnerCreationDisplay.description}
         icon={Building2}
         tone="amber"
-        trend="Transfer → Completed"
+        trend="Transfer → Done"
         accentColor="#6B4423"
       />
     </section>
