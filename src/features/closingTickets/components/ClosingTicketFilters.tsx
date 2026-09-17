@@ -3,6 +3,7 @@ import { closingTicketStatusOptions } from '../utils/closingTicketFormatters'
 import {
   CLOSING_DOCUMENT_FILTER_OPTIONS,
   BOT_STATUS_FILTER_OPTIONS,
+  PACKAGE_TYPE_FILTER_OPTIONS,
 } from '../utils/closingTicketFilters'
 import type { ClosingTicketFilters } from '../types/closingTicket'
 
@@ -25,6 +26,11 @@ interface ClosingTicketFiltersProps {
   onBotStatusFilterChange: (
     value: ClosingTicketFilters['botStatusFilter']
   ) => void
+  /** Developer Mode only — lets a developer find tickets by their Package Type. */
+  showPackageTypeFilter?: boolean
+  onPackageTypeFilterChange: (
+    value: ClosingTicketFilters['packageTypeFilter']
+  ) => void
 }
 
 export function ClosingTicketFilters({
@@ -37,6 +43,8 @@ export function ClosingTicketFilters({
   onChargesFilterChange,
   showBotStatusFilter = false,
   onBotStatusFilterChange,
+  showPackageTypeFilter = false,
+  onPackageTypeFilterChange,
 }: ClosingTicketFiltersProps) {
   return (
     <section
@@ -74,7 +82,7 @@ export function ClosingTicketFilters({
         ))}
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto] sm:items-end">
+      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] sm:items-end">
         <SearchFilter
           id="closing-ticket-general-search"
           label="Search closings"
@@ -157,6 +165,36 @@ export function ClosingTicketFilters({
             >
               <option value="">All bot statuses</option>
               {BOT_STATUS_FILTER_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
+        {showPackageTypeFilter && (
+          <label
+            className="flex flex-col gap-1 text-xs font-medium text-[#5F5E5A]"
+            htmlFor="closing-ticket-package-type-filter"
+          >
+            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94a3b8]">
+              Package Type
+            </span>
+            <select
+              id="closing-ticket-package-type-filter"
+              className="h-9 min-w-[220px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
+              value={filters.packageTypeFilter}
+              onChange={(event) =>
+                onPackageTypeFilterChange(
+                  event.target.value === ''
+                    ? ''
+                    : Number(event.target.value)
+                )
+              }
+            >
+              <option value="">All package types</option>
+              {PACKAGE_TYPE_FILTER_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>

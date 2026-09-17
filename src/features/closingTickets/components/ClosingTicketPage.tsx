@@ -182,6 +182,7 @@ export function ClosingTicketPage() {
     setDocumentFilter,
     setChargesFilter,
     setBotStatusFilter,
+    setPackageTypeFilter,
     clearFilters,
   } = useClosingTicketFilters(
     records,
@@ -418,6 +419,8 @@ export function ClosingTicketPage() {
                 onChargesFilterChange={setChargesFilter}
                 showBotStatusFilter={developerMode.enabled}
                 onBotStatusFilterChange={setBotStatusFilter}
+                showPackageTypeFilter={developerMode.enabled}
+                onPackageTypeFilterChange={setPackageTypeFilter}
               />
 
               {filteredRecords.length === 0 ? (

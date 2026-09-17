@@ -8,6 +8,7 @@ import {
 } from '../../newOwnerTickets/utils/dataverseFileUtils'
 import { formatGeneratedLabel } from '../../invoices/utils/invoiceFormatters'
 import { BOT_STATUS_OPTIONS } from '../../devTools/utils/statusOptions'
+import { Cr7de_closingticketdetailsescr109_packagetype } from '../../../generated/models/Cr7de_closingticketdetailsesModel'
 import type {
   ClosingTicketFilters,
   ClosingTicketRecord,
@@ -76,6 +77,35 @@ function matchesBotStatusFilter(
   }
 
   return Number(record.cr109_botstatus) === botStatusFilter
+}
+
+/** Labels for the developer-mode "Package Type" filter — matches the labels used elsewhere (e.g. SendToATeamTab). */
+const PACKAGE_TYPE_FILTER_LABELS: Record<string, string> = {
+  condo_sale: 'Condo Sale',
+  coop_sale: 'Co-op Sale',
+  coop_transfer: 'Co-op Transfer',
+}
+
+/** Options for the developer-mode "Package Type" filter dropdown. */
+export const PACKAGE_TYPE_FILTER_OPTIONS: {
+  value: number
+  label: string
+}[] = Object.entries(Cr7de_closingticketdetailsescr109_packagetype).map(
+  ([value, rawLabel]) => ({
+    value: Number(value),
+    label: PACKAGE_TYPE_FILTER_LABELS[rawLabel] ?? rawLabel,
+  })
+)
+
+function matchesPackageTypeFilter(
+  record: ClosingTicketRecord,
+  packageTypeFilter: ClosingTicketFilters['packageTypeFilter']
+) {
+  if (!packageTypeFilter) {
+    return true
+  }
+
+  return Number(record.cr109_packagetype) === packageTypeFilter
 }
 
 function matchesChargesFilter(
@@ -188,6 +218,7 @@ export function filterClosingTickets(
         filters.chargesFilter,
         ticketIdsWithCharges
       ) &&
-      matchesBotStatusFilter(record, filters.botStatusFilter)
+      matchesBotStatusFilter(record, filters.botStatusFilter) &&
+      matchesPackageTypeFilter(record, filters.packageTypeFilter)
   )
 }

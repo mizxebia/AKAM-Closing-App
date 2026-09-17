@@ -49,6 +49,12 @@ export type ClosingTicketFilters = {
    * otherwise the numeric `cr109_botstatus` option-set value to match.
    */
   botStatusFilter: '' | number
+  /**
+   * Developer-mode-only "Package Type" filter. Empty string means no
+   * filter; otherwise the numeric `cr109_packagetype` option-set value to
+   * match.
+   */
+  packageTypeFilter: '' | number
 }
 
 export type ClosingTicketStatusLabel =
