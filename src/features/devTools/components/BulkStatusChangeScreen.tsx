@@ -5,7 +5,10 @@ import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import { EmptyState } from '../../../components/enterprise'
 import { ClosingTicketFilters } from '../../closingTickets/components/ClosingTicketFilters'
 import { ClosingTicketTable } from '../../closingTickets/components/ClosingTicketTable'
-import { closingTicketColumns } from '../../closingTickets/constants/closingTicketColumns'
+import {
+  closingTicketColumns,
+  botStatusColumn,
+} from '../../closingTickets/constants/closingTicketColumns'
 import { useClosingTicketFilters } from '../../closingTickets/hooks/useClosingTicketFilters'
 import type { ClosingTicketRecord } from '../../closingTickets/types/closingTicket'
 import { updateClosingTicket } from '../../closingTickets/api/closingTicketsService'
@@ -39,6 +42,7 @@ export function BulkStatusChangeScreen({
     setSearch,
     setDocumentFilter,
     setChargesFilter,
+    setBotStatusFilter,
   } = useClosingTicketFilters(records, { userName, userId })
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
@@ -263,6 +267,8 @@ export function BulkStatusChangeScreen({
         showDocumentFilter
         onDocumentFilterChange={setDocumentFilter}
         onChargesFilterChange={setChargesFilter}
+        showBotStatusFilter
+        onBotStatusFilterChange={setBotStatusFilter}
       />
 
       {filteredRecords.length === 0 ? (
@@ -273,7 +279,7 @@ export function BulkStatusChangeScreen({
       ) : (
         <ClosingTicketTable
           records={filteredRecords}
-          columns={closingTicketColumns}
+          columns={[...closingTicketColumns, botStatusColumn]}
           onRecordSelect={toggleSelect}
           selectable
           selectedIds={selectedIds}

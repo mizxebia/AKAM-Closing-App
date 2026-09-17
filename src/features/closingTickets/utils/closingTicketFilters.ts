@@ -6,6 +6,8 @@ import {
   hasDocument,
   type NewOwnerDocumentDefinition,
 } from '../../newOwnerTickets/utils/dataverseFileUtils'
+import { formatGeneratedLabel } from '../../invoices/utils/invoiceFormatters'
+import { BOT_STATUS_OPTIONS } from '../../devTools/utils/statusOptions'
 import type {
   ClosingTicketFilters,
   ClosingTicketRecord,
@@ -54,6 +56,26 @@ function matchesDocumentFilter(
 
   const present = hasDocument(record, document)
   return presence === 'present' ? present : !present
+}
+
+/** Options for the developer-mode "Bot Status" filter dropdown. */
+export const BOT_STATUS_FILTER_OPTIONS: {
+  value: number
+  label: string
+}[] = BOT_STATUS_OPTIONS.map((option) => ({
+  value: option.value,
+  label: formatGeneratedLabel(option.label),
+}))
+
+function matchesBotStatusFilter(
+  record: ClosingTicketRecord,
+  botStatusFilter: ClosingTicketFilters['botStatusFilter']
+) {
+  if (!botStatusFilter) {
+    return true
+  }
+
+  return Number(record.cr109_botstatus) === botStatusFilter
 }
 
 function matchesChargesFilter(
@@ -165,6 +187,7 @@ export function filterClosingTickets(
         record,
         filters.chargesFilter,
         ticketIdsWithCharges
-      )
+      ) &&
+      matchesBotStatusFilter(record, filters.botStatusFilter)
   )
 }

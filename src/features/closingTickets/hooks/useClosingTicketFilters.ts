@@ -10,6 +10,7 @@ const defaultFilters: ClosingTicketFilters = {
   search: '',
   documentFilter: '',
   chargesFilter: '',
+  botStatusFilter: '',
 }
 
 export function useClosingTicketFilters(
@@ -63,6 +64,15 @@ export function useClosingTicketFilters(
     }))
   }
 
+  const setBotStatusFilter = (
+    botStatusFilter: ClosingTicketFilters['botStatusFilter']
+  ) => {
+    setFilters((currentFilters) => ({
+      ...currentFilters,
+      botStatusFilter,
+    }))
+  }
+
   const clearFilters = () => {
     setFilters(defaultFilters)
   }
@@ -74,6 +84,7 @@ export function useClosingTicketFilters(
     setSearch,
     setDocumentFilter,
     setChargesFilter,
+    setBotStatusFilter,
     clearFilters,
   }
 }

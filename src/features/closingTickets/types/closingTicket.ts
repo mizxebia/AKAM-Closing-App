@@ -44,6 +44,11 @@ export type ClosingTicketFilters = {
    * it — see ticketIdsWithCharges in filterClosingTickets.
    */
   chargesFilter: '' | 'present' | 'missing'
+  /**
+   * Developer-mode-only "Bot Status" filter. Empty string means no filter;
+   * otherwise the numeric `cr109_botstatus` option-set value to match.
+   */
+  botStatusFilter: '' | number
 }
 
 export type ClosingTicketStatusLabel =
