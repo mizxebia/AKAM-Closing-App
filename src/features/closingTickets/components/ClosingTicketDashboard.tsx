@@ -88,7 +88,7 @@ export function ClosingTicketDashboard({
   const timeToCloseDisplay = formatDurationStat(
     timeToClose,
     loadingDurations,
-    'closed ticket'
+    'ticket'
   )
   const yardiOwnerCreationDisplay = formatDurationStat(
     yardiOwnerCreation,
@@ -147,7 +147,7 @@ export function ClosingTicketDashboard({
         accentColor="#B8860B"
       />
       <StatCard
-        label="Yardi Owner Creation"
+        label="Owner Creation"
         value={yardiOwnerCreationDisplay.value}
         description={yardiOwnerCreationDisplay.description}
         icon={Building2}
