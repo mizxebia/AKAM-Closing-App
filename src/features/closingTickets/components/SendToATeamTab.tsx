@@ -8,10 +8,12 @@ import {
   RotateCcw,
   Save,
   Send,
+  Trash2,
 } from 'lucide-react'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import { useTabBarActionsPortal } from './tabBarActionsPortal'
 import {
+  deleteClosingTicketFile,
   updateClosingTicket,
   uploadClosingTicketFile,
 } from '../api/closingTicketsService'
@@ -349,6 +351,7 @@ function Attachment({
   onUploaded,
 }: AttachmentProps) {
   const [uploading, setUploading] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const present = hasDocument(closingTicket, document)
   const fileName = present
@@ -380,6 +383,27 @@ function Attachment({
       )
     } finally {
       setUploading(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    setDeleting(true)
+    setError(null)
+
+    try {
+      await deleteClosingTicketFile(
+        closingTicket.cr7de_closingticketdetailsid,
+        document.columnName
+      )
+      await onUploaded()
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : `Failed to delete ${document.label}.`
+      )
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -423,18 +447,32 @@ function Attachment({
       )}
 
       {uploadable && (
-        <label
-          className="inline-flex h-7 shrink-0 cursor-pointer items-center rounded-md border border-[#1E3A47] px-2 text-[11px] font-semibold text-[#1E3A47] hover:bg-[#F5F2EC]"
-          title={`Upload ${document.label}`}
-        >
-          {uploading ? '…' : present ? 'Replace' : 'Upload'}
-          <input
-            type="file"
-            className="hidden"
-            disabled={uploading}
-            onChange={(e) => void handleFileChange(e)}
-          />
-        </label>
+        <>
+          <label
+            className="inline-flex h-7 shrink-0 cursor-pointer items-center rounded-md border border-[#1E3A47] px-2 text-[11px] font-semibold text-[#1E3A47] hover:bg-[#F5F2EC]"
+            title={`Upload ${document.label}`}
+          >
+            {uploading ? '…' : present ? 'Replace' : 'Upload'}
+            <input
+              type="file"
+              className="hidden"
+              disabled={uploading || deleting}
+              onChange={(e) => void handleFileChange(e)}
+            />
+          </label>
+          {present && (
+            <button
+              type="button"
+              aria-label={`Delete ${document.label}`}
+              title={`Delete ${document.label}`}
+              className="inline-flex size-7 shrink-0 items-center justify-center rounded-md border border-red-200 text-red-500 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={uploading || deleting}
+              onClick={() => void handleDelete()}
+            >
+              <Trash2 className="size-3.5" />
+            </button>
+          )}
+        </>
       )}
 
       {error && (
@@ -508,10 +546,9 @@ export function SendToATeamTab({
     string | null
   >(null)
 
-  const bothArDocumentsPresent = Boolean(
-    closingTicket.cr109_chequesdocument_name &&
-      closingTicket.cr109_batchdocument_name
-  )
+  // Documents are attached as they become available — sending no longer
+  // requires every AR document (Cheques, Batch, Invoice, New Owner Ticket)
+  // to be present first.
 
   const previewedDocument = useMemo(
     () =>
@@ -812,7 +849,9 @@ export function SendToATeamTab({
                 onPreview={setPreviewedKey}
                 uploadable={
                   document.key === 'chequesDocument' ||
-                  document.key === 'batchDocument'
+                  document.key === 'batchDocument' ||
+                  document.key === 'closingTicketDetailsPdf' ||
+                  document.key === 'newOwnerTicketPdf'
                 }
                 onUploaded={onUploaded}
               />
@@ -877,12 +916,7 @@ export function SendToATeamTab({
               <button
                 type="button"
                 className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#1E3A47] px-3 text-xs font-semibold uppercase tracking-[0.08em] text-white shadow-sm transition hover:bg-[#152d38] disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={!bothArDocumentsPresent || busy}
-                title={
-                  bothArDocumentsPresent
-                    ? undefined
-                    : 'Upload both the Cheques Document and Batch Document before sending.'
-                }
+                disabled={busy}
                 onClick={() => void handleSend()}
               >
                 {isSentToAR ? <RotateCcw className="size-3.5" /> : <Send className="size-3.5" />}
@@ -905,7 +939,6 @@ export function SendToATeamTab({
         <div className="document-panel-inner">
           <div className="document-panel-header">
             <div>
-              <p>Preview</p>
               <h3>
                 {previewedDocument?.label ??
                   'Click an attachment to preview'}
