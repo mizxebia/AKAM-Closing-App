@@ -63,6 +63,7 @@ export type ClosingTicketStatusLabel =
   | 'Ready for Post Closing'
   | 'Post Closing'
   | 'Validate Closings'
+  | 'Transferring Building'
   | 'Completed'
   | 'Sent to AR'
   | 'Failed'

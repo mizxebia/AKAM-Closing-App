@@ -421,6 +421,7 @@ export function ClosingTicketPage() {
                 onBotStatusFilterChange={setBotStatusFilter}
                 showPackageTypeFilter={developerMode.enabled}
                 onPackageTypeFilterChange={setPackageTypeFilter}
+                showDeveloperStatusTabs={developerMode.enabled}
               />
 
               {filteredRecords.length === 0 ? (

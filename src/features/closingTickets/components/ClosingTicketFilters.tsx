@@ -5,6 +5,7 @@ import {
   BOT_STATUS_FILTER_OPTIONS,
   PACKAGE_TYPE_FILTER_OPTIONS,
 } from '../utils/closingTicketFilters'
+import { developerOnlyClosingTicketTabs } from '../constants/closingTicketMetadata'
 import type { ClosingTicketFilters } from '../types/closingTicket'
 
 interface ClosingTicketFiltersProps {
@@ -31,6 +32,8 @@ interface ClosingTicketFiltersProps {
   onPackageTypeFilterChange: (
     value: ClosingTicketFilters['packageTypeFilter']
   ) => void
+  /** Developer Mode only — also show the internal Processing / Transferring Building status tabs. */
+  showDeveloperStatusTabs?: boolean
 }
 
 export function ClosingTicketFilters({
@@ -45,7 +48,14 @@ export function ClosingTicketFilters({
   onBotStatusFilterChange,
   showPackageTypeFilter = false,
   onPackageTypeFilterChange,
+  showDeveloperStatusTabs = false,
 }: ClosingTicketFiltersProps) {
+  const visibleStatusOptions = showDeveloperStatusTabs
+    ? closingTicketStatusOptions
+    : closingTicketStatusOptions.filter(
+        (option) => !developerOnlyClosingTicketTabs.has(option.value)
+      )
+
   return (
     <section
       className="sticky top-[48px] z-10 grid gap-2 border border-[#E2DAD0] bg-white px-3 py-2 shadow-sm"
@@ -55,7 +65,7 @@ export function ClosingTicketFilters({
         className="flex flex-wrap gap-1"
         aria-label="Filter closings by status"
       >
-        {closingTicketStatusOptions.map((option) => (
+        {visibleStatusOptions.map((option) => (
           <button
             key={option.value}
             type="button"

@@ -272,6 +272,7 @@ export function BulkStatusChangeScreen({
         onBotStatusFilterChange={setBotStatusFilter}
         showPackageTypeFilter
         onPackageTypeFilterChange={setPackageTypeFilter}
+        showDeveloperStatusTabs
       />
 
       {filteredRecords.length === 0 ? (
