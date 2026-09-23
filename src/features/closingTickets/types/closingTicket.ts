@@ -55,6 +55,15 @@ export type ClosingTicketFilters = {
    * match.
    */
   packageTypeFilter: '' | number
+  /**
+   * Developer-mode-only "Closing Date" range filter. Each bound is an empty
+   * string (unset) or a `yyyy-mm-dd` date-input value; a ticket matches when
+   * its `cr7de_closingdate` falls within both set bounds (inclusive).
+   */
+  closingDateFilter: {
+    from: string
+    to: string
+  }
 }
 
 export type ClosingTicketStatusLabel =

@@ -183,6 +183,7 @@ export function ClosingTicketPage() {
     setChargesFilter,
     setBotStatusFilter,
     setPackageTypeFilter,
+    setClosingDateFilter,
     clearFilters,
   } = useClosingTicketFilters(
     records,
@@ -422,6 +423,8 @@ export function ClosingTicketPage() {
                 showPackageTypeFilter={developerMode.enabled}
                 onPackageTypeFilterChange={setPackageTypeFilter}
                 showDeveloperStatusTabs={developerMode.enabled}
+                showClosingDateFilter={developerMode.enabled}
+                onClosingDateFilterChange={setClosingDateFilter}
               />
 
               {filteredRecords.length === 0 ? (

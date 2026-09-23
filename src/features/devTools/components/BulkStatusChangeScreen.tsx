@@ -44,6 +44,7 @@ export function BulkStatusChangeScreen({
     setChargesFilter,
     setBotStatusFilter,
     setPackageTypeFilter,
+    setClosingDateFilter,
   } = useClosingTicketFilters(records, { userName, userId })
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
@@ -273,6 +274,8 @@ export function BulkStatusChangeScreen({
         showPackageTypeFilter
         onPackageTypeFilterChange={setPackageTypeFilter}
         showDeveloperStatusTabs
+        showClosingDateFilter
+        onClosingDateFilterChange={setClosingDateFilter}
       />
 
       {filteredRecords.length === 0 ? (

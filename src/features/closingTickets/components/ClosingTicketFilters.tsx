@@ -34,6 +34,11 @@ interface ClosingTicketFiltersProps {
   ) => void
   /** Developer Mode only — also show the internal Processing / Transferring Building status tabs. */
   showDeveloperStatusTabs?: boolean
+  /** Developer Mode only — lets a developer find tickets by a Closing Date range. */
+  showClosingDateFilter?: boolean
+  onClosingDateFilterChange: (
+    value: Partial<ClosingTicketFilters['closingDateFilter']>
+  ) => void
 }
 
 export function ClosingTicketFilters({
@@ -49,6 +54,8 @@ export function ClosingTicketFilters({
   showPackageTypeFilter = false,
   onPackageTypeFilterChange,
   showDeveloperStatusTabs = false,
+  showClosingDateFilter = false,
+  onClosingDateFilterChange,
 }: ClosingTicketFiltersProps) {
   const visibleStatusOptions = showDeveloperStatusTabs
     ? closingTicketStatusOptions
@@ -92,7 +99,7 @@ export function ClosingTicketFilters({
         ))}
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto] sm:items-end">
+      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto_auto] sm:items-end">
         <SearchFilter
           id="closing-ticket-general-search"
           label="Search closings"
@@ -211,6 +218,43 @@ export function ClosingTicketFilters({
               ))}
             </select>
           </label>
+        )}
+
+        {showClosingDateFilter && (
+          <div className="flex flex-col gap-1 text-xs font-medium text-[#5F5E5A]">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94a3b8]">
+              Closing Date
+            </span>
+            <div className="flex items-center gap-1">
+              <label className="sr-only" htmlFor="closing-ticket-closing-date-from">
+                Closing date from
+              </label>
+              <input
+                id="closing-ticket-closing-date-from"
+                type="date"
+                className="h-9 w-[130px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
+                value={filters.closingDateFilter.from}
+                max={filters.closingDateFilter.to || undefined}
+                onChange={(event) =>
+                  onClosingDateFilterChange({ from: event.target.value })
+                }
+              />
+              <span className="text-[#94a3b8]">to</span>
+              <label className="sr-only" htmlFor="closing-ticket-closing-date-to">
+                Closing date to
+              </label>
+              <input
+                id="closing-ticket-closing-date-to"
+                type="date"
+                className="h-9 w-[130px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
+                value={filters.closingDateFilter.to}
+                min={filters.closingDateFilter.from || undefined}
+                onChange={(event) =>
+                  onClosingDateFilterChange({ to: event.target.value })
+                }
+              />
+            </div>
+          </div>
         )}
       </div>
     </section>

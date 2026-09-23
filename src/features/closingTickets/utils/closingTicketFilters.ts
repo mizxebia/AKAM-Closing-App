@@ -108,6 +108,36 @@ function matchesPackageTypeFilter(
   return Number(record.cr109_packagetype) === packageTypeFilter
 }
 
+function matchesClosingDateFilter(
+  record: ClosingTicketRecord,
+  closingDateFilter: ClosingTicketFilters['closingDateFilter']
+) {
+  const { from, to } = closingDateFilter ?? { from: '', to: '' }
+
+  if (!from && !to) {
+    return true
+  }
+
+  if (!record.cr7de_closingdate) {
+    return false
+  }
+
+  // Dataverse date fields serialize as ISO strings — comparing the
+  // `yyyy-mm-dd` prefix lexicographically avoids timezone-shift bugs that
+  // `new Date(...)` comparisons would introduce.
+  const closingDate = record.cr7de_closingdate.slice(0, 10)
+
+  if (from && closingDate < from) {
+    return false
+  }
+
+  if (to && closingDate > to) {
+    return false
+  }
+
+  return true
+}
+
 function matchesChargesFilter(
   record: ClosingTicketRecord,
   chargesFilter: ClosingTicketFilters['chargesFilter'],
@@ -219,6 +249,7 @@ export function filterClosingTickets(
         ticketIdsWithCharges
       ) &&
       matchesBotStatusFilter(record, filters.botStatusFilter) &&
-      matchesPackageTypeFilter(record, filters.packageTypeFilter)
+      matchesPackageTypeFilter(record, filters.packageTypeFilter) &&
+      matchesClosingDateFilter(record, filters.closingDateFilter)
   )
 }

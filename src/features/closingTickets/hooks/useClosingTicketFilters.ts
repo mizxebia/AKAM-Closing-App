@@ -12,6 +12,7 @@ const defaultFilters: ClosingTicketFilters = {
   chargesFilter: '',
   botStatusFilter: '',
   packageTypeFilter: '',
+  closingDateFilter: { from: '', to: '' },
 }
 
 export function useClosingTicketFilters(
@@ -83,6 +84,20 @@ export function useClosingTicketFilters(
     }))
   }
 
+  const setClosingDateFilter = (
+    closingDateFilter: Partial<
+      ClosingTicketFilters['closingDateFilter']
+    >
+  ) => {
+    setFilters((currentFilters) => ({
+      ...currentFilters,
+      closingDateFilter: {
+        ...currentFilters.closingDateFilter,
+        ...closingDateFilter,
+      },
+    }))
+  }
+
   const clearFilters = () => {
     setFilters(defaultFilters)
   }
@@ -96,6 +111,7 @@ export function useClosingTicketFilters(
     setChargesFilter,
     setBotStatusFilter,
     setPackageTypeFilter,
+    setClosingDateFilter,
     clearFilters,
   }
 }
