@@ -165,6 +165,52 @@ export function writeActionLog(entry: {
   })
 }
 
+const APP_FAILURE_PREFIX = 'APP FAILURE'
+
+/**
+ * Records an error that happened inside this app while working on a
+ * closing ticket — a failed create/save/generate/validate/send, etc.
+ * Distinct from Power Automate flow failures (those surface through the
+ * ticket's own Bot Status field, not here): this is only for exceptions
+ * thrown by the app's own code, caught in a try/catch.
+ *
+ * The action label is prefixed "APP FAILURE - <context>" so it reads
+ * clearly in the App Logs list without needing to expand the row, and
+ * AppLogsViewer renders it with a red badge instead of the normal amber
+ * "action" one.
+ */
+export function logAppFailure(entry: {
+  ticketId: string
+  tableName: string
+  context: string
+  error: unknown
+  details?: Record<string, unknown>
+}): void {
+  const message =
+    entry.error instanceof Error
+      ? entry.error.message
+      : String(entry.error)
+
+  writeActionLog({
+    ticketId: entry.ticketId,
+    tableName: entry.tableName,
+    action: `${APP_FAILURE_PREFIX} - ${entry.context}`,
+    details: {
+      error: message,
+      stack:
+        entry.error instanceof Error
+          ? entry.error.stack
+          : undefined,
+      occurredAt: new Date().toISOString(),
+      ...entry.details,
+    },
+  })
+}
+
+export function isAppFailureAction(action: string): boolean {
+  return action.startsWith(APP_FAILURE_PREFIX)
+}
+
 export interface ChangeLogRecord {
   id: string
   ticketId: string

@@ -10,6 +10,7 @@ import {
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import {
   getChangeLogs,
+  isAppFailureAction,
   type ChangeLogRecord,
   type ChangeOperation,
 } from '../../auditLog/api/auditLogService'
@@ -267,8 +268,19 @@ export function AppLogsViewer({
             <div className="flex flex-col divide-y divide-[#e2e8f0] rounded-lg border border-[#e2e8f0]">
               {logs.map((entry) => {
                 const isExpanded = expandedId === entry.id
+                const actionLabel =
+                  entry.operation === 'action' &&
+                  typeof entry.newData?.action === 'string'
+                    ? entry.newData.action
+                    : null
+                const isFailure = Boolean(
+                  actionLabel && isAppFailureAction(actionLabel)
+                )
                 return (
-                  <div key={entry.id}>
+                  <div
+                    key={entry.id}
+                    className={isFailure ? 'bg-red-50/40' : undefined}
+                  >
                     <button
                       type="button"
                       className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-[#f8fafc]"
@@ -286,24 +298,27 @@ export function AppLogsViewer({
                       <span className="w-40 shrink-0 text-xs text-[#64748b]">
                         {formatTimestamp(entry.createdOn)}
                       </span>
-                      <span className="w-44 shrink-0 truncate font-medium text-[#1E3A47]">
-                        {entry.operation === 'action' &&
-                        typeof entry.newData?.action === 'string'
-                          ? entry.newData.action
-                          : formatTableLabel(entry.tableName)}
+                      <span
+                        className={`w-44 shrink-0 truncate font-medium ${
+                          isFailure ? 'text-red-700' : 'text-[#1E3A47]'
+                        }`}
+                      >
+                        {actionLabel ?? formatTableLabel(entry.tableName)}
                       </span>
                       <span
                         className={`w-16 shrink-0 rounded-full px-2 py-0.5 text-center text-[10px] font-semibold uppercase tracking-wide ${
-                          entry.operation === 'action'
-                            ? 'bg-amber-100 text-amber-700'
-                            : entry.operation === 'create'
-                              ? 'bg-emerald-100 text-emerald-700'
-                              : entry.operation === 'delete'
-                                ? 'bg-red-100 text-red-700'
-                                : 'bg-blue-100 text-blue-700'
+                          isFailure
+                            ? 'bg-red-100 text-red-700'
+                            : entry.operation === 'action'
+                              ? 'bg-amber-100 text-amber-700'
+                              : entry.operation === 'create'
+                                ? 'bg-emerald-100 text-emerald-700'
+                                : entry.operation === 'delete'
+                                  ? 'bg-red-100 text-red-700'
+                                  : 'bg-blue-100 text-blue-700'
                         }`}
                       >
-                        {entry.operation}
+                        {isFailure ? 'failed' : entry.operation}
                       </span>
                       {!ticketId && (
                         <span className="w-32 shrink-0 truncate text-xs text-[#64748b]">

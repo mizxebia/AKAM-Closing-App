@@ -8,7 +8,10 @@ import { ClipboardList } from 'lucide-react'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import { LoadingSkeleton } from '../../../components/enterprise'
 import { updateClosingTicket } from '../../closingTickets/api/closingTicketsService'
-import { writeActionLog } from '../../auditLog/api/auditLogService'
+import {
+  writeActionLog,
+  logAppFailure,
+} from '../../auditLog/api/auditLogService'
 import type { ClosingTicketRecord } from '../../closingTickets/types/closingTicket'
 import { COOP_TRANSFER_PACKAGE_TYPE } from '../../closingTickets/utils/ticketCreation'
 import {
@@ -315,6 +318,14 @@ function isBlankOrNA(value: string) {
   return trimmed === '' || trimmed.toUpperCase() === 'N/A'
 }
 
+function isValidSsnEin(value: string) {
+  // Only enforce the 9-digit format when something was actually entered —
+  // blank, or the 'N/A' placeholder normalizeOrNA saves when a field is
+  // left empty, are both accepted as-is.
+  if (isBlankOrNA(value)) return true
+  return /^\d{9}$/.test(value.trim())
+}
+
 // Name/SSN/address/city/state/zip fields fall back to 'N/A' when left blank,
 // since Dataverse and downstream documents expect a value in these fields.
 // Buyer 1/2 address-group fields are the exception: while the matching
@@ -579,6 +590,27 @@ export function validateForm(
       'Enter a valid email address.'
   }
 
+  const SSN_EIN_ERROR = 'SSN/EIN must be 9 digits.'
+
+  if (!isValidSsnEin(formState.cr7de_primaryownerssnein)) {
+    errors.cr7de_primaryownerssnein = SSN_EIN_ERROR
+  }
+  if (!isValidSsnEin(formState.cr7de_secondaryownerssnein)) {
+    errors.cr7de_secondaryownerssnein = SSN_EIN_ERROR
+  }
+  if (!isValidSsnEin(formState.cr109_buyer3ssn)) {
+    errors.cr109_buyer3ssn = SSN_EIN_ERROR
+  }
+  if (!isValidSsnEin(formState.cr7de_sellerssnein)) {
+    errors.cr7de_sellerssnein = SSN_EIN_ERROR
+  }
+  if (!isValidSsnEin(formState.cr109_seller2ssnein)) {
+    errors.cr109_seller2ssnein = SSN_EIN_ERROR
+  }
+  if (!isValidSsnEin(formState.cr109_seller3ssn)) {
+    errors.cr109_seller3ssn = SSN_EIN_ERROR
+  }
+
   if (formState.cr109_purchaser1occupancy === 'Absent') {
     if (!formState.cr109_buyer1address.trim()) {
       errors.cr109_buyer1address =
@@ -810,6 +842,12 @@ export function NewOwnerTicketTab({
           ? err.message
           : 'Unable to save new owner ticket.'
       )
+      logAppFailure({
+        ticketId: closingTicket.cr7de_ticketid ?? closingTicket.cr7de_closingticketdetailsid,
+        tableName: 'cr7de_newownerticketdetailses',
+        context: 'Save New Owner Ticket',
+        error: err,
+      })
     } finally {
       setSaving(false)
     }
@@ -894,6 +932,12 @@ export function NewOwnerTicketTab({
           ? err.message
           : 'Unable to validate closing ticket.'
       )
+      logAppFailure({
+        ticketId: closingTicket.cr7de_ticketid ?? recordId,
+        tableName: 'cr7de_newownerticketdetailses',
+        context: 'Validate Closing',
+        error: err,
+      })
     } finally {
       setValidating(false)
     }

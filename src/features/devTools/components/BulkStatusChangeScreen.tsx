@@ -12,7 +12,10 @@ import {
 import { useClosingTicketFilters } from '../../closingTickets/hooks/useClosingTicketFilters'
 import type { ClosingTicketRecord } from '../../closingTickets/types/closingTicket'
 import { updateClosingTicket } from '../../closingTickets/api/closingTicketsService'
-import { writeActionLog } from '../../auditLog/api/auditLogService'
+import {
+  writeActionLog,
+  logAppFailure,
+} from '../../auditLog/api/auditLogService'
 import {
   TICKET_STATUS_OPTIONS,
   BOT_STATUS_OPTIONS,
@@ -95,29 +98,41 @@ export function BulkStatusChangeScreen({
 
     const results = await Promise.allSettled(
       selectedRecords.map(async (record) => {
-        await updateClosingTicket(
-          record.cr7de_closingticketdetailsid,
-          {
-            cr7de_ticketstatus:
-              ticketStatus as ClosingTicketRecord['cr7de_ticketstatus'],
-            cr109_botstatus:
-              botStatus as ClosingTicketRecord['cr109_botstatus'],
-          }
-        )
+        const recordTicketId =
+          record.cr7de_ticketid ??
+          record.cr7de_closingticketdetailsid
 
-        writeActionLog({
-          ticketId:
-            record.cr7de_ticketid ??
+        try {
+          await updateClosingTicket(
             record.cr7de_closingticketdetailsid,
-          tableName: 'cr7de_closingticketdetailses',
-          action: 'Developer Status Override (Bulk)',
-          details: {
-            to: {
-              ticketStatus: getTicketStatusLabel(ticketStatus),
-              botStatus: getBotStatusLabel(botStatus),
+            {
+              cr7de_ticketstatus:
+                ticketStatus as ClosingTicketRecord['cr7de_ticketstatus'],
+              cr109_botstatus:
+                botStatus as ClosingTicketRecord['cr109_botstatus'],
+            }
+          )
+
+          writeActionLog({
+            ticketId: recordTicketId,
+            tableName: 'cr7de_closingticketdetailses',
+            action: 'Developer Status Override (Bulk)',
+            details: {
+              to: {
+                ticketStatus: getTicketStatusLabel(ticketStatus),
+                botStatus: getBotStatusLabel(botStatus),
+              },
             },
-          },
-        })
+          })
+        } catch (err) {
+          logAppFailure({
+            ticketId: recordTicketId,
+            tableName: 'cr7de_closingticketdetailses',
+            context: 'Developer Status Override (Bulk)',
+            error: err,
+          })
+          throw err
+        }
       })
     )
 

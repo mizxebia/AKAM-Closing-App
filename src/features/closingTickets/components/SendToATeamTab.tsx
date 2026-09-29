@@ -27,6 +27,7 @@ import {
 import {
   getChangeLogs,
   writeActionLog,
+  logAppFailure,
 } from '../../auditLog/api/auditLogService'
 import { toast } from '../../../components/feedback/toastStore'
 import {
@@ -713,6 +714,12 @@ export function SendToATeamTab({
           ? err.message
           : 'Unable to regenerate the email.'
       )
+      logAppFailure({
+        ticketId,
+        tableName: 'cr7de_closingticketdetailses',
+        context: 'Regenerate AR Email',
+        error: err,
+      })
     } finally {
       setRegenerating(false)
     }
@@ -743,6 +750,12 @@ export function SendToATeamTab({
           ? err.message
           : 'Unable to save draft.'
       )
+      logAppFailure({
+        ticketId,
+        tableName: 'cr7de_closingticketdetailses',
+        context: 'Save AR Email Draft',
+        error: err,
+      })
     } finally {
       setSavingDraft(false)
     }
@@ -795,6 +808,12 @@ export function SendToATeamTab({
           ? err.message
           : 'Unable to send to AR Team.'
       )
+      logAppFailure({
+        ticketId,
+        tableName: 'cr7de_closingticketdetailses',
+        context: 'Send to AR Team',
+        error: err,
+      })
     } finally {
       setSending(false)
     }

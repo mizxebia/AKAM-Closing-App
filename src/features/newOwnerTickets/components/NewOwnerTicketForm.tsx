@@ -461,6 +461,7 @@ function SsnEinInput({
   required,
   readOnly,
   wide,
+  error,
   onChange,
 }: {
   label: string
@@ -468,6 +469,7 @@ function SsnEinInput({
   required?: boolean
   readOnly?: boolean
   wide?: boolean
+  error?: string
   onChange: (value: string) => void
 }) {
   const [warning, setWarning] = useState<string | null>(null)
@@ -499,8 +501,10 @@ function SsnEinInput({
         placeholder="123456789"
         onChange={(e) => handleChange(e.target.value)}
       />
-      {warning && (
-        <span className="form-error" role="alert">{warning}</span>
+      {(warning || error) && (
+        <span className="form-error" role="alert">
+          {warning ?? error}
+        </span>
       )}
     </label>
   )
@@ -692,6 +696,7 @@ export function NewOwnerTicketForm({
           required={isFieldRequired(field)}
           readOnly={field.readOnly}
           wide={field.wide}
+          error={error}
           onChange={(formatted) =>
             onFieldChange(
               field.name,

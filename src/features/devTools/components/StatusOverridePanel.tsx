@@ -13,7 +13,10 @@ import {
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import { updateClosingTicket } from '../../closingTickets/api/closingTicketsService'
 import type { ClosingTicketRecord } from '../../closingTickets/types/closingTicket'
-import { writeActionLog } from '../../auditLog/api/auditLogService'
+import {
+  writeActionLog,
+  logAppFailure,
+} from '../../auditLog/api/auditLogService'
 import {
   TICKET_STATUS_OPTIONS,
   BOT_STATUS_OPTIONS,
@@ -95,6 +98,12 @@ export function StatusOverridePanel({
           ? err.message
           : 'Unable to update status.'
       )
+      logAppFailure({
+        ticketId,
+        tableName: 'cr7de_closingticketdetailses',
+        context: 'Developer Status Override',
+        error: err,
+      })
     } finally {
       setSaving(false)
     }

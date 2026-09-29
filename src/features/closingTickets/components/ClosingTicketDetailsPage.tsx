@@ -67,7 +67,10 @@ import {
   ManualDocumentUpload,
   StatusOverridePanel,
 } from '../../devTools'
-import { writeActionLog } from '../../auditLog/api/auditLogService'
+import {
+  writeActionLog,
+  logAppFailure,
+} from '../../auditLog/api/auditLogService'
 import { getClosingTicketStatusDisplay } from '../utils/closingTicketFormatters'
 import { getBotStatusLabel } from '../../devTools/utils/statusOptions'
 import { formatGeneratedLabel } from '../../invoices/utils/invoiceFormatters'
@@ -261,11 +264,11 @@ export function ClosingTicketDetailsPage({
           ? err.message
           : 'Unable to generate invoice.'
       setError(message)
-      writeActionLog({
+      logAppFailure({
         ticketId: currentTicketId,
         tableName: 'cr7de_closingticketdetailses',
-        action: 'Generate Invoice',
-        details: { result: 'failed', error: message },
+        context: 'Generate Invoice',
+        error: err,
       })
     } finally {
       setGeneratingInvoice(false)
@@ -324,11 +327,11 @@ export function ClosingTicketDetailsPage({
           ? err.message
           : 'Unable to generate new owner ticket.'
       setError(message)
-      writeActionLog({
+      logAppFailure({
         ticketId: currentTicketId,
         tableName: 'cr7de_closingticketdetailses',
-        action: 'Generate New Owner Ticket',
-        details: { result: 'failed', error: message },
+        context: 'Generate New Owner Ticket',
+        error: err,
       })
     } finally {
       setGeneratingNewOwnerTicket(false)

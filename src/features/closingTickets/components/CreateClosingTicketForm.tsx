@@ -35,6 +35,7 @@ import { useCurrentUser } from '../hooks/useCurrentUser'
 import { ProcessingDots } from '../../../components/feedback/ProcessingDots'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import { getBuildings } from '../data/buildingListCache'
+import { logAppFailure } from '../../auditLog/api/auditLogService'
 import {
   COOP_TRANSFER_PACKAGE_TYPE,
   generateTicketId,
@@ -739,6 +740,12 @@ function ClosingTicketEditorForm({
       setFormState(nextFormState)
       await onSuccess()
     } catch (error) {
+      logAppFailure({
+        ticketId: formState.cr7de_ticketid,
+        tableName: 'cr7de_closingticketdetailses',
+        context: 'Update Ticket Status',
+        error,
+      })
       setSaveError(
         error instanceof Error
           ? error.message
@@ -804,6 +811,13 @@ function ClosingTicketEditorForm({
       })
       await onSuccess()
     } catch (error) {
+      logAppFailure({
+        ticketId: formState.cr7de_ticketid,
+        tableName: 'cr7de_closingticketdetailses',
+        context: 'Delete Document',
+        error,
+        details: { columnName },
+      })
       setSaveError(
         error instanceof Error
           ? error.message
@@ -860,6 +874,15 @@ function ClosingTicketEditorForm({
         await onSuccess()
       }
     } catch (error) {
+      logAppFailure({
+        ticketId: formState.cr7de_ticketid,
+        tableName: 'cr7de_closingticketdetailses',
+        context:
+          mode === 'create'
+            ? 'Create Closing Ticket'
+            : 'Update Closing Ticket',
+        error,
+      })
       setSaveError(
         error instanceof Error
           ? error.message

@@ -20,7 +20,10 @@ import { createClosingTicket } from '../../closingTickets/api/closingTicketsServ
 import type { ClosingTicketCreateInput } from '../../closingTickets/types/closingTicket'
 import { syncNewOwnerTicketFromClosingTicket } from '../../newOwnerTickets/api/newOwnerTicketService'
 import { getBuildings } from '../../closingTickets/data/buildingListCache'
-import { writeActionLog } from '../../auditLog/api/auditLogService'
+import {
+  writeActionLog,
+  logAppFailure,
+} from '../../auditLog/api/auditLogService'
 
 const DEFAULT_LOCATION =
   '99 Park Avenue, 14th Floor, New York, NY 10014'
@@ -308,11 +311,13 @@ export function BulkCreateClosingsScreen({
         )
       )
 
+      const rowTicketId = generateTicketId()
+
       try {
         const isCoopTransfer =
           row.packageType === COOP_TRANSFER_PACKAGE_TYPE
         const payload: ClosingTicketCreateInput = {
-          cr7de_ticketid: generateTicketId(),
+          cr7de_ticketid: rowTicketId,
           cr7de_ticketstatus: 716070000,
           cr7de_unitnumber: row.unitNumber.trim(),
           cr7de_nyccode: row.nycCode.trim(),
@@ -356,6 +361,16 @@ export function BulkCreateClosingsScreen({
         )
       } catch (err) {
         failed += 1
+        logAppFailure({
+          ticketId: rowTicketId,
+          tableName: 'cr7de_closingticketdetailses',
+          context: 'Bulk Create Closing',
+          error: err,
+          details: {
+            unitNumber: row.unitNumber,
+            nycCode: row.nycCode,
+          },
+        })
         setRows((current) =>
           current.map((r) =>
             r.id === row.id
