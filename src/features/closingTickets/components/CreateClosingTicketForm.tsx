@@ -465,8 +465,10 @@ async function uploadPendingFiles(
   }
 }
 
+const DRAFT_TICKET_STATUS_VALUE = 716070000
 const PROCESSING_TICKET_STATUS_VALUE = 716070005
 const FORM_DOWNLOADED_BOT_STATUS_VALUE = 396620001
+const DOMECILE_DUMP_RETRIEVED_BOT_STATUS_VALUE = 396620006
 
 export function CreateClosingTicketForm({
   onCancel,
@@ -605,6 +607,8 @@ function ClosingTicketEditorForm({
     useState(false)
   const [yardiFlagConfirmOpen, setYardiFlagConfirmOpen] =
     useState(false)
+  const [domicileUncheckWarningOpen, setDomicileUncheckWarningOpen] =
+    useState(false)
   const [packageTypeChangedAt, setPackageTypeChangedAt] =
     useState<number | null>(null)
   const submitIntentRef = useRef<'save' | 'submit'>(
@@ -659,6 +663,10 @@ function ClosingTicketEditorForm({
     ticketStatusLabel === 'ReadyForPostClosing'
   const hasUploadedRealPropertyDocument = Boolean(
     uploadedFileNames.cr109_rpttdocument
+  )
+  const hasPurchaseApplicationForm = Boolean(
+    pendingFiles.cr109_purchaseapplicationform ??
+      uploadedFileNames.cr109_purchaseapplicationform
   )
   const isCreateMode = mode === 'create'
   const showDocumentsSection =
@@ -786,6 +794,13 @@ function ClosingTicketEditorForm({
         columnName === 'cr109_rpttdocument' &&
         (ticketStatusLabel === 'PostClosing' ||
           ticketStatusLabel === 'ValidateClosings')
+      // Only safe to roll the domicile override back if automation hasn't
+      // progressed past the FormDownloaded stage we forced on upload.
+      const shouldRevertDomicileOverride =
+        columnName === 'cr109_purchaseapplicationform' &&
+        formState.cr7de_buildingnotondomicile &&
+        formState.cr7de_ticketstatus === PROCESSING_TICKET_STATUS_VALUE &&
+        formState.cr109_botstatus === FORM_DOWNLOADED_BOT_STATUS_VALUE
 
       if (shouldResetToReadyForPostClosing) {
         const isFromValidate = ticketStatusLabel === 'ValidateClosings'
@@ -795,6 +810,19 @@ function ClosingTicketEditorForm({
           ...(isFromValidate
             ? { cr109_botstatus: PURCHASE_FORM_DATA_EXTRACTED_BOT_STATUS }
             : {}),
+        }
+
+        await updateClosingTicket(
+          recordId,
+          buildPayload(nextFormState)
+        )
+        setFormState(nextFormState)
+      } else if (shouldRevertDomicileOverride) {
+        const nextFormState: ClosingTicketFormState = {
+          ...formState,
+          cr7de_buildingnotondomicile: false,
+          cr7de_ticketstatus: DRAFT_TICKET_STATUS_VALUE,
+          cr109_botstatus: DOMECILE_DUMP_RETRIEVED_BOT_STATUS_VALUE,
         }
 
         await updateClosingTicket(
@@ -1477,12 +1505,16 @@ function ClosingTicketEditorForm({
             checked={
               formState.cr7de_buildingnotondomicile
             }
-            onChange={(checked) =>
+            onChange={(checked) => {
+              if (!checked && hasPurchaseApplicationForm) {
+                setDomicileUncheckWarningOpen(true)
+                return
+              }
               updateField(
                 'cr7de_buildingnotondomicile',
                 checked
               )
-            }
+            }}
           />
           <CheckboxField
             label="Buyer exists in Yardi"
@@ -1568,12 +1600,25 @@ function ClosingTicketEditorForm({
                     ?.name ??
                   uploadedFileNames.cr109_purchaseapplicationform
                 }
-                onFileChange={(file) =>
+                onFileChange={(file) => {
                   setPendingFiles((currentFiles) => ({
                     ...currentFiles,
                     cr109_purchaseapplicationform: file,
                   }))
-                }
+                  // A manually uploaded form means the building is being
+                  // treated as not on Domicile — keep the flag and the
+                  // Processing/FormDownloaded statuses in sync with that.
+                  if (file) {
+                    setFormState((currentState) => ({
+                      ...currentState,
+                      cr7de_buildingnotondomicile: true,
+                      cr7de_ticketstatus:
+                        PROCESSING_TICKET_STATUS_VALUE as ClosingTicketFormState['cr7de_ticketstatus'],
+                      cr109_botstatus:
+                        FORM_DOWNLOADED_BOT_STATUS_VALUE as ClosingTicketFormState['cr109_botstatus'],
+                    }))
+                  }
+                }}
                 onDelete={() =>
                   handleDeleteDocument(
                     'cr109_purchaseapplicationform'
@@ -1701,6 +1746,36 @@ function ClosingTicketEditorForm({
               }}
             >
               Change Package Type
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={domicileUncheckWarningOpen}
+        onOpenChange={setDomicileUncheckWarningOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Cannot Uncheck "Building Not on Domicile"
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              A Purchase Application Form has already been uploaded
+              manually for this ticket. This flag must stay checked,
+              and the ticket will remain in Processing with Bot Status
+              FormDownloaded, while that form is attached. Delete the
+              uploaded form first if you need to revert to automated
+              processing.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogAction
+              className="bg-[#1E3A47] text-[#F5F2EC] hover:bg-[#152d38]"
+              onClick={() => setDomicileUncheckWarningOpen(false)}
+            >
+              Understood
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
