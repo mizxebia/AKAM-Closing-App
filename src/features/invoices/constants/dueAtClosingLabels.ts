@@ -1,0 +1,113 @@
+// Display labels in Dataverse option order, starting at 396620000.
+// Generated enum keys lose spacing/punctuation, so labels are kept here.
+const DUE_AT_CLOSING_BASE_VALUE = 396620000
+
+const DUE_AT_CLOSING_LABEL_LIST = [
+  'Adjournment Fee',
+  'Admin Fee',
+  'Air Conditioning Fee',
+  'AKAM Processing Fee',
+  'Appliance Fee',
+  'Application Fee',
+  'Arrears',
+  'Assessment',
+  'Assignment of Share',
+  'Background Check',
+  'Building Admin Fee',
+  'Cable Charges',
+  'Capital Assessment Fee',
+  'Carpet Deposit',
+  'Change of Occupancy',
+  'Closing Fee (Non-Refundable)',
+  'Contribution Fee (Non-Refundable)',
+  'Contribution Reserves',
+  'COOP Prospectus',
+  'COOP Questionnaire',
+  'Credit Report / Check',
+  'Electric Fee',
+  'Elevator Fee',
+  'Energy Charge',
+  'Escrow Maintenance',
+  'Estate Review Fee',
+  'Expediting Fee',
+  'Flip Tax',
+  'Guarantee Fee',
+  'Inspection',
+  'Legal Fee',
+  'Lost Stock & Lease',
+  'Maintenance Fees',
+  'Major/Minor Alteration Fee',
+  'Messenger',
+  'Meter Fee',
+  'Mortgage Questionnaire',
+  'Move In/Out Deposit',
+  'Move In/Out Fee',
+  'Other',
+  'Over-Time Fee',
+  'Parking',
+  'POA Fee',
+  'Processing Fee',
+  'Purchaser Fee (Transfer Fee)',
+  'Real Estate Tax',
+  'Recognition Agreement',
+  'Repair Charge',
+  'Resident Manager Contribution',
+  'Security Deposit',
+  'Service Fee',
+  'Stock Transfer Fee',
+  'Storage Unit',
+  'Sublet Deposit',
+  'Sublet Fee',
+  'Transfer Fee',
+  'Utilities',
+  'Waiver Fee',
+  'Working Capital',
+  'Alteration Agreement',
+  'Antenna Lease Sale',
+  'Assessment 1',
+  'Association Dues',
+  'Bike Storage',
+  'Capital Assessment 1',
+  'Capital Assessment 2',
+  'Common Charges Residential',
+  'Exercise Room Fees',
+  'Fine',
+  'Garage',
+  'Hallway Purchase',
+  'Holiday Contribution',
+  'Insurance Refund',
+  'Interest Fee',
+  'Interest Income',
+  'Membership Income',
+  'Misc Income',
+  'Mortgage Refinance Proceeds',
+  'Operating Assessment',
+  'Other Non Oper. Income',
+  'Parking',
+  'Parking Tax',
+  'Parking Transfer Fee',
+  'Special Assessment',
+  'Special Fee',
+  'Sponsor Contribution',
+  'Storage Fee',
+  'Tax Stamps',
+  'Transfer Fees',
+  'Utilities',
+]
+
+export const DUE_AT_CLOSING_LABELS: Record<number, string> =
+  Object.fromEntries(
+    DUE_AT_CLOSING_LABEL_LIST.map((label, index) => [
+      DUE_AT_CLOSING_BASE_VALUE + index,
+      label,
+    ])
+  )
+
+/** Dropdown option values, sorted A-Z by label. */
+export const DUE_AT_CLOSING_OPTION_VALUES: number[] = Object.keys(
+  DUE_AT_CLOSING_LABELS
+)
+  .map(Number)
+  .sort((a, b) =>
+    DUE_AT_CLOSING_LABELS[a].localeCompare(DUE_AT_CLOSING_LABELS[b])
+  )

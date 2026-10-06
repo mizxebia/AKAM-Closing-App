@@ -1,5 +1,5 @@
+import { DUE_AT_CLOSING_OPTION_VALUES } from '../constants/dueAtClosingLabels'
 import {
-  Cr7de_invoicedetailsescr109_dueatclosing,
   Cr7de_invoicedetailsescr7de_paidby,
   Cr7de_invoicedetailsescr7de_payableto,
 } from '../../../generated/models/Cr7de_invoicedetailsesModel'
@@ -24,9 +24,7 @@ interface ChargeEntryRowProps {
   canRemove: boolean
 }
 
-const dueAtClosingOptions = Object.keys(
-  Cr7de_invoicedetailsescr109_dueatclosing
-).map((value) => Number(value))
+const dueAtClosingOptions = DUE_AT_CLOSING_OPTION_VALUES
 
 const paidByOptions = Object.entries(
   Cr7de_invoicedetailsescr7de_paidby

@@ -3,6 +3,7 @@ import {
   Cr7de_invoicedetailsescr7de_paidby,
   Cr7de_invoicedetailsescr7de_payableto,
 } from '../../../generated/models/Cr7de_invoicedetailsesModel'
+import { DUE_AT_CLOSING_LABELS } from '../constants/dueAtClosingLabels'
 import type {
   InvoiceColumnKey,
   InvoiceGroupKey,
@@ -22,6 +23,7 @@ export function formatGeneratedLabel(value: string) {
   return value
     .replace(/_/g, ' ')
     .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/([a-zA-Z])(\d)/g, '$1 $2')
     .replace(/\s+/g, ' ')
     .trim()
 }
@@ -78,8 +80,11 @@ export function formatDueAtClosing(
     return '-'
   }
 
-  // Dataverse option sets are numeric values in records; generated constants
-  // map those values to readable labels so users never see raw option numbers.
+  const curated = DUE_AT_CLOSING_LABELS[value]
+  if (curated) {
+    return curated
+  }
+
   const label =
     Cr7de_invoicedetailsescr109_dueatclosing[value]
 
