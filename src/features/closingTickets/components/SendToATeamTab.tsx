@@ -369,14 +369,31 @@ function Attachment({
     setUploading(true)
     setError(null)
 
+    const attachmentTicketId =
+      closingTicket.cr7de_ticketid ??
+      closingTicket.cr7de_closingticketdetailsid
+
     try {
       await uploadClosingTicketFile(
         closingTicket.cr7de_closingticketdetailsid,
         document.columnName,
         file
       )
+      writeActionLog({
+        ticketId: attachmentTicketId,
+        tableName: 'cr7de_closingticketdetailses',
+        action: `Upload Document - ${document.label}`,
+        details: { fileName: file.name },
+      })
       await onUploaded()
     } catch (err) {
+      logAppFailure({
+        ticketId: attachmentTicketId,
+        tableName: 'cr7de_closingticketdetailses',
+        context: `Upload Document - ${document.label}`,
+        error: err,
+        details: { fileName: file.name },
+      })
       setError(
         err instanceof Error
           ? err.message
@@ -391,13 +408,28 @@ function Attachment({
     setDeleting(true)
     setError(null)
 
+    const attachmentTicketId =
+      closingTicket.cr7de_ticketid ??
+      closingTicket.cr7de_closingticketdetailsid
+
     try {
       await deleteClosingTicketFile(
         closingTicket.cr7de_closingticketdetailsid,
         document.columnName
       )
+      writeActionLog({
+        ticketId: attachmentTicketId,
+        tableName: 'cr7de_closingticketdetailses',
+        action: `Delete Document - ${document.label}`,
+      })
       await onUploaded()
     } catch (err) {
+      logAppFailure({
+        ticketId: attachmentTicketId,
+        tableName: 'cr7de_closingticketdetailses',
+        context: `Delete Document - ${document.label}`,
+        error: err,
+      })
       setError(
         err instanceof Error
           ? err.message

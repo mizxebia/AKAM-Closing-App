@@ -5,10 +5,15 @@ import {
   uploadClosingTicketFile,
   type ClosingTicketUploadColumnName,
 } from '../../closingTickets/api/closingTicketsService'
+import {
+  writeActionLog,
+  logAppFailure,
+} from '../../auditLog/api/auditLogService'
 
 interface ManualUploadRowProps {
   label: string
   columnName: ClosingTicketUploadColumnName
+  ticketId: string
   closingTicketId: string
   currentFileName?: string | null
   onUploaded: () => void | Promise<void>
@@ -17,6 +22,7 @@ interface ManualUploadRowProps {
 function ManualUploadRow({
   label,
   columnName,
+  ticketId,
   closingTicketId,
   currentFileName,
   onUploaded,
@@ -42,9 +48,22 @@ function ManualUploadRow({
         columnName,
         file
       )
+      writeActionLog({
+        ticketId,
+        tableName: 'cr7de_closingticketdetailses',
+        action: `Upload Document - ${label}`,
+        details: { fileName: file.name },
+      })
       setSuccess(true)
       await onUploaded()
     } catch (err) {
+      logAppFailure({
+        ticketId,
+        tableName: 'cr7de_closingticketdetailses',
+        context: `Upload Document - ${label}`,
+        error: err,
+        details: { fileName: file.name },
+      })
       setError(
         err instanceof Error
           ? err.message
@@ -89,6 +108,7 @@ function ManualUploadRow({
 }
 
 interface ManualDocumentUploadProps {
+  ticketId: string
   closingTicketId: string
   currentInvoicePdfName?: string | null
   currentNewOwnerPdfName?: string | null
@@ -96,6 +116,7 @@ interface ManualDocumentUploadProps {
 }
 
 export function ManualDocumentUpload({
+  ticketId,
   closingTicketId,
   currentInvoicePdfName,
   currentNewOwnerPdfName,
@@ -111,6 +132,7 @@ export function ManualDocumentUpload({
         <ManualUploadRow
           label="Invoice PDF"
           columnName="cr109_closingticketdetailspdf"
+          ticketId={ticketId}
           closingTicketId={closingTicketId}
           currentFileName={currentInvoicePdfName}
           onUploaded={onUploaded}
@@ -118,6 +140,7 @@ export function ManualDocumentUpload({
         <ManualUploadRow
           label="New Owner Ticket PDF"
           columnName="cr109_newownerticketpdf"
+          ticketId={ticketId}
           closingTicketId={closingTicketId}
           currentFileName={currentNewOwnerPdfName}
           onUploaded={onUploaded}

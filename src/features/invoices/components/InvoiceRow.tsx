@@ -29,6 +29,7 @@ import {
 
 interface InvoiceRowProps {
   record: InvoiceRecord
+  rowNumber: number
   columns: InvoiceColumn[]
   onSaveEdit: (
     recordId: string,
@@ -75,6 +76,7 @@ function createEditRowFromRecord(
 
 export function InvoiceRow({
   record,
+  rowNumber,
   columns,
   onSaveEdit,
   onDelete,
@@ -122,6 +124,7 @@ export function InvoiceRow({
   if (isEditing) {
     return (
       <tr className="invoice-row-editing">
+        <td className="invoice-row-number">{rowNumber}</td>
         <td>
           <select
             className="invoice-edit-control"
@@ -277,6 +280,7 @@ export function InvoiceRow({
 
   return (
     <tr>
+      <td className="invoice-row-number">{rowNumber}</td>
       {columns.map((column) => {
         if (column.key === 'cr7de_amount') {
           const raw = record.cr7de_amount

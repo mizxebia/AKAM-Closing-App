@@ -23,6 +23,7 @@ import {
   deleteClosingTicketFile,
   updateClosingTicket,
   uploadClosingTicketFile,
+  UPLOAD_COLUMN_LABELS,
 } from '../api/closingTicketsService'
 import { syncNewOwnerTicketFromClosingTicket } from '../../newOwnerTickets/api/newOwnerTicketService'
 import { BuildingCodeLookup } from './BuildingCodeLookup'
@@ -35,7 +36,10 @@ import { useCurrentUser } from '../hooks/useCurrentUser'
 import { ProcessingDots } from '../../../components/feedback/ProcessingDots'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import { getBuildings } from '../data/buildingListCache'
-import { logAppFailure } from '../../auditLog/api/auditLogService'
+import {
+  logAppFailure,
+  writeActionLog,
+} from '../../auditLog/api/auditLogService'
 import {
   COOP_TRANSFER_PACKAGE_TYPE,
   generateTicketId,
@@ -452,6 +456,7 @@ function validateForm(
 }
 
 async function uploadPendingFiles(
+  ticketId: string,
   recordId: string,
   pendingFiles: PendingFiles
 ) {
@@ -461,7 +466,26 @@ async function uploadPendingFiles(
   )
 
   for (const [columnName, file] of uploads) {
-    await uploadClosingTicketFile(recordId, columnName, file)
+    const label = UPLOAD_COLUMN_LABELS[columnName]
+
+    try {
+      await uploadClosingTicketFile(recordId, columnName, file)
+      writeActionLog({
+        ticketId,
+        tableName: 'cr7de_closingticketdetailses',
+        action: `Upload Document - ${label}`,
+        details: { fileName: file.name },
+      })
+    } catch (error) {
+      logAppFailure({
+        ticketId,
+        tableName: 'cr7de_closingticketdetailses',
+        context: `Upload Document - ${label}`,
+        error,
+        details: { fileName: file.name },
+      })
+      throw error
+    }
   }
 }
 
@@ -498,6 +522,7 @@ export function CreateClosingTicketForm({
         const record = await createClosingTicket(payload)
         await syncNewOwnerTicketFromClosingTicket(record)
         await uploadPendingFiles(
+          record.cr7de_ticketid ?? record.cr7de_closingticketdetailsid,
           record.cr7de_closingticketdetailsid,
           pendingFiles
         )
@@ -539,6 +564,7 @@ export function EditClosingTicketForm({
         )
         await syncNewOwnerTicketFromClosingTicket(updatedRecord)
         await uploadPendingFiles(
+          record.cr7de_ticketid ?? record.cr7de_closingticketdetailsid,
           record.cr7de_closingticketdetailsid,
           pendingFiles
         )
@@ -790,6 +816,11 @@ function ClosingTicketEditorForm({
 
     try {
       await deleteClosingTicketFile(recordId, columnName)
+      writeActionLog({
+        ticketId: formState.cr7de_ticketid,
+        tableName: 'cr7de_closingticketdetailses',
+        action: `Delete Document - ${UPLOAD_COLUMN_LABELS[columnName]}`,
+      })
       const shouldResetToReadyForPostClosing =
         columnName === 'cr109_rpttdocument' &&
         (ticketStatusLabel === 'PostClosing' ||
@@ -842,9 +873,8 @@ function ClosingTicketEditorForm({
       logAppFailure({
         ticketId: formState.cr7de_ticketid,
         tableName: 'cr7de_closingticketdetailses',
-        context: 'Delete Document',
+        context: `Delete Document - ${UPLOAD_COLUMN_LABELS[columnName]}`,
         error,
-        details: { columnName },
       })
       setSaveError(
         error instanceof Error

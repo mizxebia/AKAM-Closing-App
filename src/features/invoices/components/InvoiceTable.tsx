@@ -240,6 +240,7 @@ export function InvoiceTable({
                   <table className="invoice-table">
                     <thead>
                       <tr>
+                        <th>#</th>
                         {invoiceColumns.map((column) => (
                           <th key={column.key}>
                             {column.label}
@@ -249,12 +250,13 @@ export function InvoiceTable({
                       </tr>
                     </thead>
                     <tbody>
-                      {groupRecords.map((record) => (
+                      {groupRecords.map((record, index) => (
                         <InvoiceRow
                           key={
                             record.cr7de_invoicedetailsid
                           }
                           record={record}
+                          rowNumber={index + 1}
                           columns={invoiceColumns}
                           onSaveEdit={onSaveEdit}
                           onDelete={onDelete}

@@ -16,6 +16,7 @@ type DueAtClosingValue = Exclude<
 
 interface ChargeEntryRowProps {
   row: InvoiceChargeFormRow
+  rowNumber: number
   onChange: (
     rowId: string,
     changedFields: Partial<InvoiceChargeFormRow>
@@ -36,12 +37,14 @@ const payableToOptions = Object.entries(
 
 export function ChargeEntryRow({
   row,
+  rowNumber,
   onChange,
   onRemove,
   canRemove,
 }: ChargeEntryRowProps) {
   return (
     <tr>
+      <td className="charge-row-number">{rowNumber}</td>
       <td>
         <select
           value={row.cr109_dueatclosing}

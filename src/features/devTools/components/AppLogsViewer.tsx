@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ChevronDown, ChevronRight, RefreshCw, X } from 'lucide-react'
+import {
+  ChevronDown,
+  ChevronRight,
+  FileText,
+  RefreshCw,
+  X,
+} from 'lucide-react'
 import {
   Sheet,
   SheetContent,
@@ -10,9 +16,9 @@ import {
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import {
   getChangeLogs,
-  isAppFailureAction,
+  getLogType,
   type ChangeLogRecord,
-  type ChangeOperation,
+  type LogType,
 } from '../../auditLog/api/auditLogService'
 
 const TABLE_LABELS: Record<string, string> = {
@@ -26,16 +32,39 @@ const TABLE_LABELS: Record<string, string> = {
   crc5c_buyerledgers: 'Buyer Ledger',
 }
 
-const OPERATION_OPTIONS: Array<{
-  value: '' | ChangeOperation
-  label: string
-}> = [
-  { value: '', label: 'All operations' },
-  { value: 'action', label: 'Action' },
-  { value: 'create', label: 'Create' },
-  { value: 'update', label: 'Update' },
-  { value: 'delete', label: 'Delete' },
+const TYPE_OPTIONS: Array<{ value: '' | LogType; label: string }> = [
+  { value: '', label: 'All types' },
+  { value: 'file', label: 'File Logs' },
+  { value: 'status', label: 'Status Logs' },
+  { value: 'communication', label: 'Communication Logs' },
+  { value: 'create', label: 'Create Logs' },
+  { value: 'update', label: 'Update Logs' },
+  { value: 'delete', label: 'Delete Logs' },
+  { value: 'failure', label: 'Failure Logs' },
+  { value: 'other', label: 'Other Logs' },
 ]
+
+const TYPE_BADGE_CLASSES: Record<LogType, string> = {
+  file: 'bg-indigo-100 text-indigo-700',
+  status: 'bg-amber-100 text-amber-700',
+  communication: 'bg-sky-100 text-sky-700',
+  create: 'bg-emerald-100 text-emerald-700',
+  update: 'bg-blue-100 text-blue-700',
+  delete: 'bg-red-100 text-red-700',
+  failure: 'bg-red-100 text-red-700',
+  other: 'bg-slate-100 text-slate-700',
+}
+
+const TYPE_BADGE_LABELS: Record<LogType, string> = {
+  file: 'file',
+  status: 'status',
+  communication: 'sent',
+  create: 'create',
+  update: 'update',
+  delete: 'delete',
+  failure: 'failed',
+  other: 'action',
+}
 
 function formatTableLabel(tableName: string) {
   return TABLE_LABELS[tableName] ?? tableName
@@ -87,9 +116,7 @@ export function AppLogsViewer({
     ticketId ?? ''
   )
   const [tableFilter, setTableFilter] = useState('')
-  const [operationFilter, setOperationFilter] = useState<
-    '' | ChangeOperation
-  >('')
+  const [typeFilter, setTypeFilter] = useState<'' | LogType>('')
   const [logs, setLogs] = useState<ChangeLogRecord[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -105,7 +132,7 @@ export function AppLogsViewer({
       const results = await getChangeLogs({
         ticketId: ticketFilter || undefined,
         tableName: tableFilter || undefined,
-        operation: operationFilter || undefined,
+        type: typeFilter || undefined,
       })
       setLogs(results)
     } catch (err) {
@@ -188,8 +215,8 @@ export function AppLogsViewer({
           </button>
         </SheetHeader>
 
-        <div className="flex flex-col gap-4 overflow-y-auto px-1 py-4">
-          <div className="flex flex-wrap items-end gap-3">
+        <div className="flex flex-col gap-5 overflow-y-auto px-1 py-4">
+          <div className="flex flex-wrap items-end gap-4">
             <label className="flex flex-col gap-1 text-xs font-medium text-[#475569]">
               Ticket ID
               <input
@@ -222,17 +249,15 @@ export function AppLogsViewer({
             </label>
 
             <label className="flex flex-col gap-1 text-xs font-medium text-[#475569]">
-              Operation
+              Type
               <select
                 className="h-9 rounded-md border border-[#e2e8f0] px-2 text-sm"
-                value={operationFilter}
+                value={typeFilter}
                 onChange={(e) =>
-                  setOperationFilter(
-                    e.target.value as '' | ChangeOperation
-                  )
+                  setTypeFilter(e.target.value as '' | LogType)
                 }
               >
-                {OPERATION_OPTIONS.map((option) => (
+                {TYPE_OPTIONS.map((option) => (
                   <option
                     key={option.value}
                     value={option.value}
@@ -265,7 +290,7 @@ export function AppLogsViewer({
           )}
 
           {logs.length > 0 && (
-            <div className="flex flex-col divide-y divide-[#e2e8f0] rounded-lg border border-[#e2e8f0]">
+            <div className="flex flex-col divide-y divide-[#e2e8f0] rounded-lg border border-[#e2e8f0] text-sm">
               {logs.map((entry) => {
                 const isExpanded = expandedId === entry.id
                 const actionLabel =
@@ -273,9 +298,8 @@ export function AppLogsViewer({
                   typeof entry.newData?.action === 'string'
                     ? entry.newData.action
                     : null
-                const isFailure = Boolean(
-                  actionLabel && isAppFailureAction(actionLabel)
-                )
+                const logType = getLogType(entry)
+                const isFailure = logType === 'failure'
                 return (
                   <div
                     key={entry.id}
@@ -283,7 +307,7 @@ export function AppLogsViewer({
                   >
                     <button
                       type="button"
-                      className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm hover:bg-[#f8fafc]"
+                      className="flex w-full flex-wrap items-center gap-x-5 gap-y-1.5 px-4 py-3 text-left text-sm hover:bg-[#f8fafc]"
                       onClick={() =>
                         setExpandedId(
                           isExpanded ? null : entry.id
@@ -298,55 +322,53 @@ export function AppLogsViewer({
                       <span className="w-40 shrink-0 text-xs text-[#64748b]">
                         {formatTimestamp(entry.createdOn)}
                       </span>
-                      <span
-                        className={`w-44 shrink-0 truncate font-medium ${
-                          isFailure ? 'text-red-700' : 'text-[#1E3A47]'
-                        }`}
-                      >
-                        {actionLabel ?? formatTableLabel(entry.tableName)}
+                      <span className="flex min-w-[160px] flex-1 items-center gap-1.5">
+                        {logType === 'file' && (
+                          <FileText
+                            className="size-3.5 shrink-0 text-indigo-500"
+                            aria-label="File log"
+                          />
+                        )}
+                        <span
+                          className={`truncate font-medium ${
+                            isFailure ? 'text-red-700' : 'text-[#1E3A47]'
+                          }`}
+                        >
+                          {actionLabel ?? formatTableLabel(entry.tableName)}
+                        </span>
                       </span>
                       <span
-                        className={`w-16 shrink-0 rounded-full px-2 py-0.5 text-center text-[10px] font-semibold uppercase tracking-wide ${
-                          isFailure
-                            ? 'bg-red-100 text-red-700'
-                            : entry.operation === 'action'
-                              ? 'bg-amber-100 text-amber-700'
-                              : entry.operation === 'create'
-                                ? 'bg-emerald-100 text-emerald-700'
-                                : entry.operation === 'delete'
-                                  ? 'bg-red-100 text-red-700'
-                                  : 'bg-blue-100 text-blue-700'
-                        }`}
+                        className={`w-20 shrink-0 rounded-full px-2 py-1 text-center text-[10px] font-semibold uppercase tracking-wide ${TYPE_BADGE_CLASSES[logType]}`}
                       >
-                        {isFailure ? 'failed' : entry.operation}
+                        {TYPE_BADGE_LABELS[logType]}
                       </span>
                       {!ticketId && (
                         <span className="w-32 shrink-0 truncate text-xs text-[#64748b]">
                           {entry.ticketId}
                         </span>
                       )}
-                      <span className="truncate text-xs text-[#94a3b8]">
+                      <span className="w-40 shrink-0 truncate text-xs text-[#94a3b8]">
                         {entry.modifiedBy}
                       </span>
                     </button>
 
                     {isExpanded && (
-                      <div className="bg-[#f8fafc] px-9 py-3">
+                      <div className="bg-[#f8fafc] px-9 py-4">
                         {diffKeys(entry).length === 0 ? (
                           <p className="text-xs text-[#94a3b8]">
                             No field-level data recorded.
                           </p>
                         ) : (
-                          <table className="w-full text-xs">
+                          <table className="w-full border-separate border-spacing-y-1 text-xs">
                             <thead>
                               <tr className="text-left text-[#94a3b8]">
-                                <th className="pb-1 pr-3 font-medium">
+                                <th className="pb-2 pr-4 font-medium">
                                   Field
                                 </th>
-                                <th className="pb-1 pr-3 font-medium">
+                                <th className="pb-2 pr-4 font-medium">
                                   Old
                                 </th>
-                                <th className="pb-1 font-medium">
+                                <th className="pb-2 font-medium">
                                   New
                                 </th>
                               </tr>
@@ -372,13 +394,13 @@ export function AppLogsViewer({
 
                                 return (
                                   <tr key={key}>
-                                    <td className="py-0.5 pr-3 font-mono text-[#475569]">
+                                    <td className="py-1 pr-4 align-top font-mono text-[#475569]">
                                       {key}
                                     </td>
                                     <td
-                                      className={`py-0.5 pr-3 ${
+                                      className={`py-1 pr-4 align-top ${
                                         hadOldValue && isChanged
-                                          ? 'rounded bg-red-50 px-1.5 text-red-700 line-through decoration-red-300'
+                                          ? 'rounded bg-red-50 px-2 py-1 text-red-700 line-through decoration-red-300'
                                           : hadOldValue
                                             ? 'text-[#64748b]'
                                             : 'text-[#94a3b8]'
@@ -387,9 +409,9 @@ export function AppLogsViewer({
                                       {formattedOld}
                                     </td>
                                     <td
-                                      className={`py-0.5 ${
+                                      className={`py-1 align-top ${
                                         hasNewValue && isChanged
-                                          ? 'rounded bg-emerald-50 px-1.5 text-emerald-700'
+                                          ? 'rounded bg-emerald-50 px-2 py-1 text-emerald-700'
                                           : hasNewValue
                                             ? 'text-[#1E3A47]'
                                             : 'text-[#94a3b8]'

@@ -21,6 +21,19 @@ export type ClosingTicketUploadColumnName =
   | 'cr109_chequesdocument'
   | 'cr109_batchdocument'
 
+/** Human-readable labels for upload columns, used in App Logs entries. */
+export const UPLOAD_COLUMN_LABELS: Record<
+  ClosingTicketUploadColumnName,
+  string
+> = {
+  cr109_purchaseapplicationform: 'Purchase Application Form',
+  cr109_rpttdocument: 'RPTT Document',
+  cr109_closingticketdetailspdf: 'Invoice PDF',
+  cr109_newownerticketpdf: 'New Owner Ticket PDF',
+  cr109_chequesdocument: 'Cheques Document',
+  cr109_batchdocument: 'Batch Document',
+}
+
 const TABLE_NAME = 'cr7de_closingticketdetailses'
 const closingTicketTableName = TABLE_NAME
 const dataverseClient = getClient(dataSourcesInfo)

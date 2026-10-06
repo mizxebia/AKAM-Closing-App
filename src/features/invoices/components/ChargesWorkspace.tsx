@@ -344,6 +344,7 @@ export function ChargesWorkspace({
           <table className="charge-entry-table">
             <thead>
               <tr>
+                <th>#</th>
                 <th>Payment</th>
                 <th>Paid By</th>
                 <th>Amount</th>
@@ -355,10 +356,11 @@ export function ChargesWorkspace({
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
+              {rows.map((row, index) => (
                 <ChargeEntryRow
                   key={row.id}
                   row={row}
+                  rowNumber={index + 1}
                   onChange={updateRow}
                   onRemove={removeRow}
                   canRemove={rows.length > 1}

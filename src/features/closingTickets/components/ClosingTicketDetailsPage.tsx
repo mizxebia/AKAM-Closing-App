@@ -672,6 +672,7 @@ export function ClosingTicketDetailsPage({
             </div>
 
             <ManualDocumentUpload
+              ticketId={ticketId}
               closingTicketId={record.cr7de_closingticketdetailsid}
               currentInvoicePdfName={
                 record.cr109_closingticketdetailspdf_name

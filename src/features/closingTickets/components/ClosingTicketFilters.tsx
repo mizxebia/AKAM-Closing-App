@@ -99,14 +99,16 @@ export function ClosingTicketFilters({
         ))}
       </div>
 
-      <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto_auto_auto_auto] sm:items-end">
-        <SearchFilter
-          id="closing-ticket-general-search"
-          label="Search closings"
-          placeholder="Search closings by ID, building, unit, status, buyer, seller..."
-          value={filters.search}
-          onChange={onSearchChange}
-        />
+      <div className="flex flex-wrap items-end gap-2">
+        <div className="min-w-[220px] flex-1">
+          <SearchFilter
+            id="closing-ticket-general-search"
+            label="Search closings"
+            placeholder="Search closings by ID, building, unit, status, buyer, seller..."
+            value={filters.search}
+            onChange={onSearchChange}
+          />
+        </div>
 
         {showDocumentFilter && (
           <label
@@ -118,7 +120,7 @@ export function ClosingTicketFilters({
             </span>
             <select
               id="closing-ticket-document-filter"
-              className="h-9 min-w-[220px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
+              className="h-9 min-w-[170px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
               value={filters.documentFilter}
               onChange={(event) =>
                 onDocumentFilterChange(event.target.value)
@@ -144,7 +146,7 @@ export function ClosingTicketFilters({
             </span>
             <select
               id="closing-ticket-charges-filter"
-              className="h-9 min-w-[220px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
+              className="h-9 min-w-[170px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
               value={filters.chargesFilter}
               onChange={(event) =>
                 onChargesFilterChange(
@@ -170,7 +172,7 @@ export function ClosingTicketFilters({
             </span>
             <select
               id="closing-ticket-bot-status-filter"
-              className="h-9 min-w-[220px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
+              className="h-9 min-w-[170px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
               value={filters.botStatusFilter}
               onChange={(event) =>
                 onBotStatusFilterChange(
@@ -200,7 +202,7 @@ export function ClosingTicketFilters({
             </span>
             <select
               id="closing-ticket-package-type-filter"
-              className="h-9 min-w-[220px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
+              className="h-9 min-w-[170px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
               value={filters.packageTypeFilter}
               onChange={(event) =>
                 onPackageTypeFilterChange(

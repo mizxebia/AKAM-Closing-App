@@ -1839,6 +1839,15 @@ body {
   letter-spacing: 0.1em;
 }
 
+.charge-entry-table th:first-child,
+.charge-row-number {
+  width: 1%;
+  white-space: nowrap;
+  text-align: center;
+  color: #94A3B8;
+  font-weight: 600;
+}
+
 .charge-entry-table input,
 .charge-entry-table select {
   width: 100%;
@@ -2569,60 +2578,73 @@ body {
   font-size: 0.78rem;
 }
 
-.invoice-table td:first-child,
-.invoice-table td:nth-child(3) {
+.invoice-table td:nth-child(2),
+.invoice-table td:nth-child(4) {
   color: #1E3A47;
   font-weight: 600;
 }
 
-/* 7 columns + actions = 8 cells total, 100% width used */
+.invoice-row-number {
+  color: #94A3B8 !important;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* # + 7 columns + actions = 9 cells total, 100% width used */
 .invoice-table th:nth-child(1),
 .invoice-table td:nth-child(1) {
-  /* Charge Title */
-  width: 22%;
+  /* # */
+  width: 4%;
+  text-align: center;
 }
 
 .invoice-table th:nth-child(2),
 .invoice-table td:nth-child(2) {
-  /* Party Type */
-  width: 9%;
+  /* Charge Title */
+  width: 20%;
 }
 
 .invoice-table th:nth-child(3),
 .invoice-table td:nth-child(3) {
-  /* Amount */
-  width: 9%;
+  /* Party Type */
+  width: 8%;
 }
 
 .invoice-table th:nth-child(4),
 .invoice-table td:nth-child(4) {
+  /* Amount */
+  width: 8%;
+}
+
+.invoice-table th:nth-child(5),
+.invoice-table td:nth-child(5) {
   /* Payable To — wide enough for "AKAM Associates, Inc" */
-  width: 16%;
+  width: 15%;
   overflow: visible;
   white-space: normal;
   word-break: break-word;
 }
 
-.invoice-table th:nth-child(5),
-.invoice-table td:nth-child(5) {
-  /* Cheque # */
-  width: 9%;
-}
-
 .invoice-table th:nth-child(6),
 .invoice-table td:nth-child(6) {
-  /* Ledger */
+  /* Cheque # */
   width: 8%;
 }
 
 .invoice-table th:nth-child(7),
 .invoice-table td:nth-child(7) {
-  /* Created On */
-  width: 10%;
+  /* Ledger */
+  width: 8%;
 }
 
 .invoice-table th:nth-child(8),
 .invoice-table td:nth-child(8) {
+  /* Created On */
+  width: 10%;
+}
+
+.invoice-table th:nth-child(9),
+.invoice-table td:nth-child(9) {
   /* Actions */
   width: 17%;
   overflow: visible;

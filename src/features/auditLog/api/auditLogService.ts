@@ -64,6 +64,47 @@ function getModifiedBy(): Promise<string> {
   return _modifiedByPromise
 }
 
+// Separate from modifiedBy (a display name) — this resolves a stable
+// identifier (UPN/email, falling back to the AAD object id) so action
+// log entries can record exactly which account performed them.
+let _userIdPromise: Promise<string> | null = null
+
+async function resolveUserId(): Promise<string> {
+  try {
+    const { getContext } = await import('@microsoft/power-apps/app')
+    const ctx = await getContext()
+    const id =
+      ctx.user?.userPrincipalName ?? ctx.user?.objectId ?? null
+    if (id) {
+      return id
+    }
+  } catch (e) {
+    console.warn('[auditLog] resolveUserId via getContext() failed:', e)
+  }
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const xrm = (window as any).Xrm
+    const userSettings = xrm?.Utility?.getGlobalContext?.()?.userSettings
+    const id =
+      userSettings?.userId ?? userSettings?.userPrincipalName ?? null
+    if (id) {
+      return id
+    }
+  } catch (e) {
+    console.warn('[auditLog] resolveUserId via Xrm failed:', e)
+  }
+
+  return 'unknown'
+}
+
+function getUserId(): Promise<string> {
+  if (!_userIdPromise) {
+    _userIdPromise = resolveUserId()
+  }
+  return _userIdPromise
+}
+
 export type ChangeOperation =
   | 'create'
   | 'update'
@@ -156,13 +197,18 @@ export function writeActionLog(entry: {
   action: string
   details?: Record<string, unknown>
 }): void {
-  writeChangeLog({
-    ticketId: entry.ticketId,
-    tableName: entry.tableName,
-    operation: 'create',
-    oldData: null,
-    newData: { action: entry.action, ...entry.details },
-  })
+  // Resolving the user id is async, so this hop keeps writeActionLog's
+  // own signature synchronous/fire-and-forget like every other logger here.
+  void (async () => {
+    const userId = await getUserId()
+    writeChangeLog({
+      ticketId: entry.ticketId,
+      tableName: entry.tableName,
+      operation: 'create',
+      oldData: null,
+      newData: { action: entry.action, userId, ...entry.details },
+    })
+  })()
 }
 
 const APP_FAILURE_PREFIX = 'APP FAILURE'
@@ -211,6 +257,84 @@ export function isAppFailureAction(action: string): boolean {
   return action.startsWith(APP_FAILURE_PREFIX)
 }
 
+/**
+ * Sub-categorizes 'action' log entries so the App Logs viewer can offer
+ * filters more useful than the raw create/update/delete/action split —
+ * e.g. separating a file upload from a status override from a Send to
+ * AR email, which all otherwise land in the same 'action' bucket.
+ *
+ * Matched by known action-label prefixes (every label is defined by this
+ * codebase, not user input) rather than keyword guessing, so labels like
+ * "Regenerate AR Email" don't get misclassified as a file action just
+ * because they contain "generate".
+ */
+export type LogType =
+  | 'create'
+  | 'update'
+  | 'delete'
+  | 'file'
+  | 'status'
+  | 'communication'
+  | 'failure'
+  | 'other'
+
+const FILE_ACTION_PREFIXES = [
+  'Generate Invoice',
+  'Generate New Owner Ticket',
+  'Upload Document',
+  'Delete Document',
+]
+
+const STATUS_ACTION_PREFIXES = [
+  'Developer Status Override',
+  'Update Ticket Status',
+  'Validate Closing',
+]
+
+const COMMUNICATION_ACTION_PREFIXES = [
+  'Send to AR Team',
+  'Send Again to AR',
+  'Regenerate AR Email',
+  'Save AR Draft',
+  'Save AR Email Draft',
+]
+
+function classifyActionLabel(
+  action: string
+): Exclude<LogType, 'create' | 'update' | 'delete' | 'failure'> {
+  if (FILE_ACTION_PREFIXES.some((prefix) => action.startsWith(prefix))) {
+    return 'file'
+  }
+  if (STATUS_ACTION_PREFIXES.some((prefix) => action.startsWith(prefix))) {
+    return 'status'
+  }
+  if (
+    COMMUNICATION_ACTION_PREFIXES.some((prefix) =>
+      action.startsWith(prefix)
+    )
+  ) {
+    return 'communication'
+  }
+  return 'other'
+}
+
+export function getLogType(entry: ChangeLogRecord): LogType {
+  if (entry.operation !== 'action') {
+    return entry.operation
+  }
+
+  const action =
+    typeof entry.newData?.action === 'string'
+      ? entry.newData.action
+      : ''
+
+  if (isAppFailureAction(action)) {
+    return 'failure'
+  }
+
+  return classifyActionLabel(action)
+}
+
 export interface ChangeLogRecord {
   id: string
   ticketId: string
@@ -226,6 +350,8 @@ export interface ChangeLogFilters {
   ticketId?: string
   tableName?: string
   operation?: ChangeOperation
+  /** Finer-grained than `operation` — see `getLogType`. */
+  type?: LogType
   limit?: number
 }
 
@@ -322,9 +448,15 @@ export async function getChangeLogs(
     }
   )
 
-  return filters.operation
+  const operationFiltered = filters.operation
     ? records.filter((r) => r.operation === filters.operation)
     : records
+
+  return filters.type
+    ? operationFiltered.filter(
+        (r) => getLogType(r) === filters.type
+      )
+    : operationFiltered
 }
 
 /**
