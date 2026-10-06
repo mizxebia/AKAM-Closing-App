@@ -1839,15 +1839,6 @@ body {
   letter-spacing: 0.1em;
 }
 
-.charge-entry-table th:first-child,
-.charge-row-number {
-  width: 1%;
-  white-space: nowrap;
-  text-align: center;
-  color: #94A3B8;
-  font-weight: 600;
-}
-
 .charge-entry-table input,
 .charge-entry-table select {
   width: 100%;
