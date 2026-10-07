@@ -769,7 +769,10 @@ export function ClosingTicketDetailsPage({
               loading={invoicesLoading}
               error={invoicesError}
               onRefresh={refreshInvoicesAndRecord}
-              readOnly={isReadOnly}
+              readOnly={
+                Number(record.cr7de_ticketstatus) ===
+                TRANSFERRING_BUILDING_STATUS
+              }
             />
           )}
 
