@@ -119,17 +119,16 @@ describe('NewOwnerTicketForm', () => {
     expect(onSubmit).toHaveBeenCalledTimes(1)
   })
 
-  it('shows the Validate button only when eligible, and confirms before validating', async () => {
+  it('shows the Validate button only when eligible, and calls onValidate when clicked', async () => {
+    // Confirmation now happens in a single dialog one level up (in
+    // NewOwnerTicketTab, combined with the Charge Date confirmation),
+    // so this button calls onValidate directly rather than opening its
+    // own dialog first.
     const user = userEvent.setup()
     const { onValidate } = renderForm({ showValidateButton: true })
 
     await user.click(
       screen.getByRole('button', { name: /^validate$/i })
-    )
-    expect(onValidate).not.toHaveBeenCalled()
-
-    await user.click(
-      screen.getByRole('button', { name: /yes, validate and lock/i })
     )
     expect(onValidate).toHaveBeenCalledTimes(1)
   })

@@ -1075,6 +1075,14 @@ export function NewOwnerTicketTab({
               Linked to Closing Ticket{' '}
               {closingTicket.cr7de_ticketid ?? 'current session'}
             </span>
+            {closingTicket.cr109_chargedate && (
+              <span className="mt-1 block text-sm font-medium text-emerald-700">
+                Scheduled Charges Start Date:{' '}
+                {formatDateInputForDisplay(
+                  getDateInputValue(closingTicket.cr109_chargedate)
+                )}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -1176,8 +1184,15 @@ export function NewOwnerTicketTab({
                   . Is this correct?
                 </>
               ) : (
-                'Choose the date Scheduled Charges should start for this closing, then continue with validation.'
+                'Choose the date Scheduled Charges should start for this closing.'
               )}
+              <br />
+              <br />
+              Confirming will also validate this closing. This action{' '}
+              <strong>cannot be undone</strong> — once validated, the
+              ticket will be permanently locked and no fields,
+              documents, or charges can be edited. The New Owner Ticket
+              PDF will be regenerated automatically.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -1217,7 +1232,9 @@ export function NewOwnerTicketTab({
                   }
                   disabled={chargeDateSaving}
                 >
-                  {chargeDateSaving ? 'Saving…' : 'Yes, looks good'}
+                  {chargeDateSaving
+                    ? 'Validating…'
+                    : 'Yes, validate and lock'}
                 </button>
               </>
             ) : (
@@ -1236,7 +1253,9 @@ export function NewOwnerTicketTab({
                   onClick={() => void confirmChargeDate(customChargeDate)}
                   disabled={chargeDateSaving || !customChargeDate}
                 >
-                  {chargeDateSaving ? 'Saving…' : 'Save & Validate'}
+                  {chargeDateSaving
+                    ? 'Validating…'
+                    : 'Validate and lock'}
                 </button>
               </>
             )}

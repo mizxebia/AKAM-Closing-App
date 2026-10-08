@@ -7,17 +7,6 @@ import type {
   EditableNewOwnerTicketField,
   NewOwnerTicketFormState,
 } from '../types/newOwnerTicket'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '../../../components/ui/alert-dialog'
 
 type FieldKind =
   | 'text'
@@ -758,38 +747,14 @@ export function NewOwnerTicketForm({
       {!readOnly && (
       <div className="form-actions new-owner-actions">
         {showValidateButton && (
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <button
-                className="primary-action-button"
-                type="button"
-                disabled={saving || validating}
-              >
-                {validating ? 'Validating...' : 'Validate'}
-              </button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>
-                  Validate this closing?
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action <strong>cannot be undone</strong>. Once validated, the ticket will be permanently locked — no fields, documents, or charges can be edited. The new owner ticket PDF will be regenerated automatically.
-                  <br /><br />
-                  Please confirm you have reviewed all details before proceeding.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={onValidate}
-                  className="bg-[#1E3A47] text-white hover:bg-[#152d38]"
-                >
-                  Yes, validate and lock
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <button
+            className="primary-action-button"
+            type="button"
+            disabled={saving || validating}
+            onClick={onValidate}
+          >
+            {validating ? 'Validating...' : 'Validate'}
+          </button>
         )}
         <button
           className="primary-action-button"

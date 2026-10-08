@@ -1,0 +1,285 @@
+AKAM CLOSING MANAGEMENT SYSTEM — CHANGE LOG
+Period covered: September 1, 2026 – October 8, 2026
+Prepared: October 8, 2026
+Purpose: Raw input for generating a task list (status: Completed / Deployed / In Progress / Needs Follow-up)
+
+============================================================
+HOW TO READ THIS FILE
+============================================================
+This is a chronological log of every change made to the AKAM Closing
+Management System (a React/TypeScript Power Apps "code app" backed by
+Dataverse) over the past ~5-6 weeks, plus related process/tooling work.
+
+STATUS KEY:
+  DEPLOYED        = Confirmed on GitHub (master branch) AND deployed to
+                     the Power Apps Dev environment as of Oct 8, 2026.
+  COMMITTED       = Confirmed pushed to GitHub master. Standalone Power
+                     Apps deployment for this specific change was not
+                     independently re-verified (see note below).
+  NEEDS CONFIG    = Code is written and deployed, but requires a
+                     non-code action (e.g. setting a value in the Power
+                     Platform admin center) before it's fully functional.
+  OPEN / FOLLOW-UP = Known gap or decision point, not yet actioned.
+
+IMPORTANT NOTE ON DEPLOYMENT STATUS:
+As of Oct 8, 2026, the entire current codebase (every item below) has
+been built, pushed to GitHub master, and deployed to the Power Apps Dev
+environment in one final push. So from a "is it live right now" point
+of view, everything below is live in Dev. The DEPLOYED/COMMITTED
+distinction below instead reflects how directly each change was
+verified during this engagement — items marked COMMITTED were authored
+earlier (by teammates or in earlier sessions) and are included for
+completeness from git history, not independently re-tested here.
+
+============================================================
+SECTION 1 — CHRONOLOGICAL CHANGE LOG
+============================================================
+
+--- Sept 1, 2026 ---
+
+1. New Owner Ticket email template & "Regenerate" button [COMMITTED]
+   Added a new email subject/body template for the New Owner Ticket
+   workflow and a Regenerate button to refresh it on demand.
+   (commit 3f331fa)
+
+2. Help Centre content updates, notes bug fixes [COMMITTED]
+   (commits 9c57477, 95703b3)
+
+--- Sept 7, 2026 ---
+
+3. Delete Closing Ticket feature (Developer Mode) [COMMITTED]
+   Added the ability to permanently delete a closing ticket record,
+   gated behind Developer Mode plus a confirmation/password step.
+   (commit f9d193c)
+
+--- Sept 8, 2026 ---
+
+4. Email body formatting fix — removed stray <br> in notes [COMMITTED]
+   (commit 0808cbb)
+
+5. Tightened form validations across the app [COMMITTED]
+   (commit fee9c41)
+
+--- Sept 9–11, 2026 ---
+
+6. Delete flow refinements; Ticket Status pinned to sticky header;
+   Purchase Application Form made optional for Coop Transfer deals
+   [COMMITTED]
+   Coop Transfer closings don't involve a sale/purchase transaction,
+   so the Purchase Application Form requirement was dropped for that
+   package type specifically.
+   (commits c97d88f, ef5d7e3 — the latter also fixed stale/broken tests)
+
+--- Sept 16–17, 2026 ---
+
+7. Dashboard KPI cards — added "Closings Done" card, compacted
+   StatCard layout, shortened taglines for consistent card sizing
+   [COMMITTED]
+   (commits 799b9b9, cd1fb38, f3a7803, b3d8c90, eb12f37)
+
+8. Developer Mode filtering — Processing status filter, reordered
+   status tabs, Bot Status column + filter, Package Type filter
+   [COMMITTED]
+   Built out a family of Developer-Mode-only filters on the dashboard
+   (status, bot status, package type) to let developers slice tickets
+   by internal workflow state without exposing this to regular users.
+   (commits c5f755c, 43d644a, c746df2)
+
+--- Sept 21, 2026 ---
+
+9. Gated Processing / Transferring Building status tabs behind
+   Developer Mode [COMMITTED]
+   These internal pipeline statuses are now hidden from regular users
+   and only visible with Developer Mode enabled.
+   (commit 5d1c48b)
+
+10. Dataverse table schema update + "Send to AR" tab updates
+    [COMMITTED]
+    (commits 171de8a, d9de9de)
+
+--- Sept 23, 2026 ---
+
+11. Developer Mode Closing Date range filter [COMMITTED]
+    Added a from/to date-range filter on Closing Date, Developer-Mode
+    only.
+    (commit 42a7569)
+
+--- Sept 29, 2026 ---
+
+12. SSN/EIN field validation — enforce 9 digits [COMPLETED]
+    Added validation across 6 SSN/EIN fields (primary/secondary owner,
+    buyer 3, seller, seller 2, seller 3) in the New Owner Ticket form
+    requiring exactly 9 digits (or blank/N/A). Verified with full
+    type-check, lint, and build.
+
+13. Outlook-style "Send to AR Team" tab [COMPLETED — earlier work,
+    confirmed functioning]
+    A dedicated screen (appears once a ticket reaches Completed status)
+    styled like an email compose window: shows Invoice, New Owner
+    Ticket, Cheques, and Batch documents as attachments with
+    hover-to-preview; auto-generates a subject line (Buyer T-code /
+    Unit / Building / Name); lets the closing agent write a free-text
+    message (stored in the email-message Dataverse column); Send /
+    Save Draft / Regenerate actions trigger the underlying Power
+    Automate flows (invoice + new owner ticket regeneration, then the
+    email-to-AR flow).
+
+14. "App Logs" failure tracking — APP FAILURE audit trail [DEPLOYED]
+    Added logAppFailure()/isAppFailureAction() to the audit log
+    service. Every meaningful app-level operation (create/update
+    ticket, status change, document delete, Generate Invoice/New
+    Owner Ticket, Validate, Send to AR, bulk status change, bulk
+    create) now logs a distinct "APP FAILURE - <context>" entry
+    (with error message, stack trace, timestamp) when it throws —
+    separate from Power Automate flow failures, which already surface
+    via the ticket's own Bot Status field. The App Logs viewer
+    (Developer Mode) highlights these with a red badge/row.
+    (commit 1152cdf — pushed to GitHub and confirmed building clean)
+
+--- Sept 30, 2026 ---
+
+15. "Not on Domicile" purchase-form case updated [COMMITTED]
+    (commit e44129f)
+
+--- Oct 6, 2026 ---
+
+16. Invoice dropdown updates [COMMITTED]
+    (commit 5bd4063)
+
+17. Upload/generation logging + user attribution + App Logs filters +
+    row numbering [DEPLOYED]
+    - Every document upload and delete (not just failures) now writes
+      an App Logs entry, across all 4 upload entry points in the app
+      (create/edit ticket form, Dev Tools manual PDF upload, Send to
+      AR Team cheques/batch upload).
+    - Every action-type log entry now also records a resolved user ID
+      (UPN/email, falling back to the Entra object ID) alongside the
+      existing display name.
+    - App Logs viewer: added a file icon for file-type log entries,
+      and replaced the old blunt "Operation" filter with a richer
+      "Type" filter (File / Status / Communication / Create / Update
+      / Delete / Failure / Other), classified from the action label so
+      it works retroactively on historical entries too. Improved row
+      spacing/readability.
+    - Added row numbering (#) to both the "Add Payments" entry table
+      and the saved "Invoice Details" table on the Invoice tab.
+    - Fixed the Developer Mode filter bar on the dashboard, which was
+      overlapping/clipping at narrower widths — switched to a wrapping
+      flex layout.
+    (commit 5376f2b — pushed to GitHub and deployed to Power Apps Dev)
+
+--- Oct 7, 2026 ---
+
+18. Help Centre content update [COMMITTED]
+    (commit b3751d2)
+
+--- Oct 8, 2026 ---
+
+19. Invoice tab made editable for Completed / Sent to AR tickets
+    [COMMITTED]
+    (commit 92956b0)
+
+20. Dataverse schema reimport + Cheques/Batch document field changes
+    + Charges Date feature [DEPLOYED]
+    a) Reimported the full Dataverse schema after the admin added
+       columns, renamed one, and deleted one. This also picked up a
+       display-name format change across every status/bot-status/
+       transaction-type option set (e.g. "ReadyForPostClosing" became
+       "Ready For Post Closing") — fixed two status-badge color-lookup
+       tables that would otherwise have silently fallen back to
+       default styling for most statuses after the rename, and fixed
+       4 stale string comparisons in the create/edit ticket form.
+    b) Removed the "Cheques Document" field from the app entirely
+       (the column was deleted in Dataverse — it's now merged into
+       Batch Document).
+    c) Relabeled the remaining "Batch Document" field to "Batch And
+       Cheque Document" everywhere it appears (uploads, the Send to
+       AR email template, the attachments list, Help Centre docs),
+       matching the renamed Dataverse column title.
+    d) Added a "Charges Date" (cr109_chargedate) feature: clicking
+       Validate on the New Owner Ticket tab now computes a suggested
+       Scheduled Charges Start Date from the Closing Date and the
+       "NSC_Charges_Check_Date" environment variable threshold (if
+       the closing falls on/before the threshold day-of-month, charges
+       start the 1st of that month; otherwise the 1st of the next
+       month), shows a confirmation dialog ("Is this correct?"), and
+       only proceeds with validation once the user confirms the
+       suggestion or enters a custom date — saved to Dataverse either
+       way. This is not a visible form field anymore; it's fully
+       dialog-driven.
+    e) Properly registered cr109_NSC_Charges_Check_Date's underlying
+       Dataverse tables (environmentvariabledefinition,
+       environmentvariablevalue) as typed data sources in the code
+       app (via `npx power-apps add-data-source`), replacing an
+       earlier ad-hoc generic-connector query with generated, typed
+       services.
+    Verified with full type-check, project-wide lint (only pre-existing,
+    unrelated findings remain), production build, and the full unit
+    test suite (122/122 passing).
+    (commit 9fa7e30 — pushed to GitHub master and deployed to Power
+    Apps Dev via `npx power-apps push`)
+
+============================================================
+SECTION 2 — OPEN ITEMS / FOLLOW-UPS
+============================================================
+
+A. NSC_Charges_Check_Date has no value set in Dev [NEEDS CONFIG]
+   The environment variable "cr109_NSC_Charges_Check_Date" currently
+   has neither a default value nor an override value configured in
+   the Dev Power Platform environment. Until a number is set (via the
+   Power Platform admin center / maker portal), the Validate
+   confirmation dialog can't compute a suggested Charges Start Date
+   and will open directly into manual date-entry mode instead. The
+   user noted this is expected for now — production will get the real
+   value — but Dev should get a default value set if anyone wants to
+   test the auto-suggestion path before prod is configured.
+
+B. Power Apps deployment tooling [OPEN / FOLLOW-UP — informational]
+   The legacy `pac code push` CLI command currently fails against this
+   app with an HTTP 400 "workflowDetails" deserialization error (a
+   schema mismatch between that CLI and the current service), even
+   after updating `pac` to the latest version (2.12.2). The npm-based
+   CLI (`npx power-apps push --non-interactive`) works reliably and
+   should be used for all future deployments instead.
+
+C. Pre-existing lint debt [OPEN / FOLLOW-UP — low priority]
+   A number of `react-hooks/set-state-in-effect` and
+   `react-refresh/only-export-components` findings exist across the
+   codebase (e.g. BuildingCodeLookup.tsx, ClosingTicketTable.tsx,
+   DocumentViewerPanel.tsx, NewOwnerTicketTab.tsx, and others). These
+   predate this engagement's changes, have been repeatedly verified as
+   not introduced by any of the work above, and are not blocking —
+   listed here only as a possible future cleanup task.
+
+D. Bundle size [RESOLVED, informational]
+   The production JS bundle crossed Vite's 500kB warning threshold
+   briefly during this period; it was addressed earlier via vendor
+   chunk-splitting (framer-motion, lucide-react, @radix-ui,
+   @microsoft/power-apps split into separate chunks) and dead
+   dependency removal (react-pdf, pdfjs-dist, which were unused). The
+   bundle is currently back under the warning threshold.
+
+E. charges/invoice line-item save failures — audit logging scope
+   [OPEN / FOLLOW-UP — low priority]
+   The "APP FAILURE" logging pass (item 14 above) covered ticket-level
+   operations but intentionally did not extend into the Charges/
+   Invoices workspace's own Save All / Save Payments error paths,
+   since those already have decent inline error banners. Flagged in
+   case consistent audit-log coverage there becomes a priority later.
+
+============================================================
+SECTION 3 — KEY TECHNICAL CONTEXT (for reference)
+============================================================
+
+- Stack: React 19 + TypeScript (strict) + Vite 7 + Tailwind CSS v4,
+  running as a Microsoft Power Apps "code app" against Dataverse via
+  @microsoft/power-apps SDK.
+- Repo: github.com/mizxebia/AKAM-Closing-App, branch "master".
+- Power Apps Dev environment ID: e1cba263-6407-ef71-82d5-197403fb0d06.
+- `src/generated/` is auto-generated from the Dataverse schema — never
+  hand-edited; regenerated via `npx power-apps refresh-data-source`
+  (whole schema) or `npx power-apps add-data-source` (adding a new
+  table as a data source).
+- Critical build-verification rule: `tsc --noEmit -p .` does NOT type-
+  check this project (the tsconfig is solution-style with "files": []).
+  Always use `npx tsc -b` or the full `npm run build` instead.
