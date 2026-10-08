@@ -29,11 +29,11 @@ const statusDisplayByGeneratedLabel: Record<
     label: 'Processing',
     tone: 'processing',
   },
-  ReadyForPostClosing: {
+  'Ready For Post Closing': {
     label: 'Ready for Post Closing',
     tone: 'postClosing',
   },
-  PostClosing: {
+  'Post Closing': {
     label: 'Post Closing',
     tone: 'postClosing',
   },
@@ -41,11 +41,11 @@ const statusDisplayByGeneratedLabel: Record<
     label: 'Validate Closings',
     tone: 'validate',
   },
-  ValidateClosings: {
+  'Validate Closings': {
     label: 'Validate Closings',
     tone: 'validate',
   },
-  TransferringBuilding: {
+  'Transferring Building': {
     label: 'Transferring Building',
     tone: 'processing',
   },
@@ -53,7 +53,7 @@ const statusDisplayByGeneratedLabel: Record<
     label: 'Failed',
     tone: 'failed',
   },
-  SenttoAR: {
+  'Sent to AR': {
     label: 'Sent to AR',
     tone: 'sentToAR',
   },

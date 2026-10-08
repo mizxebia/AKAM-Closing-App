@@ -4,7 +4,7 @@
   "type": "Microsoft.PowerApps/apis",
   "properties": {
     "displayName": "OneDrive for Business",
-    "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1814/1.0.1814.4751/onedriveforbusiness/icon.png",
+    "iconUri": "https://static.powerapps.com/resource/ppcr/releases/v1.0.1827/1.0.1827.4902/onedriveforbusiness/icon.png",
     "iconBrandColor": "#0078D4",
     "apiEnvironment": "Shared",
     "isCustomApi": false,
@@ -69,8 +69,8 @@
           "one drive"
         ]
       },
-      "host": "unitedstates-002.azure-apim.net",
-      "basePath": "/apim/onedriveforbusiness",
+      "host": "e1cba2636407ef7182d5197403fb0d.06.environment.api.powerplatform.com",
+      "basePath": "/connectors/runtime/invoke/scalegroups/usa002/shards/02/apis/onedriveforbusiness/connections/",
       "schemes": [
         "https"
       ],
@@ -171,7 +171,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "id"
               }
             ],
             "responses": {
@@ -189,6 +190,7 @@
             "x-ms-openai-data": {
               "openai-enabled": true
             },
+            "x-ms-name-for-model": "get_file_metadata",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#get-file-metadata"
             }
@@ -254,7 +256,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "id"
               },
               {
                 "name": "body",
@@ -265,7 +268,9 @@
                   "format": "binary",
                   "type": "string"
                 },
-                "x-ms-summary": "File Content"
+                "x-ms-summary": "File Content",
+                "x-ms-name-for-model": "body",
+                "x-ms-description-for-model": "Set to the binary content of the file."
               }
             ],
             "responses": {
@@ -282,6 +287,8 @@
             "x-ms-capabilities": {
               "chunkTransfer": true
             },
+            "x-ms-name-for-model": "update_file",
+            "x-ms-description-for-model": "Replace the entire contents of an existing OneDrive for Business file, identified by its file id, with new binary content. Overwrites the current file data and returns the updated file metadata.",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#update-file"
             }
@@ -422,7 +429,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "path"
               }
             ],
             "responses": {
@@ -440,6 +448,7 @@
             "x-ms-openai-data": {
               "openai-enabled": true
             },
+            "x-ms-name-for-model": "get_file_metadata_by_path",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#get-file-metadata-using-path"
             }
@@ -507,7 +516,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "id"
               },
               {
                 "name": "type",
@@ -520,7 +530,9 @@
                   "Edit",
                   "Direct"
                 ],
-                "x-ms-summary": "Link type"
+                "x-ms-summary": "Link type",
+                "x-ms-name-for-model": "type",
+                "x-ms-description-for-model": "Set to the type of sharing link to create. One of: View (read-only), Edit (read-write), or Direct (a direct link to the item)."
               },
               {
                 "name": "scope",
@@ -533,7 +545,9 @@
                   "Anonymous",
                   "Organization"
                 ],
-                "x-ms-summary": "Link scope"
+                "x-ms-summary": "Link scope",
+                "x-ms-name-for-model": "scope",
+                "x-ms-description-for-model": "Set to the audience for the sharing link. One of: Anonymous (anyone with the link) or Organization (people in your organization). Optional; defaults to Anonymous if omitted."
               }
             ],
             "responses": {
@@ -554,6 +568,7 @@
               "family": "CreateShareLink",
               "revision": 1
             },
+            "x-ms-name-for-model": "create_share_link",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#create-share-link-%5bdeprecated%5d"
             }
@@ -621,7 +636,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "id"
               },
               {
                 "name": "type",
@@ -633,7 +649,9 @@
                   "View",
                   "Edit"
                 ],
-                "x-ms-summary": "Link type"
+                "x-ms-summary": "Link type",
+                "x-ms-name-for-model": "type",
+                "x-ms-description-for-model": "Set to the type of sharing link to create. One of: View (read-only) or Edit (read-write)."
               },
               {
                 "name": "scope",
@@ -646,7 +664,9 @@
                   "Anonymous",
                   "Organization"
                 ],
-                "x-ms-summary": "Link scope"
+                "x-ms-summary": "Link scope",
+                "x-ms-name-for-model": "scope",
+                "x-ms-description-for-model": "Set to the audience for the sharing link. One of: Anonymous (anyone with the link) or Organization (people in your organization). Optional; defaults to Anonymous if omitted."
               }
             ],
             "responses": {
@@ -667,6 +687,8 @@
               "family": "CreateShareLink",
               "revision": 2
             },
+            "x-ms-name-for-model": "create_share_link_v2",
+            "x-ms-description-for-model": "Create a sharing link for a OneDrive for Business file identified by its file id, returning a web URL that grants the chosen access (view or edit) at the chosen scope.",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#create-share-link"
             }
@@ -733,7 +755,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "path"
               },
               {
                 "name": "type",
@@ -746,7 +769,9 @@
                   "Edit",
                   "Direct"
                 ],
-                "x-ms-summary": "Link type"
+                "x-ms-summary": "Link type",
+                "x-ms-name-for-model": "type",
+                "x-ms-description-for-model": "Set to the type of sharing link to create. One of: View (read-only), Edit (read-write), or Direct (a direct link to the item)."
               },
               {
                 "name": "scope",
@@ -759,7 +784,9 @@
                   "Anonymous",
                   "Organization"
                 ],
-                "x-ms-summary": "Link scope"
+                "x-ms-summary": "Link scope",
+                "x-ms-name-for-model": "scope",
+                "x-ms-description-for-model": "Set to the audience for the sharing link. One of: Anonymous (anyone with the link) or Organization (people in your organization). Optional; defaults to Anonymous if omitted."
               }
             ],
             "responses": {
@@ -780,6 +807,7 @@
               "family": "CreateShareLinkByPath",
               "revision": 1
             },
+            "x-ms-name-for-model": "create_share_link_by_path",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#create-share-link-by-path-%5bdeprecated%5d"
             }
@@ -846,7 +874,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "path"
               },
               {
                 "name": "type",
@@ -858,7 +887,9 @@
                   "View",
                   "Edit"
                 ],
-                "x-ms-summary": "Link type"
+                "x-ms-summary": "Link type",
+                "x-ms-name-for-model": "type",
+                "x-ms-description-for-model": "Set to the type of sharing link to create. One of: View (read-only) or Edit (read-write)."
               },
               {
                 "name": "scope",
@@ -871,7 +902,9 @@
                   "Anonymous",
                   "Organization"
                 ],
-                "x-ms-summary": "Link scope"
+                "x-ms-summary": "Link scope",
+                "x-ms-name-for-model": "scope",
+                "x-ms-description-for-model": "Set to the audience for the sharing link. One of: Anonymous (anyone with the link) or Organization (people in your organization). Optional; defaults to Anonymous if omitted."
               }
             ],
             "responses": {
@@ -892,6 +925,8 @@
               "family": "CreateShareLinkByPath",
               "revision": 2
             },
+            "x-ms-name-for-model": "create_share_link_by_path_v2",
+            "x-ms-description-for-model": "Create a sharing link for a OneDrive for Business file identified by its path, returning a web URL that grants the chosen access (view or edit) at the chosen scope.",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#create-share-link-by-path"
             }
@@ -1052,7 +1087,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "id"
               },
               {
                 "name": "inferContentType",
@@ -1062,7 +1098,9 @@
                 "type": "boolean",
                 "default": true,
                 "x-ms-summary": "Infer Content Type",
-                "x-ms-visibility": "advanced"
+                "x-ms-visibility": "advanced",
+                "x-ms-name-for-model": "infer_content_type",
+                "x-ms-description-for-model": "Set to true or false to control whether the content type is inferred from the file extension. Optional; defaults to true."
               }
             ],
             "responses": {
@@ -1079,6 +1117,7 @@
                 "description": "Operation Failed."
               }
             },
+            "x-ms-name-for-model": "get_file_content",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#get-file-content"
             }
@@ -1145,7 +1184,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "folder_path"
               },
               {
                 "name": "name",
@@ -1153,7 +1193,9 @@
                 "description": "The name of the file. Certain characters are disallowed by OneDrive and will be replaced by underscores.",
                 "required": true,
                 "type": "string",
-                "x-ms-summary": "File Name"
+                "x-ms-summary": "File Name",
+                "x-ms-name-for-model": "name",
+                "x-ms-description-for-model": "Set to the file name for the new file, including its extension. Characters disallowed by OneDrive are replaced with underscores. Example: Q1.docx."
               },
               {
                 "name": "body",
@@ -1164,7 +1206,9 @@
                   "format": "binary",
                   "type": "string"
                 },
-                "x-ms-summary": "File Content"
+                "x-ms-summary": "File Content",
+                "x-ms-name-for-model": "body",
+                "x-ms-description-for-model": "Set to the binary content of the file."
               }
             ],
             "responses": {
@@ -1182,6 +1226,8 @@
             "x-ms-capabilities": {
               "chunkTransfer": true
             },
+            "x-ms-name-for-model": "create_file",
+            "x-ms-description-for-model": "Upload a new file to a OneDrive for Business folder, creating it from the supplied binary content and file name, and return the new file's metadata.",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#create-file"
             }
@@ -1259,10 +1305,10 @@
               {
                 "name": "sessionId",
                 "in": "query",
-                "description": "The search query to use",
+                "description": "The upload session identifier.",
                 "required": true,
                 "type": "string",
-                "x-ms-summary": "Search Query"
+                "x-ms-summary": "Upload session ID"
               },
               {
                 "name": "body",
@@ -1417,10 +1463,10 @@
               {
                 "name": "sessionId",
                 "in": "query",
-                "description": "The search query to use",
+                "description": "The upload session identifier.",
                 "required": true,
                 "type": "string",
-                "x-ms-summary": "Search Query"
+                "x-ms-summary": "Upload session ID"
               },
               {
                 "name": "body",
@@ -1568,7 +1614,9 @@
                 "description": "The url to the source file.",
                 "required": true,
                 "type": "string",
-                "x-ms-summary": "Source URL"
+                "x-ms-summary": "Source URL",
+                "x-ms-name-for-model": "source",
+                "x-ms-description-for-model": "Set to the URL of the external source file to upload into OneDrive for Business. Example: https://example.com/report.pdf."
               },
               {
                 "name": "destination",
@@ -1576,7 +1624,9 @@
                 "description": "The destination file path, including target filename.",
                 "required": true,
                 "type": "string",
-                "x-ms-summary": "Destination File Path"
+                "x-ms-summary": "Destination File Path",
+                "x-ms-name-for-model": "destination",
+                "x-ms-description-for-model": "Set to the destination file path in OneDrive for Business, including the target file name. Example: /Reports/Q1-copy.docx."
               },
               {
                 "name": "overwrite",
@@ -1585,7 +1635,9 @@
                 "required": false,
                 "type": "boolean",
                 "default": false,
-                "x-ms-summary": "Overwrite"
+                "x-ms-summary": "Overwrite",
+                "x-ms-name-for-model": "overwrite",
+                "x-ms-description-for-model": "Set to true to overwrite the destination file if it already exists. Optional; defaults to false."
               }
             ],
             "responses": {
@@ -1600,6 +1652,8 @@
               }
             },
             "x-ms-visibility": "advanced",
+            "x-ms-name-for-model": "copy_file",
+            "x-ms-description-for-model": "Upload a file from an external URL into OneDrive for Business, saving it to the given destination path, and return the created file's metadata.",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#upload-file-from-url"
             }
@@ -1667,7 +1721,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "id"
               },
               {
                 "name": "destination",
@@ -1675,7 +1730,9 @@
                 "description": "The destination file path, including target filename.",
                 "required": true,
                 "type": "string",
-                "x-ms-summary": "Destination File Path"
+                "x-ms-summary": "Destination File Path",
+                "x-ms-name-for-model": "destination",
+                "x-ms-description-for-model": "Set to the destination file path in OneDrive for Business, including the target file name. Example: /Reports/Q1-copy.docx."
               },
               {
                 "name": "overwrite",
@@ -1684,7 +1741,9 @@
                 "required": false,
                 "type": "boolean",
                 "default": false,
-                "x-ms-summary": "Overwrite"
+                "x-ms-summary": "Overwrite",
+                "x-ms-name-for-model": "overwrite",
+                "x-ms-description-for-model": "Set to true to overwrite the destination file if it already exists. Optional; defaults to false."
               }
             ],
             "responses": {
@@ -1702,6 +1761,8 @@
             "x-ms-api-annotation": {
               "status": "Production"
             },
+            "x-ms-name-for-model": "copy_drive_file",
+            "x-ms-description-for-model": "Copy an existing OneDrive for Business file, identified by its file id, to another location within OneDrive, and return the copied file's metadata.",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#copy-file"
             }
@@ -1768,7 +1829,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "source"
               },
               {
                 "name": "destination",
@@ -1776,7 +1838,9 @@
                 "description": "The destination file path, including target filename.",
                 "required": true,
                 "type": "string",
-                "x-ms-summary": "Destination File Path"
+                "x-ms-summary": "Destination File Path",
+                "x-ms-name-for-model": "destination",
+                "x-ms-description-for-model": "Set to the destination file path in OneDrive for Business, including the target file name. Example: /Reports/Q1-copy.docx."
               },
               {
                 "name": "overwrite",
@@ -1785,7 +1849,9 @@
                 "required": false,
                 "type": "boolean",
                 "default": false,
-                "x-ms-summary": "Overwrite"
+                "x-ms-summary": "Overwrite",
+                "x-ms-name-for-model": "overwrite",
+                "x-ms-description-for-model": "Set to true to overwrite the destination file if it already exists. Optional; defaults to false."
               }
             ],
             "responses": {
@@ -1803,6 +1869,8 @@
             "x-ms-api-annotation": {
               "status": "Production"
             },
+            "x-ms-name-for-model": "copy_drive_file_by_path",
+            "x-ms-description-for-model": "Copy an existing OneDrive for Business file, identified by its path, to another location within OneDrive, and return the copied file's metadata.",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#copy-file-using-path"
             }
@@ -1870,7 +1938,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "id"
               },
               {
                 "name": "destination",
@@ -1878,7 +1947,9 @@
                 "description": "The destination file path, including target filename.",
                 "required": true,
                 "type": "string",
-                "x-ms-summary": "Destination File Path"
+                "x-ms-summary": "Destination File Path",
+                "x-ms-name-for-model": "destination",
+                "x-ms-description-for-model": "Set to the destination file path in OneDrive for Business, including the target file name. Example: /Reports/Q1-copy.docx."
               },
               {
                 "name": "overwrite",
@@ -1887,7 +1958,9 @@
                 "required": false,
                 "type": "boolean",
                 "default": false,
-                "x-ms-summary": "Overwrite"
+                "x-ms-summary": "Overwrite",
+                "x-ms-name-for-model": "overwrite",
+                "x-ms-description-for-model": "Set to true to overwrite the destination file if it already exists. Optional; defaults to false."
               }
             ],
             "responses": {
@@ -1905,6 +1978,8 @@
             "x-ms-api-annotation": {
               "status": "Production"
             },
+            "x-ms-name-for-model": "move_file",
+            "x-ms-description-for-model": "Move or rename an existing OneDrive for Business file, identified by its file id, to a new destination path, and return the moved file's metadata.",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#move-or-rename-a-file"
             }
@@ -1971,7 +2046,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "source"
               },
               {
                 "name": "destination",
@@ -1979,7 +2055,9 @@
                 "description": "The destination file path, including target filename.",
                 "required": true,
                 "type": "string",
-                "x-ms-summary": "Destination File Path"
+                "x-ms-summary": "Destination File Path",
+                "x-ms-name-for-model": "destination",
+                "x-ms-description-for-model": "Set to the destination file path in OneDrive for Business, including the target file name. Example: /Reports/Q1-copy.docx."
               },
               {
                 "name": "overwrite",
@@ -1988,7 +2066,9 @@
                 "required": false,
                 "type": "boolean",
                 "default": false,
-                "x-ms-summary": "Overwrite"
+                "x-ms-summary": "Overwrite",
+                "x-ms-name-for-model": "overwrite",
+                "x-ms-description-for-model": "Set to true to overwrite the destination file if it already exists. Optional; defaults to false."
               }
             ],
             "responses": {
@@ -2006,6 +2086,8 @@
             "x-ms-api-annotation": {
               "status": "Production"
             },
+            "x-ms-name-for-model": "move_file_by_path",
+            "x-ms-description-for-model": "Move or rename an existing OneDrive for Business file, identified by its path, to a new destination path, and return the moved file's metadata.",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#move-or-rename-a-file-using-path"
             }
@@ -2070,7 +2152,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "id"
               },
               {
                 "name": "type",
@@ -2085,7 +2168,9 @@
                   "HTML",
                   "JPG"
                 ],
-                "x-ms-summary": "Target type"
+                "x-ms-summary": "Target type",
+                "x-ms-name-for-model": "type",
+                "x-ms-description-for-model": "Set to the target format to convert the file to. One of: PDF, GLB, HTML, or JPG. Optional; defaults to PDF. See https://aka.ms/onedriveconversions for supported conversions."
               }
             ],
             "responses": {
@@ -2114,6 +2199,8 @@
             "x-ms-api-annotation": {
               "status": "Production"
             },
+            "x-ms-name-for-model": "convert_file",
+            "x-ms-description-for-model": "Convert a OneDrive for Business file, identified by its file id, to another format (PDF, GLB, HTML, or JPG) and return the converted file content. See https://aka.ms/onedriveconversions for supported conversions.",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#convert-file"
             }
@@ -2177,7 +2264,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "path"
               },
               {
                 "name": "type",
@@ -2192,7 +2280,9 @@
                   "HTML",
                   "JPG"
                 ],
-                "x-ms-summary": "Target type"
+                "x-ms-summary": "Target type",
+                "x-ms-name-for-model": "type",
+                "x-ms-description-for-model": "Set to the target format to convert the file to. One of: PDF, GLB, HTML, or JPG. Optional; defaults to PDF. See https://aka.ms/onedriveconversions for supported conversions."
               }
             ],
             "responses": {
@@ -2221,6 +2311,8 @@
             "x-ms-api-annotation": {
               "status": "Production"
             },
+            "x-ms-name-for-model": "convert_file_by_path",
+            "x-ms-description-for-model": "Convert a OneDrive for Business file, identified by its path, to another format (PDF, GLB, HTML, or JPG) and return the converted file content. See https://aka.ms/onedriveconversions for supported conversions.",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#convert-file-using-path"
             }
@@ -2288,7 +2380,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "id"
               },
               {
                 "name": "size",
@@ -2301,7 +2394,9 @@
                   "Medium",
                   "Large"
                 ],
-                "x-ms-summary": "Thumbnail Size"
+                "x-ms-summary": "Thumbnail Size",
+                "x-ms-name-for-model": "size",
+                "x-ms-description-for-model": "Set to the thumbnail size to retrieve. One of: Small, Medium, or Large."
               }
             ],
             "responses": {
@@ -2319,6 +2414,8 @@
             "x-ms-api-annotation": {
               "status": "Production"
             },
+            "x-ms-name-for-model": "get_file_thumbnail",
+            "x-ms-description-for-model": "Get a thumbnail image for a OneDrive for Business file identified by its file id, at the requested size (Small, Medium, or Large). The returned thumbnail is valid for 6 hours.",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#get-file-thumbnail"
             }
@@ -2747,7 +2844,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "folder_id"
               },
               {
                 "name": "inferContentType",
@@ -2757,7 +2855,9 @@
                 "type": "boolean",
                 "default": true,
                 "x-ms-summary": "Infer Content Type",
-                "x-ms-visibility": "advanced"
+                "x-ms-visibility": "advanced",
+                "x-ms-name-for-model": "infer_content_type",
+                "x-ms-description-for-model": "Set to true or false to control whether the content type is inferred from the file extension. Optional; defaults to true."
               },
               {
                 "name": "x-ms-operation-context",
@@ -2841,6 +2941,7 @@
                 }
               }
             },
+            "x-ms-name-for-model": "on_new_file",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#when-a-file-is-created-%5bdeprecated%5d"
             }
@@ -2904,7 +3005,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "folder_id"
               },
               {
                 "name": "includeSubfolders",
@@ -2914,7 +3016,9 @@
                 "type": "boolean",
                 "default": false,
                 "x-ms-summary": "Include subfolders",
-                "x-ms-visibility": "advanced"
+                "x-ms-visibility": "advanced",
+                "x-ms-name-for-model": "include_subfolders",
+                "x-ms-description-for-model": "Set to true to also include items in subfolders. Optional; defaults to false."
               },
               {
                 "name": "inferContentType",
@@ -2924,7 +3028,9 @@
                 "type": "boolean",
                 "default": true,
                 "x-ms-summary": "Infer Content Type",
-                "x-ms-visibility": "advanced"
+                "x-ms-visibility": "advanced",
+                "x-ms-name-for-model": "infer_content_type",
+                "x-ms-description-for-model": "Set to true or false to control whether the content type is inferred from the file extension. Optional; defaults to true."
               },
               {
                 "name": "simulate",
@@ -3017,6 +3123,8 @@
                 }
               }
             },
+            "x-ms-name-for-model": "on_new_file_v2",
+            "x-ms-description-for-model": "Trigger a flow when a new file is created in the selected OneDrive for Business folder, returning the file content. Files larger than 50 MB are skipped; files moved within OneDrive are not treated as new.",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#when-a-file-is-created"
             }
@@ -3080,7 +3188,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "folder_id"
               },
               {
                 "name": "includeFileContent",
@@ -3099,7 +3208,9 @@
                 "type": "boolean",
                 "default": true,
                 "x-ms-summary": "Infer Content Type",
-                "x-ms-visibility": "advanced"
+                "x-ms-visibility": "advanced",
+                "x-ms-name-for-model": "infer_content_type",
+                "x-ms-description-for-model": "Set to true or false to control whether the content type is inferred from the file extension. Optional; defaults to true."
               },
               {
                 "name": "x-ms-operation-context",
@@ -3182,6 +3293,7 @@
                 }
               }
             },
+            "x-ms-name-for-model": "on_updated_file",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#when-a-file-is-modified-%5bdeprecated%5d"
             }
@@ -3245,7 +3357,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "folder_id"
               },
               {
                 "name": "includeSubfolders",
@@ -3255,7 +3368,9 @@
                 "type": "boolean",
                 "default": false,
                 "x-ms-summary": "Include subfolders",
-                "x-ms-visibility": "advanced"
+                "x-ms-visibility": "advanced",
+                "x-ms-name-for-model": "include_subfolders",
+                "x-ms-description-for-model": "Set to true to also include items in subfolders. Optional; defaults to false."
               },
               {
                 "name": "includeFileContent",
@@ -3274,7 +3389,9 @@
                 "type": "boolean",
                 "default": true,
                 "x-ms-summary": "Infer Content Type",
-                "x-ms-visibility": "advanced"
+                "x-ms-visibility": "advanced",
+                "x-ms-name-for-model": "infer_content_type",
+                "x-ms-description-for-model": "Set to true or false to control whether the content type is inferred from the file extension. Optional; defaults to true."
               },
               {
                 "name": "simulate",
@@ -3366,6 +3483,8 @@
                 }
               }
             },
+            "x-ms-name-for-model": "on_updated_file_v2",
+            "x-ms-description-for-model": "Trigger a flow when a file is modified in the selected OneDrive for Business folder, returning the file content. Files larger than 50 MB are skipped.",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#when-a-file-is-modified"
             }
@@ -3478,7 +3597,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "folder_id"
               },
               {
                 "name": "maxFileCount",
@@ -3489,7 +3609,9 @@
                 "format": "int32",
                 "default": 10,
                 "x-ms-summary": "Number of files to return",
-                "x-ms-visibility": "advanced"
+                "x-ms-visibility": "advanced",
+                "x-ms-name-for-model": "max_file_count",
+                "x-ms-description-for-model": "Set to the maximum number of files to return (1-100). Optional; defaults to 10."
               },
               {
                 "name": "x-ms-operation-context",
@@ -3533,6 +3655,7 @@
                 }
               }
             },
+            "x-ms-name-for-model": "on_new_files",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#when-a-file-is-created-(properties-only)-%5bdeprecated%5d"
             }
@@ -3599,7 +3722,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "folder_id"
               },
               {
                 "name": "includeSubfolders",
@@ -3609,7 +3733,9 @@
                 "type": "boolean",
                 "default": false,
                 "x-ms-summary": "Include subfolders",
-                "x-ms-visibility": "advanced"
+                "x-ms-visibility": "advanced",
+                "x-ms-name-for-model": "include_subfolders",
+                "x-ms-description-for-model": "Set to true to also include items in subfolders. Optional; defaults to false."
               },
               {
                 "name": "maxFileCount",
@@ -3620,7 +3746,9 @@
                 "format": "int32",
                 "default": 10,
                 "x-ms-summary": "Number of files to return",
-                "x-ms-visibility": "advanced"
+                "x-ms-visibility": "advanced",
+                "x-ms-name-for-model": "max_file_count",
+                "x-ms-description-for-model": "Set to the maximum number of files to return (1-100). Optional; defaults to 10."
               },
               {
                 "name": "simulate",
@@ -3673,6 +3801,8 @@
                 }
               }
             },
+            "x-ms-name-for-model": "on_new_files_v2",
+            "x-ms-description-for-model": "Trigger a flow when new files are created in the selected OneDrive for Business folder, returning file properties only (no content). Files moved within OneDrive are not treated as new.",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#when-a-file-is-created-(properties-only)"
             }
@@ -3739,7 +3869,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "folder_id"
               },
               {
                 "name": "maxFileCount",
@@ -3750,7 +3881,9 @@
                 "format": "int32",
                 "default": 10,
                 "x-ms-summary": "Number of files to return",
-                "x-ms-visibility": "advanced"
+                "x-ms-visibility": "advanced",
+                "x-ms-name-for-model": "max_file_count",
+                "x-ms-description-for-model": "Set to the maximum number of files to return (1-100). Optional; defaults to 10."
               },
               {
                 "name": "x-ms-operation-context",
@@ -3794,6 +3927,7 @@
                 }
               }
             },
+            "x-ms-name-for-model": "on_updated_files",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#when-a-file-is-modified-(properties-only)-%5bdeprecated%5d"
             }
@@ -3860,7 +3994,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "folder_id"
               },
               {
                 "name": "includeSubfolders",
@@ -3870,7 +4005,9 @@
                 "type": "boolean",
                 "default": false,
                 "x-ms-summary": "Include subfolders",
-                "x-ms-visibility": "advanced"
+                "x-ms-visibility": "advanced",
+                "x-ms-name-for-model": "include_subfolders",
+                "x-ms-description-for-model": "Set to true to also include items in subfolders. Optional; defaults to false."
               },
               {
                 "name": "maxFileCount",
@@ -3881,7 +4018,9 @@
                 "format": "int32",
                 "default": 10,
                 "x-ms-summary": "Number of files to return",
-                "x-ms-visibility": "advanced"
+                "x-ms-visibility": "advanced",
+                "x-ms-name-for-model": "max_file_count",
+                "x-ms-description-for-model": "Set to the maximum number of files to return (1-100). Optional; defaults to 10."
               },
               {
                 "name": "simulate",
@@ -3934,6 +4073,8 @@
                 }
               }
             },
+            "x-ms-name-for-model": "on_updated_files_v2",
+            "x-ms-description-for-model": "Trigger a flow when files are modified in the selected OneDrive for Business folder, returning file properties only (no content).",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#when-a-file-is-modified-(properties-only)"
             }
@@ -4154,7 +4295,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "id"
               },
               {
                 "name": "includeSubfolders",
@@ -4163,7 +4305,9 @@
                 "required": false,
                 "type": "boolean",
                 "default": false,
-                "x-ms-summary": "Include subfolders"
+                "x-ms-summary": "Include subfolders",
+                "x-ms-name-for-model": "include_subfolders",
+                "x-ms-description-for-model": "Set to true to also include items in subfolders. Optional; defaults to false."
               }
             ],
             "responses": {
@@ -4187,6 +4331,7 @@
               "family": "ListFolder",
               "revision": 1
             },
+            "x-ms-name-for-model": "list_folder",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#list-files-in-folder-%5bdeprecated%5d"
             }
@@ -4254,7 +4399,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "id"
               },
               {
                 "name": "skipToken",
@@ -4300,6 +4446,8 @@
             "x-ms-openai-data": {
               "openai-enabled": true
             },
+            "x-ms-name-for-model": "list_folder_v2",
+            "x-ms-description-for-model": "List the files and subfolders contained in a OneDrive for Business folder identified by its folder id, returning a page of metadata (supports paging).",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#list-files-in-folder"
             }
@@ -4336,6 +4484,8 @@
             "x-ms-openai-data": {
               "openai-enabled": true
             },
+            "x-ms-name-for-model": "list_root_folder",
+            "x-ms-description-for-model": "List the files and subfolders in the root folder of the OneDrive for Business account, returning their metadata.",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#list-files-in-root-folder"
             },
@@ -4378,6 +4528,7 @@
               }
             },
             "x-ms-visibility": "internal",
+            "x-ms-name-for-model": "list_all_root_folders",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#lists-all-the-root-folders"
             },
@@ -4458,7 +4609,8 @@
                     "itemIsParent": "(IsFolder eq true)",
                     "selectableFilter": "(MediaType eq 'application/zip' or MediaType eq 'application/x-zip-compressed')"
                   }
-                }
+                },
+                "x-ms-name-for-model": "source"
               },
               {
                 "name": "destination",
@@ -4500,7 +4652,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "destination"
               },
               {
                 "name": "overwrite",
@@ -4509,7 +4662,9 @@
                 "required": false,
                 "type": "boolean",
                 "default": false,
-                "x-ms-summary": "Overwrite"
+                "x-ms-summary": "Overwrite",
+                "x-ms-name-for-model": "overwrite",
+                "x-ms-description-for-model": "Set to true to overwrite destination files if they already exist. Optional; defaults to false."
               }
             ],
             "responses": {
@@ -4527,6 +4682,8 @@
               }
             },
             "x-ms-visibility": "advanced",
+            "x-ms-name-for-model": "extract_folder_v2",
+            "x-ms-description-for-model": "Extract the contents of an archive file (for example a .zip) stored in OneDrive for Business into a destination folder, and return the metadata of the extracted files. Maximum archive size is 50 MB and 100 files.",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#extract-archive-to-folder"
             }
@@ -4623,7 +4780,9 @@
                 "description": "The search query to use",
                 "required": true,
                 "type": "string",
-                "x-ms-summary": "Search Query"
+                "x-ms-summary": "Search Query",
+                "x-ms-name-for-model": "query",
+                "x-ms-description-for-model": "Set to the search query. In OneDriveSearch mode this is a search term; in Pattern mode this is a regular-expression pattern matched against file names."
               },
               {
                 "name": "id",
@@ -4666,7 +4825,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "id"
               },
               {
                 "name": "findMode",
@@ -4678,7 +4838,9 @@
                   "OneDriveSearch",
                   "Pattern"
                 ],
-                "x-ms-summary": "File Search Mode"
+                "x-ms-summary": "File Search Mode",
+                "x-ms-name-for-model": "find_mode",
+                "x-ms-description-for-model": "Set to the search method. One of: OneDriveSearch (search OneDrive using the query like a search engine) or Pattern (treat the query as a regular-expression pattern matched against file names)."
               },
               {
                 "name": "maxFileCount",
@@ -4689,7 +4851,9 @@
                 "format": "int32",
                 "default": 10,
                 "x-ms-summary": "Number of files to return",
-                "x-ms-visibility": "advanced"
+                "x-ms-visibility": "advanced",
+                "x-ms-name-for-model": "max_file_count",
+                "x-ms-description-for-model": "Set to the maximum number of files to return (1-100). Optional; defaults to 10."
               }
             ],
             "responses": {
@@ -4707,6 +4871,8 @@
               }
             },
             "x-ms-visibility": "advanced",
+            "x-ms-name-for-model": "find_files",
+            "x-ms-description-for-model": "Find files within a OneDrive for Business folder, identified by its folder id, using either OneDrive search or a filename regular-expression pattern match, and return the matching files' metadata.",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#find-files-in-folder"
             }
@@ -4739,7 +4905,9 @@
                 "description": "The search query to use",
                 "required": true,
                 "type": "string",
-                "x-ms-summary": "Search Query"
+                "x-ms-summary": "Search Query",
+                "x-ms-name-for-model": "query",
+                "x-ms-description-for-model": "Set to the search query. In OneDriveSearch mode this is a search term; in Pattern mode this is a regular-expression pattern matched against file names."
               },
               {
                 "name": "path",
@@ -4781,7 +4949,8 @@
                     "itemFullTitlePath": "Path",
                     "itemIsParent": "(IsFolder eq true)"
                   }
-                }
+                },
+                "x-ms-name-for-model": "path"
               },
               {
                 "name": "findMode",
@@ -4793,7 +4962,9 @@
                   "OneDriveSearch",
                   "Pattern"
                 ],
-                "x-ms-summary": "File Search Mode"
+                "x-ms-summary": "File Search Mode",
+                "x-ms-name-for-model": "find_mode",
+                "x-ms-description-for-model": "Set to the search method. One of: OneDriveSearch (search OneDrive using the query like a search engine) or Pattern (treat the query as a regular-expression pattern matched against file names)."
               },
               {
                 "name": "maxFileCount",
@@ -4804,7 +4975,9 @@
                 "format": "int32",
                 "default": 10,
                 "x-ms-summary": "Number of files to return",
-                "x-ms-visibility": "advanced"
+                "x-ms-visibility": "advanced",
+                "x-ms-name-for-model": "max_file_count",
+                "x-ms-description-for-model": "Set to the maximum number of files to return (1-100). Optional; defaults to 10."
               }
             ],
             "responses": {
@@ -4822,6 +4995,8 @@
               }
             },
             "x-ms-visibility": "advanced",
+            "x-ms-name-for-model": "find_files_by_path",
+            "x-ms-description-for-model": "Find files within a OneDrive for Business folder, identified by its path, using either OneDrive search or a filename regular-expression pattern match, and return the matching files' metadata.",
             "externalDocs": {
               "url": "https://docs.microsoft.com/connectors/onedriveforbusiness/#find-files-in-folder-by-path"
             }
@@ -5230,17 +5405,17 @@
       }
     },
     "runtimeUrls": [
-      "https://unitedstates-002.azure-apim.net/apim/onedriveforbusiness"
+      "https://e1cba2636407ef7182d5197403fb0d.06.environment.api.powerplatform.com/connectors/runtime/invoke/scalegroups/usa002/shards/02/apis/onedriveforbusiness/connections/"
     ],
-    "primaryRuntimeUrl": "https://unitedstates-002.azure-apim.net/apim/onedriveforbusiness",
-    "doNotUseApiHubNetRuntimeUrl": "https://unitedstates-002.azure-apim.net/apim/onedriveforbusiness",
+    "primaryRuntimeUrl": "https://e1cba2636407ef7182d5197403fb0d.06.environment.api.powerplatform.com/connectors/runtime/invoke/scalegroups/usa002/shards/02/apis/onedriveforbusiness/connections/",
+    "doNotUseApiHubNetRuntimeUrl": "https://e1cba263-6407-ef71-82d5-197403fb0d06.02.common.usa002.azure-apihub.net/apim/onedriveforbusiness",
     "metadata": {
       "source": "marketplace",
       "brandColor": "#0078D4",
       "useNewApimVersion": "true",
       "version": {
-        "previous": "releases/v1.0.1802\\1.0.1802.4667",
-        "current": "releases/v1.0.1814\\1.0.1814.4751"
+        "previous": "releases/v1.0.1825\\1.0.1825.4855",
+        "current": "releases/v1.0.1827\\1.0.1827.4902"
       }
     },
     "capabilities": [
@@ -5267,7 +5442,7 @@
     },
     "description": "OneDrive for Business is a cloud storage, file hosting service that allows users to sync files and later access them from a web browser or mobile device. Connect to OneDrive for Business to manage your files. You can perform various actions such as upload, update, get, and delete files.",
     "createdTime": "2018-07-10T17:18:05.5760104Z",
-    "changedTime": "2026-06-08T16:40:20.4489238Z",
+    "changedTime": "2026-09-09T19:16:34.3296927Z",
     "releaseTag": "Production",
     "tier": "Standard",
     "publisher": "Microsoft",

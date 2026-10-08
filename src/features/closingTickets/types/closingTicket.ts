@@ -109,6 +109,7 @@ export type ClosingTicketCreateInput = Partial<
     | 'cr109_buyer2name'
     | 'cr109_buyer3'
     | 'cr109_buyerunitnumber'
+    | 'cr109_chargedate'
     | 'cr109_domecilepackageurl'
     | 'cr109_emailbody'
     | 'cr109_emailsubject'

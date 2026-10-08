@@ -686,7 +686,7 @@ function ClosingTicketEditorForm({
   }, [formState.cr7de_ticketstatus])
 
   const showMoveToPostClosing =
-    ticketStatusLabel === 'ReadyForPostClosing'
+    ticketStatusLabel === 'Ready For Post Closing'
   const hasUploadedRealPropertyDocument = Boolean(
     uploadedFileNames.cr109_rpttdocument
   )
@@ -823,8 +823,8 @@ function ClosingTicketEditorForm({
       })
       const shouldResetToReadyForPostClosing =
         columnName === 'cr109_rpttdocument' &&
-        (ticketStatusLabel === 'PostClosing' ||
-          ticketStatusLabel === 'ValidateClosings')
+        (ticketStatusLabel === 'Post Closing' ||
+          ticketStatusLabel === 'Validate Closings')
       // Only safe to roll the domicile override back if automation hasn't
       // progressed past the FormDownloaded stage we forced on upload.
       const shouldRevertDomicileOverride =
@@ -834,7 +834,7 @@ function ClosingTicketEditorForm({
         formState.cr109_botstatus === FORM_DOWNLOADED_BOT_STATUS_VALUE
 
       if (shouldResetToReadyForPostClosing) {
-        const isFromValidate = ticketStatusLabel === 'ValidateClosings'
+        const isFromValidate = ticketStatusLabel === 'Validate Closings'
         const nextFormState: ClosingTicketFormState = {
           ...formState,
           cr7de_ticketstatus: READY_FOR_POST_CLOSING_STATUS,
@@ -1672,7 +1672,7 @@ function ClosingTicketEditorForm({
                 onDelete={() =>
                   handleDeleteDocument('cr109_rpttdocument')
                 }
-                disabled={ticketStatusLabel !== 'ReadyForPostClosing'}
+                disabled={ticketStatusLabel !== 'Ready For Post Closing'}
                 disabledMessage="RPTT document can only be uploaded when the ticket status is Ready For Post Closing."
               />
             )}

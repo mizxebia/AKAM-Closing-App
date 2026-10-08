@@ -26,7 +26,7 @@ export const Crc5c_manualchargesescr109_chargecode = {
 export type Crc5c_manualchargesescr109_chargecode = keyof typeof Crc5c_manualchargesescr109_chargecode;
 export const Crc5c_manualchargesescr109_epaytype = {
   396620000: 'EFT',
-  396620001: 'CreditCard'
+  396620001: 'Credit Card'
 } as const;
 export type Crc5c_manualchargesescr109_epaytype = keyof typeof Crc5c_manualchargesescr109_epaytype;
 export const Crc5c_manualchargesescr109_type = {

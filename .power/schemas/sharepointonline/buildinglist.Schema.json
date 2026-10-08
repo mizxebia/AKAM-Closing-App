@@ -10,7 +10,6 @@
         "field_3",
         "{Identifier}",
         "{IsFolder}",
-        "{Thumbnail}",
         "{Link}",
         "{Name}",
         "{FilenameWithExtension}",
@@ -33,7 +32,6 @@
         "field_3",
         "{Identifier}",
         "{IsFolder}",
-        "{Thumbnail}",
         "{Link}",
         "{Name}",
         "{FilenameWithExtension}",
@@ -1059,44 +1057,11 @@
           "x-ms-sort": "none"
         },
         "{IsFolder}": {
-          "title": "IsFolder",
+          "title": "Is folder",
           "description": "True when the item is a folder, false otherwise.",
           "type": "boolean",
           "x-ms-permission": "read-only",
           "x-ms-sort": "none"
-        },
-        "{Thumbnail}": {
-          "title": "Thumbnail",
-          "description": "URL to the thumbnails of the item in 3 different sizes, if available.",
-          "type": "object",
-          "x-ms-permission": "read-only",
-          "x-ms-sort": "none",
-          "properties": {
-            "@odata.type": {
-              "title": "@odata.type",
-              "x-ms-visibility": "internal",
-              "type": "string",
-              "x-ms-permission": "read-only"
-            },
-            "Small": {
-              "title": "Small",
-              "type": "string",
-              "description": "URL to the small, highly compressed size thumbnail of the item, if available.",
-              "x-ms-permission": "read-only"
-            },
-            "Medium": {
-              "title": "Medium",
-              "type": "string",
-              "description": "URL to the standard size thumbnail of the item, if available.",
-              "x-ms-permission": "read-only"
-            },
-            "Large": {
-              "title": "Large",
-              "type": "string",
-              "description": "URL to the largest size thumbnail of the item, if available.",
-              "x-ms-permission": "read-only"
-            }
-          }
         },
         "{Link}": {
           "title": "Link to item",

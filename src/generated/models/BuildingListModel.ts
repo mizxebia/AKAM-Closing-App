@@ -91,15 +91,6 @@ export interface BuildingListBase {
   "Editor#Claims"?: string;
   "{Identifier}"?: string;
   "{IsFolder}"?: boolean;
-  "{Thumbnail}"?: {
-    "@odata.type"?: string;
-    // URL to the small, highly compressed size thumbnail of the item, if available.
-    Small?: string;
-    // URL to the standard size thumbnail of the item, if available.
-    Medium?: string;
-    // URL to the largest size thumbnail of the item, if available.
-    Large?: string;
-  };
   "{Link}"?: string;
   "{Name}"?: string;
   "{FilenameWithExtension}"?: string;

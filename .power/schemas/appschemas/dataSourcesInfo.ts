@@ -3793,6 +3793,20 @@ export const dataSourcesInfo = {
     "dataSourceType": "Dataverse",
     "apis": {}
   },
+  "environmentvariabledefinitions": {
+    "tableId": "",
+    "version": "",
+    "primaryKey": "environmentvariabledefinitionid",
+    "dataSourceType": "Dataverse",
+    "apis": {}
+  },
+  "environmentvariablevalues": {
+    "tableId": "",
+    "version": "",
+    "primaryKey": "environmentvariablevalueid",
+    "dataSourceType": "Dataverse",
+    "apis": {}
+  },
   "nsc_generate_invoice": {
     "tableId": "",
     "version": "",

@@ -92,12 +92,12 @@ const STATUS_CARDS: StatusCard[] = [
   {
     status: 'Completed', color: '#059669', lightBg: '#ECFDF5', lightBorder: '#A7F3D0',
     icon: <CheckCircle2 size={16} />,
-    what: 'The new owner has been created in YARDI. The Send to AR Team tab is now available — upload the Cheques & Batch documents and send the closing documents to the AR team.',
+    what: 'The new owner has been created in YARDI. The Send to AR Team tab is now available — upload the Batch And Cheque Document and send the closing documents to the AR team.',
     action: 'Open the Send to AR Team tab, review the pre-filled email, and click Send to AR Team.',
     isUserAction: true, estimatedTime: 'Your action needed',
     steps: [
       'Open the Send to AR Team tab — it appears once the ticket reaches Completed status.',
-      'Upload the Cheques Document and Batch Document using the Replace / Upload buttons in the Attachments section.',
+      'Upload the Batch And Cheque Document using the Replace / Upload button in the Attachments section.',
       'Review the pre-filled subject and email body. Edit if needed.',
       'Click "Send to AR Team" — the New Owner Ticket PDF and Invoice PDF are both regenerated automatically, then the email is sent.',
       'The ticket status changes to Sent to AR and the ticket locks for editing.',
@@ -260,11 +260,11 @@ const BEHAVIOURS: BehaviourCard[] = [
   { icon: '💬', title: 'Ticket showing as Failed?',
     body: 'A banner at the top of the ticket will describe what went wrong. Review the details, make any necessary corrections, and reach out to the Xebia team — they will investigate and reset the status from the backend.' },
   { icon: '📤', title: 'Send to AR Team tab — final step after Completed',
-    body: 'Once a ticket reaches Completed status, the Send to AR Team tab becomes available. Upload the Cheques and Batch documents, review the pre-filled email, and click "Send to AR Team". The app regenerates the New Owner Ticket PDF and Invoice PDF automatically, then triggers the email flow to the AR team. The ticket moves to Sent to AR and becomes read-only.' },
+    body: 'Once a ticket reaches Completed status, the Send to AR Team tab becomes available. Upload the Batch And Cheque Document, review the pre-filled email, and click "Send to AR Team". The app regenerates the New Owner Ticket PDF and Invoice PDF automatically, then triggers the email flow to the AR team. The ticket moves to Sent to AR and becomes read-only.' },
   { icon: '🔁', title: 'Resending to AR — always possible',
     body: 'If the email needs to be resent (e.g. updated attachment or corrected email body), open the Send to AR Team tab on any Sent to AR ticket. Update the subject or body if needed, then click "Send Again to AR". Both PDFs are regenerated and the email is resent.' },
-  { icon: '📎', title: 'Four attachments are always included in the AR email',
-    body: 'The Send to AR email always includes four attachments: Cheques Document, Batch Document, Invoice PDF, and New Owner Ticket PDF. The Cheques and Batch documents must be manually uploaded via the Replace / Upload buttons in the Attachments section of the Send to AR Team tab. The Invoice and New Owner Ticket PDFs are regenerated automatically each time you send.' },
+  { icon: '📎', title: 'Three attachments are always included in the AR email',
+    body: 'The Send to AR email always includes three attachments: Batch And Cheque Document, Invoice PDF, and New Owner Ticket PDF. The Batch And Cheque Document must be manually uploaded via the Replace / Upload button in the Attachments section of the Send to AR Team tab. The Invoice and New Owner Ticket PDFs are regenerated automatically each time you send.' },
 ]
 
 function BehaviourCardItem({ card }: { card: BehaviourCard }) {
@@ -599,24 +599,24 @@ function FlowchartContent() {
         statuses={[{ label: 'Trigger', value: 'Bot Status = Draft' }]} />
       <Arrow short />
       <DecisionRow
-        success={[{ label: 'Ticket Status', value: 'Processing' }, { label: 'Bot Status', value: 'DomecileDumpRetrieved' }]}
-        failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: 'FailedDomecileDumpRetrieval' }]} />
+        success={[{ label: 'Ticket Status', value: 'Processing' }, { label: 'Bot Status', value: 'Domecile Dump Retrieved' }]}
+        failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: 'Failed Domecile Dump Retrieval' }]} />
       <Arrow />
       <StepCard variant="desktop" stage="Stage 3" title="Retrieve Seller Information"
         subtitle="Desktop Flow: NSC Yardi Seller Details"
         statuses={[{ label: 'Trigger', value: 'Follows Stage 2 success' }]} />
       <Arrow short />
       <DecisionRow
-        success={[{ label: 'Ticket Status', value: 'Processing' }, { label: 'Bot Status', value: 'SellerInfoRetrieved' }]}
-        failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: 'FailedSellerInfoRetrieval' }]} />
+        success={[{ label: 'Ticket Status', value: 'Processing' }, { label: 'Bot Status', value: 'Seller Info Retrieved' }]}
+        failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: 'Failed Seller Info Retrieval' }]} />
       <Arrow />
       <StepCard variant="desktop" stage="Stage 4" title="Download Purchase Application Form"
         subtitle="Desktop Flow: NSC Purchase Application Form Download"
         statuses={[{ label: 'Trigger', value: 'Follows Stage 3 success' }]} />
       <Arrow short />
       <DecisionRow
-        success={[{ label: 'Ticket Status', value: 'Processing' }, { label: 'Bot Status', value: 'FormDownloaded' }]}
-        failure={[{ label: 'Ticket Status', value: 'Processing' }, { label: 'Bot Status', value: 'FailedFormDownload' }]} />
+        success={[{ label: 'Ticket Status', value: 'Processing' }, { label: 'Bot Status', value: 'Form Downloaded' }]}
+        failure={[{ label: 'Ticket Status', value: 'Processing' }, { label: 'Bot Status', value: 'Failed Form Download' }]} />
       <Arrow short />
       <NoteBox icon="📌" title="Note">
         The ticket stays in <strong>Processing</strong> on form download failure because this step can be automatically retried.
@@ -627,34 +627,34 @@ function FlowchartContent() {
         statuses={[{ label: 'Trigger', value: 'Follows Stage 4 success' }]} />
       <Arrow short />
       <DecisionRow
-        success={[{ label: 'Ticket Status', value: 'Processing' }, { label: 'Bot Status', value: 'PurchaseFormUploadOnedrive' }]}
-        failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: 'FailedPurchaseFormUploadOnedrive' }]} />
+        success={[{ label: 'Ticket Status', value: 'Processing' }, { label: 'Bot Status', value: 'Purchase Form Upload Onedrive' }]}
+        failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: 'Failed Purchase Form Upload Onedrive' }]} />
       <Arrow />
       <StepCard variant="cloud" stage="Stage 6" title="Extract Purchase Form Information"
         subtitle="Cloud Flow: NSC_PurchaseApplication_DataExtraction"
         statuses={[{ label: 'Trigger', value: 'Follows Stage 5 success' }]} />
       <Arrow short />
       <DecisionRow
-        success={[{ label: 'Ticket Status', value: 'ReadyForPostClosing' }, { label: 'Bot Status', value: 'PurchaseFormDataExtracted' }]}
-        failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: 'FailedPurchaseFormDataExtraction' }]} />
+        success={[{ label: 'Ticket Status', value: 'Ready For Post Closing' }, { label: 'Bot Status', value: 'Purchase Form Data Extracted' }]}
+        failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: 'Failed Purchase Form Data Extraction' }]} />
       <Arrow />
 
       <PhaseHeader number="Phase 3" title="Post-Closing Preparation" />
       <Arrow />
       <StepCard variant="user" stage="Stage 7a" title="Upload RPTT / ACRIS Document"
         subtitle="User attaches the RPTT document in Closing Details and clicks Save"
-        statuses={[{ label: 'Ticket Status', value: 'ReadyForPostClosing' }, { label: 'Bot Status', value: 'RPTTUploaded' }]} />
+        statuses={[{ label: 'Ticket Status', value: 'Ready For Post Closing' }, { label: 'Bot Status', value: 'RPTT Uploaded' }]} />
       <Arrow short />
       <NoteBox icon="🔒" title="Upload Restriction">
-        The RPTT upload control is only enabled while Ticket Status is <strong>ReadyForPostClosing</strong>. In every other status the field is disabled, so the document cannot be swapped once it is already in Post Closing, Validate Closings, or beyond.
+        The RPTT upload control is only enabled while Ticket Status is <strong>Ready For Post Closing</strong>. In every other status the field is disabled, so the document cannot be swapped once it is already in Post Closing, Validate Closings, or beyond.
       </NoteBox>
       <Arrow />
       <StepCard variant="user" stage="Stage 7b" title="Move to Post Closing"
         subtitle='User clicks "Move to Post Closing" (only visible after RPTT is uploaded)'
-        statuses={[{ label: 'Ticket Status', value: 'PostClosing' }, { label: 'Bot Status', value: 'RPTTUploaded (unchanged)' }]} />
+        statuses={[{ label: 'Ticket Status', value: 'Post Closing' }, { label: 'Bot Status', value: 'RPTT Uploaded (unchanged)' }]} />
       <Arrow short />
       <NoteBox icon="↩" title="Rollback Rule — RPTT uploaded by mistake">
-        If the RPTT was uploaded incorrectly, <strong>delete</strong> it while the ticket is in <strong>Post Closing</strong> or <strong>Validate Closings</strong> — the ticket rolls back to <strong>ReadyForPostClosing</strong> automatically. From there: upload the correct document and Save, then click <strong>"Move to Post Closing"</strong> again. This re-triggers Stage 8 (RPTT extraction) and Stage 9 (YARDI charges fetch) from scratch on the new document, and once charges are refetched you must go through <strong>Validate Closings</strong> again before the ticket can proceed.
+        If the RPTT was uploaded incorrectly, <strong>delete</strong> it while the ticket is in <strong>Post Closing</strong> or <strong>Validate Closings</strong> — the ticket rolls back to <strong>Ready For Post Closing</strong> automatically. From there: upload the correct document and Save, then click <strong>"Move to Post Closing"</strong> again. This re-triggers Stage 8 (RPTT extraction) and Stage 9 (YARDI charges fetch) from scratch on the new document, and once charges are refetched you must go through <strong>Validate Closings</strong> again before the ticket can proceed.
       </NoteBox>
       <Arrow />
 
@@ -662,26 +662,26 @@ function FlowchartContent() {
       <Arrow />
       <StepCard variant="cloud" stage="Stage 8" title="Extract RPTT Document Information"
         subtitle="Cloud Flow: NSC_RPTT_DataExtraction"
-        statuses={[{ label: 'Trigger', value: 'Bot Status = RPTTUploaded' }]} />
+        statuses={[{ label: 'Trigger', value: 'Bot Status = RPTT Uploaded' }]} />
       <Arrow short />
       <DecisionRow
-        success={[{ label: 'Ticket Status', value: 'ValidateClosings' }, { label: 'Bot Status', value: 'RPTTExtracted' }]}
-        failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: 'FailedRPTTExtraction' }]} />
+        success={[{ label: 'Ticket Status', value: 'Validate Closings' }, { label: 'Bot Status', value: 'RPTT Extracted' }]}
+        failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: 'Failed RPTT Extraction' }]} />
       <Arrow />
       <StepCard variant="desktop" stage="Stage 9" title="Retrieve YARDI Charges"
         subtitle="Desktop Flow: NSC Fetch YARDI Charges"
         statuses={[{ label: 'Trigger', value: 'Follows Stage 8 success' }]} />
       <Arrow short />
       <DecisionRow
-        success={[{ label: 'Ticket Status', value: 'ValidateClosings' }, { label: 'Bot Status', value: 'YARDIChargesFetched' }]}
+        success={[{ label: 'Ticket Status', value: 'Validate Closings' }, { label: 'Bot Status', value: 'YARDI Charges Fetched' }]}
         failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: '—' }]} />
       <Arrow />
       <StepCard variant="user" stage="Stage 9b" title="Auto Move Charges (Optional)"
         subtitle='User clicks "Auto Move Charges" in the Yardi Charges tab to auto-match invoice payments to unpaid charges'
-        statuses={[{ label: 'Bot Status', value: 'YardiChargesUpdated' }, { label: 'Note', value: 'Can re-run anytime' }]} />
+        statuses={[{ label: 'Bot Status', value: 'Yardi Charges Updated' }, { label: 'Note', value: 'Can re-run anytime' }]} />
       <Arrow short />
       <NoteBox icon="⚡" title="Auto Move Charges">
-        The <strong>Auto Move Charges</strong> button is visible when Bot Status is <strong>YARDIChargesFetched</strong> or <strong>YardiChargesUpdated</strong>. It automatically matches invoice payments (Payable To: Building, exact amount) against unpaid YARDI charges and ticks the <strong>Move</strong> flag. Partial charges are never moved. You can re-run it at any time.
+        The <strong>Auto Move Charges</strong> button is visible when Bot Status is <strong>YARDI Charges Fetched</strong> or <strong>Yardi Charges Updated</strong>. It automatically matches invoice payments (Payable To: Building, exact amount) against unpaid YARDI charges and ticks the <strong>Move</strong> flag. Partial charges are never moved. You can re-run it at any time.
       </NoteBox>
       <Arrow />
 
@@ -689,11 +689,11 @@ function FlowchartContent() {
       <Arrow />
       <StepCard variant="user" stage="Stage 10" title="Validate Closing Information"
         subtitle='User reviews all info and clicks "Validate" in the New Owner Ticket tab'
-        statuses={[{ label: 'Before', value: 'ValidateClosings' }, { label: 'Ticket Status', value: 'TransferringBuilding' }, { label: 'Bot Status', value: 'InformationValidated' }]} />
+        statuses={[{ label: 'Before', value: 'Validate Closings' }, { label: 'Ticket Status', value: 'Transferring Building' }, { label: 'Bot Status', value: 'Information Validated' }]} />
       <Arrow short />
       <NoteBox icon="✅" title="Validation Requirements">
         The Validate button appears only when <strong>all</strong> of the following are true:
-        <br />• Bot Status is <strong>YARDIChargesFetched</strong> or <strong>YardiChargesUpdated</strong>
+        <br />• Bot Status is <strong>YARDI Charges Fetched</strong> or <strong>Yardi Charges Updated</strong>
         <br />• All three documents are present: <strong>Purchase Application Form</strong>, <strong>RPTT Document</strong>, and <strong>New Owner Ticket PDF</strong>
         <br />• No Scheduled Charge in the Yardi Charges tab has an unconfirmed <strong>"TBD"</strong> amount
         <br /><br />
@@ -709,19 +709,19 @@ function FlowchartContent() {
       <Arrow />
       <StepCard variant="desktop" stage="Stage 11" title="Update Seller Information in YARDI"
         subtitle="Desktop Flow: NSC Yardi Seller Update"
-        statuses={[{ label: 'Trigger', value: 'Bot Status = InformationValidated' }]} />
+        statuses={[{ label: 'Trigger', value: 'Bot Status = Information Validated' }]} />
       <Arrow short />
       <DecisionRow
-        success={[{ label: 'Ticket Status', value: 'TransferringBuilding' }, { label: 'Bot Status', value: 'SellerDetailsUpdated' }]}
-        failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: 'FailedSellerInfoRetrieval' }]} />
+        success={[{ label: 'Ticket Status', value: 'Transferring Building' }, { label: 'Bot Status', value: 'Seller Details Updated' }]}
+        failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: 'Failed Seller Info Retrieval' }]} />
       <Arrow />
       <StepCard variant="desktop" stage="Stage 12" title="Create New Owner in YARDI"
         subtitle="Desktop Flow: NSC Yardi Create New Owner"
         statuses={[{ label: 'Trigger', value: 'Follows Stage 11 success' }]} />
       <Arrow short />
       <DecisionRow
-        success={[{ label: 'Ticket Status', value: 'Completed' }, { label: 'Bot Status', value: 'OwnerRecordCreated' }]}
-        failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: 'FailedCreateNewOwner' }]} />
+        success={[{ label: 'Ticket Status', value: 'Completed' }, { label: 'Bot Status', value: 'Owner Record Created' }]}
+        failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: 'Failed Create New Owner' }]} />
       <Arrow short />
 
       <div className="w-full rounded-2xl border-2 border-emerald-300 bg-emerald-50 px-5 py-4 flex items-center justify-between gap-4 shadow-sm">
@@ -738,8 +738,8 @@ function FlowchartContent() {
 
       <PhaseHeader number="Phase 7" title="Send to AR Team" />
       <Arrow />
-      <StepCard variant="user" stage="Stage 13a" title="Upload Cheques &amp; Batch Documents"
-        subtitle="In the Send to AR Team tab, upload the Cheques Document and Batch Document using the Replace / Upload buttons"
+      <StepCard variant="user" stage="Stage 13a" title="Upload Batch And Cheque Document"
+        subtitle="In the Send to AR Team tab, upload the Batch And Cheque Document using the Replace / Upload button"
         statuses={[{ label: 'Ticket Status', value: 'Completed' }]} />
       <Arrow />
       <StepCard variant="user" stage="Stage 13b" title="Review &amp; Send Email to AR Team"
@@ -750,7 +750,7 @@ function FlowchartContent() {
         Three flows run in sequence:<br />
         1. <strong>NSC_Generate_New_Owner_Ticket</strong> — regenerates the New Owner Ticket PDF with the latest data.<br />
         2. <strong>NSC_Generate_Invoice</strong> — regenerates the Invoice PDF with the latest payment data.<br />
-        3. <strong>NSC_Send_Email_To_AR</strong> — sends the email to the AR team with four attachments: Cheques Document, Batch Document, Invoice PDF, and New Owner Ticket PDF.
+        3. <strong>NSC_Send_Email_To_AR</strong> — sends the email to the AR team with three attachments: Batch And Cheque Document, Invoice PDF, and New Owner Ticket PDF.
       </NoteBox>
       <Arrow short />
       <DecisionRow
@@ -1306,7 +1306,7 @@ function SendToARContent() {
         <ol className="space-y-3">
           {[
             { n: '1', title: 'Open the Send to AR Team tab', body: 'Navigate to the ticket and click the "Send to AR Team" tab. It appears after the New Owner Ticket tab once the ticket is Completed.' },
-            { n: '2', title: 'Upload Cheques & Batch Documents', body: 'In the Attachments section (top of the left panel), upload or replace the Cheques Document and Batch Document using the Replace / Upload buttons on each row. The Invoice and New Owner Ticket PDF are generated automatically and do not require manual upload.' },
+            { n: '2', title: 'Upload Batch And Cheque Document', body: 'In the Attachments section (top of the left panel), upload or replace the Batch And Cheque Document using the Replace / Upload button on its row. The Invoice and New Owner Ticket PDF are generated automatically and do not require manual upload.' },
             { n: '3', title: 'Review the email subject', body: 'The subject is pre-filled. Edit it if needed. It is saved to the ticket as a draft whenever you click "Save Draft".' },
             { n: '4', title: 'Review the email body', body: 'The body is pre-filled with closing details. Edit if needed. The character counter appears bottom-right — a warning shows at 8,000 characters. Click "Save Draft" at any time to preserve your edits.' },
             { n: '5', title: 'Click "Send to AR Team"', body: 'Three flows run in sequence: (1) NSC_Generate_New_Owner_Ticket regenerates the New Owner Ticket PDF, (2) NSC_Generate_Invoice regenerates the Invoice PDF, (3) NSC_Send_Email_To_AR sends the email. If any step fails, the send is aborted.' },
@@ -1327,7 +1327,7 @@ function SendToARContent() {
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-3">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E] mb-1">Attachments</p>
         <h3 className="text-[14px] font-bold text-slate-800">What is included in the email?</h3>
-        <p className="text-[12px] text-slate-500 leading-relaxed">Four documents are always attached. Two are auto-generated; two must be manually uploaded.</p>
+        <p className="text-[12px] text-slate-500 leading-relaxed">Three documents are always attached. Two are auto-generated; one must be manually uploaded.</p>
         <div className="rounded-xl border border-slate-200 overflow-hidden shadow-sm">
           <table className="w-full text-[12px] border-collapse bg-white">
             <thead>
@@ -1338,8 +1338,7 @@ function SendToARContent() {
             </thead>
             <tbody>
               {[
-                { doc: 'Cheques Document', source: 'Manual upload — Replace / Upload button' },
-                { doc: 'Batch Document', source: 'Manual upload — Replace / Upload button' },
+                { doc: 'Batch And Cheque Document', source: 'Manual upload — Replace / Upload button' },
                 { doc: 'Invoice PDF', source: 'Regenerated by NSC_Generate_Invoice during the Send sequence' },
                 { doc: 'New Owner Ticket PDF', source: 'Regenerated by NSC_Generate_New_Owner_Ticket during the Send sequence' },
               ].map((r, i) => (
@@ -1359,7 +1358,7 @@ function SendToARContent() {
         <h3 className="text-[14px] font-bold text-slate-800">Sending again after Sent to AR</h3>
         <p className="text-[12px] text-slate-600 leading-relaxed">
           The Send to AR Team tab remains accessible on tickets in <strong>Sent to AR</strong> status. A green banner confirms the email was already sent.
-          You can edit the subject and body, replace the Cheques or Batch documents, then click <strong>"Send Again to AR"</strong> to trigger the full send sequence again.
+          You can edit the subject and body, replace the Batch And Cheque Document, then click <strong>"Send Again to AR"</strong> to trigger the full send sequence again.
           Each resend regenerates both the New Owner Ticket PDF and Invoice PDF, then sends a fresh email to the AR team.
         </p>
       </div>

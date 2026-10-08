@@ -13,9 +13,7 @@ export type GeneratedClosingDocumentKey =
   | 'newOwnerTicketPdf'
   | 'closingTicketDetailsPdf'
 
-export type ArTeamDocumentKey =
-  | 'chequesDocument'
-  | 'batchDocument'
+export type ArTeamDocumentKey = 'batchDocument'
 
 export type ClosingTicketDocumentKey =
   | NewOwnerDocumentKey
@@ -31,7 +29,6 @@ export interface NewOwnerDocumentDefinition {
     | 'cr109_newownerticketpdf_name'
     | 'cr109_purchaseapplicationform_name'
     | 'cr109_rpttdocument_name'
-    | 'cr109_chequesdocument_name'
     | 'cr109_batchdocument_name'
 }
 
@@ -116,14 +113,8 @@ export const AR_TEAM_DOCUMENTS:
   readonly NewOwnerDocumentDefinition[] =
   [
     {
-      key: 'chequesDocument',
-      label: 'Cheques Document',
-      columnName: 'cr109_chequesdocument',
-      fileNameColumn: 'cr109_chequesdocument_name',
-    },
-    {
       key: 'batchDocument',
-      label: 'Batch Document',
+      label: 'Batch And Cheque Document',
       columnName: 'cr109_batchdocument',
       fileNameColumn: 'cr109_batchdocument_name',
     },

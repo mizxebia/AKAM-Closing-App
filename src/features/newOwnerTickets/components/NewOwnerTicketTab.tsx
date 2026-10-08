@@ -7,6 +7,14 @@ import {
 import { ClipboardList } from 'lucide-react'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import { LoadingSkeleton } from '../../../components/enterprise'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../../../components/ui/alert-dialog'
 import { updateClosingTicket } from '../../closingTickets/api/closingTicketsService'
 import {
   writeActionLog,
@@ -35,6 +43,10 @@ import {
   type ClosingTicketDocumentKey,
 } from '../utils/dataverseFileUtils'
 import { buildClosingPayloadFromNewOwnerTicket } from '../utils/sharedTicketFields'
+import {
+  computeChargeDate,
+  getChargesCheckDateThreshold,
+} from '../utils/chargeDate'
 import { DocumentViewerPanel } from './DocumentViewerPanel'
 import { NewOwnerTicketForm } from './NewOwnerTicketForm'
 import { ProcessingDots } from '../../../components/feedback/ProcessingDots'
@@ -71,6 +83,26 @@ function getDateInputValue(value?: string) {
 
 function valueOrEmpty(value?: string) {
   return value ?? ''
+}
+
+// Formats a plain yyyy-mm-dd date-input value for display, building the
+// Date from its local year/month/day components (not parsed as UTC) so
+// the displayed date never shifts by a day in timezones behind UTC.
+function formatDateInputForDisplay(value: string) {
+  if (!value) {
+    return '—'
+  }
+
+  const [year, month, day] = value.split('-').map(Number)
+  if (!year || !month || !day) {
+    return value
+  }
+
+  return new Date(year, month - 1, day).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
 }
 
 export function getInitialFormState(
@@ -715,6 +747,19 @@ export function NewOwnerTicketTab({
   const [validationErrors, setValidationErrors] =
     useState<ValidationErrors>({})
 
+  // Scheduled Charges Start Date confirmation — shown when the user clicks
+  // Validate, instead of a Charge Date field living in the form itself.
+  const [chargeDateDialogOpen, setChargeDateDialogOpen] = useState(false)
+  const [chargeDateMode, setChargeDateMode] = useState<
+    'confirm' | 'edit'
+  >('confirm')
+  const [suggestedChargeDate, setSuggestedChargeDate] = useState('')
+  const [customChargeDate, setCustomChargeDate] = useState('')
+  const [chargeDateSaving, setChargeDateSaving] = useState(false)
+  const [chargeDateError, setChargeDateError] = useState<
+    string | null
+  >(null)
+
   const defaultDocument = useMemo(
     () => getDefaultDocument(closingTicket),
     [closingTicket]
@@ -949,6 +994,69 @@ export function NewOwnerTicketTab({
     record,
   ])
 
+  // Clicking Validate opens the Scheduled Charges Start Date dialog first —
+  // actual validation only proceeds once that date is confirmed or set.
+  const openChargeDateConfirmation = useCallback(async () => {
+    setChargeDateError(null)
+
+    const closingDate = getDateInputValue(
+      closingTicket.cr7de_closingdate
+    )
+    const threshold = await getChargesCheckDateThreshold()
+
+    const computed =
+      closingDate && threshold !== null
+        ? computeChargeDate(closingDate, threshold)
+        : ''
+
+    setSuggestedChargeDate(computed)
+    setCustomChargeDate(computed)
+    setChargeDateMode(computed ? 'confirm' : 'edit')
+    setChargeDateDialogOpen(true)
+  }, [closingTicket.cr7de_closingdate])
+
+  const confirmChargeDate = useCallback(
+    async (date: string) => {
+      if (!date) {
+        setChargeDateError(
+          'Select a Scheduled Charges Start Date to continue.'
+        )
+        return
+      }
+
+      const recordId = closingTicket.cr7de_closingticketdetailsid
+      setChargeDateSaving(true)
+      setChargeDateError(null)
+
+      try {
+        await updateClosingTicket(recordId, {
+          cr109_chargedate: date,
+        })
+        setChargeDateDialogOpen(false)
+        await validateClosingTicket()
+      } catch (err) {
+        setChargeDateError(
+          err instanceof Error
+            ? err.message
+            : 'Unable to save the Scheduled Charges Start Date.'
+        )
+        logAppFailure({
+          ticketId: closingTicket.cr7de_ticketid ?? recordId,
+          tableName: 'cr7de_closingticketdetailses',
+          context: 'Save Scheduled Charges Start Date',
+          error: err,
+        })
+      } finally {
+        setChargeDateSaving(false)
+      }
+    },
+    [
+      closingTicket.cr7de_closingticketdetailsid,
+      closingTicket.cr7de_ticketid,
+      validateClosingTicket,
+    ]
+  )
+
   return (
     <section className="grid gap-4">
       <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200/60">
@@ -1025,7 +1133,7 @@ export function NewOwnerTicketTab({
               showValidateButton={showValidateButton}
               onFieldChange={updateField}
               onSubmit={saveRecord}
-              onValidate={validateClosingTicket}
+              onValidate={() => void openChargeDateConfirmation()}
               readOnly={readOnly}
             />
           </div>
@@ -1038,6 +1146,103 @@ export function NewOwnerTicketTab({
           />
         </div>
       )}
+
+      <AlertDialog
+        open={chargeDateDialogOpen}
+        onOpenChange={(open) => {
+          if (!chargeDateSaving) {
+            setChargeDateDialogOpen(open)
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {chargeDateMode === 'confirm'
+                ? 'Confirm Scheduled Charges Start Date'
+                : 'Set Scheduled Charges Start Date'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {chargeDateMode === 'confirm' ? (
+                <>
+                  Based on the Closing Date (
+                  {formatDateInputForDisplay(
+                    getDateInputValue(closingTicket.cr7de_closingdate)
+                  )}
+                  ), the Scheduled Charges Start Date will be{' '}
+                  <strong className="text-slate-900">
+                    {formatDateInputForDisplay(suggestedChargeDate)}
+                  </strong>
+                  . Is this correct?
+                </>
+              ) : (
+                'Choose the date Scheduled Charges should start for this closing, then continue with validation.'
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          {chargeDateMode === 'edit' && (
+            <label className="form-field">
+              <span>Scheduled Charges Start Date</span>
+              <input
+                type="date"
+                value={customChargeDate}
+                onChange={(event) =>
+                  setCustomChargeDate(event.target.value)
+                }
+              />
+            </label>
+          )}
+
+          {chargeDateError && (
+            <StatusBanner type="error" message={chargeDateError} />
+          )}
+
+          <AlertDialogFooter>
+            {chargeDateMode === 'confirm' ? (
+              <>
+                <button
+                  type="button"
+                  className="inline-flex h-9 items-center justify-center rounded-md border border-[#1E3A47] bg-white px-4 text-sm font-semibold text-[#1E3A47] hover:bg-[#1E3A47]/5 disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={() => setChargeDateMode('edit')}
+                  disabled={chargeDateSaving}
+                >
+                  No, choose a different date
+                </button>
+                <button
+                  type="button"
+                  className="inline-flex h-9 items-center justify-center rounded-md bg-[#1E3A47] px-4 text-sm font-semibold text-[#F5F2EC] hover:bg-[#152d38] disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={() =>
+                    void confirmChargeDate(suggestedChargeDate)
+                  }
+                  disabled={chargeDateSaving}
+                >
+                  {chargeDateSaving ? 'Saving…' : 'Yes, looks good'}
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className="inline-flex h-9 items-center justify-center rounded-md border border-[#1E3A47] bg-white px-4 text-sm font-semibold text-[#1E3A47] hover:bg-[#1E3A47]/5 disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={() => setChargeDateDialogOpen(false)}
+                  disabled={chargeDateSaving}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="inline-flex h-9 items-center justify-center rounded-md bg-[#1E3A47] px-4 text-sm font-semibold text-[#F5F2EC] hover:bg-[#152d38] disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={() => void confirmChargeDate(customChargeDate)}
+                  disabled={chargeDateSaving || !customChargeDate}
+                >
+                  {chargeDateSaving ? 'Saving…' : 'Save & Validate'}
+                </button>
+              </>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   )
 }

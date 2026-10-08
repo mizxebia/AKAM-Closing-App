@@ -95,10 +95,10 @@ const PACKAGE_TYPE_LABELS: Record<string, string> = {
 }
 
 const TRANSACTION_TYPE_LABELS: Record<string, string> = {
-  AllCash: 'All Cash',
+  'All Cash': 'All Cash',
   Financing: 'Financing',
   Transfer: 'Transfer',
-  TrustTransfer: 'Trust Transfer',
+  'Trust Transfer': 'Trust Transfer',
 }
 
 function formatPackageType(
@@ -280,7 +280,7 @@ ${renderSectionTable('Closing Details', closingRows)}
 ${renderSectionTable('Seller', sellerRows)}
 ${renderSectionTable('Buyer', buyerRows)}
 ${notes ? renderNotesBlock(notes) : ''}
-<p>The Cheques Document and Batch Document are attached for your reference. Please reach out if any additional information is required.</p>
+<p>The Batch And Cheque Document is attached for your reference. Please reach out if any additional information is required.</p>
 <p>Thank you,<br>${escapeHtml(closingTicket.cr7de_closingagentname || 'AKAM Closing Team')}</p>`
 }
 
@@ -580,7 +580,7 @@ export function SendToATeamTab({
   >(null)
 
   // Documents are attached as they become available — sending no longer
-  // requires every AR document (Cheques, Batch, Invoice, New Owner Ticket)
+  // requires every AR document (Batch And Cheque, Invoice, New Owner Ticket)
   // to be present first.
 
   const previewedDocument = useMemo(
@@ -818,8 +818,6 @@ export function SendToATeamTab({
         action: SEND_ACTION_LABEL,
         details: {
           subject,
-          chequesDocument:
-            closingTicket.cr109_chequesdocument_name,
           batchDocument: closingTicket.cr109_batchdocument_name,
           invoice:
             closingTicket.cr109_closingticketdetailspdf_name,
@@ -899,7 +897,6 @@ export function SendToATeamTab({
                 isPreviewed={previewedKey === document.key}
                 onPreview={setPreviewedKey}
                 uploadable={
-                  document.key === 'chequesDocument' ||
                   document.key === 'batchDocument' ||
                   document.key === 'closingTicketDetailsPdf' ||
                   document.key === 'newOwnerTicketPdf'

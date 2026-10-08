@@ -12,7 +12,7 @@
       "properties": {
         "cr109_batchdocument": {
           "type": "string",
-          "title": "Batch Document",
+          "title": "Batch And Cheque Document",
           "x-ms-dataverse-attribute": "cr109_batchdocument",
           "x-ms-dataverse-type": "FileType",
           "x-ms-schema-name": "cr109_BatchDocument",
@@ -148,22 +148,12 @@
           "x-ms-schema-name": "cr109_BuyerUnitNumber",
           "maxLength": 100
         },
-        "cr109_chequesdocument": {
+        "cr109_chargedate": {
           "type": "string",
-          "title": "Cheques Document",
-          "x-ms-dataverse-attribute": "cr109_chequesdocument",
-          "x-ms-dataverse-type": "FileType",
-          "x-ms-schema-name": "cr109_ChequesDocument",
-          "x-ms-read-only": true
-        },
-        "cr109_chequesdocument_name": {
-          "type": "string",
-          "title": "cr109_chequesdocument_name",
-          "x-ms-dataverse-attribute": "cr109_chequesdocument_name",
-          "x-ms-dataverse-type": "StringType",
-          "x-ms-schema-name": "cr109_ChequesDocument_Name",
-          "x-ms-read-only": true,
-          "maxLength": 200
+          "title": "Charge Date",
+          "x-ms-dataverse-attribute": "cr109_chargedate",
+          "x-ms-dataverse-type": "DateTimeType",
+          "x-ms-schema-name": "cr109_ChargeDate"
         },
         "cr109_closingticketdetailspdf": {
           "type": "string",
@@ -303,6 +293,14 @@
           "x-ms-dataverse-type": "VirtualType",
           "x-ms-schema-name": "cr109_packagetypeName",
           "x-ms-read-only": true
+        },
+        "cr109_processcheckpoint": {
+          "type": "string",
+          "title": "Process Checkpoint",
+          "x-ms-dataverse-attribute": "cr109_processcheckpoint",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_ProcessCheckpoint",
+          "maxLength": 100
         },
         "cr109_purchaseapplicationform": {
           "type": "string",

@@ -4,29 +4,29 @@
  */
 export const Cr7de_closingticketdetailsescr109_botstatus = {
   396620004: 'Draft',
-  396620000: 'SellerInfoRetrieved',
-  396620006: 'DomecileDumpRetrieved',
-  396620001: 'FormDownloaded',
-  396620010: 'RPTTUploaded',
-  396620011: 'YARDIChargesFetched',
-  396620021: 'YardiChargesUpdated',
-  396620007: 'InformationValidated',
-  396620002: 'SellerDetailsUpdated',
-  396620003: 'OwnerRecordCreated',
-  396620005: 'FailedSellerInfoRetrieval',
-  396620015: 'PurchaseFormUploadOnedrive',
-  396620008: 'FailedFormDownload',
-  396620009: 'FailedDomecileDumpRetrieval',
-  396620012: 'FailedYardiChargesFetch',
-  396620013: 'PurchaseFormDataExtracted',
-  396620014: 'FailedPurchaseFormDataExtraction',
-  396620016: 'FailedPurchaseFormUploadOnedrive',
-  396620017: 'FailedSellerDetailsUpdate',
-  396620018: 'FailedCreateNewOwner',
-  396620019: 'FailedRPTTExtraction',
-  396620020: 'RPTTExtracted',
-  396620022: 'SentToAR',
-  396620023: 'FailedtoSendtoAR'
+  396620000: 'Seller Info Retrieved',
+  396620006: 'Domecile Dump Retrieved',
+  396620001: 'Form Downloaded',
+  396620010: 'RPTT Uploaded',
+  396620011: 'YARDI Charges Fetched',
+  396620021: 'Yardi Charges Updated',
+  396620007: 'Information Validated',
+  396620002: 'Seller Details Updated',
+  396620003: 'Owner Record Created',
+  396620005: 'Failed Seller Info Retrieval',
+  396620015: 'Purchase Form Upload Onedrive',
+  396620008: 'Failed Form Download',
+  396620009: 'Failed Domecile Dump Retrieval',
+  396620012: 'Failed Yardi Charges Fetch',
+  396620013: 'Purchase Form Data Extracted',
+  396620014: 'Failed Purchase Form Data Extraction',
+  396620016: 'Failed Purchase Form Upload Onedrive',
+  396620017: 'Failed Seller Details Update',
+  396620018: 'Failed Create New Owner',
+  396620019: 'Failed RPTT Extraction',
+  396620020: 'RPTT Extracted',
+  396620022: 'Sent To AR',
+  396620023: 'Failed to Send to AR'
 } as const;
 export type Cr7de_closingticketdetailsescr109_botstatus = keyof typeof Cr7de_closingticketdetailsescr109_botstatus;
 export const Cr7de_closingticketdetailsescr109_packagetype = {
@@ -36,22 +36,22 @@ export const Cr7de_closingticketdetailsescr109_packagetype = {
 } as const;
 export type Cr7de_closingticketdetailsescr109_packagetype = keyof typeof Cr7de_closingticketdetailsescr109_packagetype;
 export const Cr7de_closingticketdetailsescr109_transactiontypedeal = {
-  396620000: 'AllCash',
+  396620000: 'All Cash',
   396620001: 'Financing',
   396620002: 'Transfer',
-  396620003: 'TrustTransfer'
+  396620003: 'Trust Transfer'
 } as const;
 export type Cr7de_closingticketdetailsescr109_transactiontypedeal = keyof typeof Cr7de_closingticketdetailsescr109_transactiontypedeal;
 export const Cr7de_closingticketdetailsescr7de_ticketstatus = {
   716070000: 'Draft',
   716070005: 'Processing',
-  716070006: 'ReadyForPostClosing',
-  716070004: 'PostClosing',
-  716070001: 'ValidateClosings',
-  716070002: 'TransferringBuilding',
+  716070006: 'Ready For Post Closing',
+  716070004: 'Post Closing',
+  716070001: 'Validate Closings',
+  716070002: 'Transferring Building',
   716070007: 'Failed',
   716070008: 'Completed',
-  396620001: 'SenttoAR'
+  396620001: 'Sent to AR'
 } as const;
 export type Cr7de_closingticketdetailsescr7de_ticketstatus = keyof typeof Cr7de_closingticketdetailsescr7de_ticketstatus;
 export const Cr7de_closingticketdetailsesstatecode = {
@@ -70,6 +70,7 @@ export interface Cr7de_closingticketdetailsesBase {
   cr109_buyer2name?: string;
   cr109_buyer3?: string;
   cr109_buyerunitnumber?: string;
+  cr109_chargedate?: string;
   cr109_domecilechargesextracted?: boolean;
   cr109_domecilepackageurl?: string;
   cr109_emailbody?: string;
@@ -77,6 +78,7 @@ export interface Cr7de_closingticketdetailsesBase {
   cr109_legalname?: string;
   cr109_locationofclosing?: string;
   cr109_packagetype?: Cr7de_closingticketdetailsescr109_packagetype;
+  cr109_processcheckpoint?: string;
   cr109_saleprice?: string;
   cr109_seller2name?: string;
   cr109_seller3?: string;
@@ -115,8 +117,6 @@ export interface Cr7de_closingticketdetailses extends Cr7de_closingticketdetails
   cr109_batchdocument?: string;
   cr109_batchdocument_name?: string;
   cr109_botstatusname?: string;
-  cr109_chequesdocument?: string;
-  cr109_chequesdocument_name?: string;
   cr109_closingticketdetailspdf?: string;
   cr109_closingticketdetailspdf_name?: string;
   cr109_domecilechargesextractedname?: string;
@@ -162,4 +162,6 @@ export interface Cr7de_closingticketdetailses extends Cr7de_closingticketdetails
   owninguser?: object;
   _owninguser_value?: string;
 }
-export type Cr7de_closingticketdetailsesUploadColumnName = 'cr109_batchdocument' | 'cr109_chequesdocument' | 'cr109_closingticketdetailspdf' | 'cr109_newownerticketpdf' | 'cr109_purchaseapplicationform' | 'cr109_rpttdocument';
+export type Cr7de_closingticketdetailsesFileColumnName = 'cr109_batchdocument' | 'cr109_closingticketdetailspdf' | 'cr109_newownerticketpdf' | 'cr109_purchaseapplicationform' | 'cr109_rpttdocument';
+
+export type Cr7de_closingticketdetailsesUploadColumnName = Cr7de_closingticketdetailsesFileColumnName;
