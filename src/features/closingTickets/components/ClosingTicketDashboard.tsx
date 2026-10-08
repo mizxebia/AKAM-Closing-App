@@ -2,20 +2,18 @@ import {
   Activity,
   CalendarDays,
   Files,
-  Timer,
-  Building2,
+  ClipboardCheck,
+  FileCheck2,
   CheckCircle2,
 } from 'lucide-react'
 import { StatCard } from '../../../components/enterprise'
-import {
-  useClosingPipelineDurations,
-  type DurationStat,
-} from '../hooks/useClosingPipelineDurations'
 import type { ClosingTicketRecord } from '../types/closingTicket'
 
 const COMPLETED_STATUS = 716070008
 const SENT_TO_AR_STATUS = 396620001
 const FAILED_TICKET_STATUS = 716070007
+const VALIDATE_CLOSINGS_STATUS = 716070001
+const READY_FOR_POST_CLOSING_STATUS = 716070006
 const INACTIVE_STATUSES = [
   COMPLETED_STATUS,
   SENT_TO_AR_STATUS,
@@ -25,26 +23,6 @@ const INACTIVE_STATUSES = [
 interface ClosingTicketDashboardProps {
   totalRecords: number
   records: ClosingTicketRecord[]
-}
-
-function formatDurationStat(
-  stat: DurationStat,
-  loading: boolean,
-  noun: string
-) {
-  const value = loading
-    ? '—'
-    : stat.averageDays === null
-      ? 'N/A'
-      : `${stat.averageDays.toFixed(1)}d`
-
-  const description = loading
-    ? 'Calculating…'
-    : stat.averageDays === null
-      ? 'No data (30d)'
-      : `${stat.sampleSize} ${noun}${stat.sampleSize === 1 ? '' : 's'} · 30d`
-
-  return { value, description }
 }
 
 export function ClosingTicketDashboard({
@@ -82,19 +60,15 @@ export function ClosingTicketDashboard({
     }
   ).length
 
-  const { timeToClose, yardiOwnerCreation, loading: loadingDurations } =
-    useClosingPipelineDurations(records)
+  const validationPendingRecords = records.filter(
+    (record) =>
+      Number(record.cr7de_ticketstatus) === VALIDATE_CLOSINGS_STATUS
+  ).length
 
-  const timeToCloseDisplay = formatDurationStat(
-    timeToClose,
-    loadingDurations,
-    'ticket'
-  )
-  const yardiOwnerCreationDisplay = formatDurationStat(
-    yardiOwnerCreation,
-    loadingDurations,
-    'ticket'
-  )
+  const readyForPostClosingRecords = records.filter(
+    (record) =>
+      Number(record.cr7de_ticketstatus) === READY_FOR_POST_CLOSING_STATUS
+  ).length
 
   return (
     <section
@@ -109,6 +83,15 @@ export function ClosingTicketDashboard({
         tone="blue"
         trend="Portfolio wide"
         accentColor="#1E3A47"
+      />
+      <StatCard
+        label="Closings Done"
+        value={closingsDoneRecords}
+        description="AR + Completed"
+        icon={CheckCircle2}
+        tone="emerald"
+        trend="Closed out"
+        accentColor="#1a7a52"
       />
       <StatCard
         label="This Month"
@@ -129,31 +112,22 @@ export function ClosingTicketDashboard({
         accentColor="#8B3A2A"
       />
       <StatCard
-        label="Closings Done"
-        value={closingsDoneRecords}
-        description="AR + Completed"
-        icon={CheckCircle2}
-        tone="emerald"
-        trend="Closed out"
-        accentColor="#1a7a52"
-      />
-      <StatCard
-        label="Avg. Time to Close"
-        value={timeToCloseDisplay.value}
-        description={timeToCloseDisplay.description}
-        icon={Timer}
-        tone="amber"
-        trend="Created → Closed"
-        accentColor="#B8860B"
-      />
-      <StatCard
-        label="Owner Creation"
-        value={yardiOwnerCreationDisplay.value}
-        description={yardiOwnerCreationDisplay.description}
-        icon={Building2}
-        tone="amber"
-        trend="Transfer → Done"
+        label="Validation Pending"
+        value={validationPendingRecords}
+        description="Awaiting Validate"
+        icon={ClipboardCheck}
+        tone="violet"
+        trend="Needs review"
         accentColor="#6B4423"
+      />
+      <StatCard
+        label="Ready for Post Closing"
+        value={readyForPostClosingRecords}
+        description="Awaiting RPTT upload"
+        icon={FileCheck2}
+        tone="blue"
+        trend="Next step"
+        accentColor="#2A5C8B"
       />
     </section>
   )

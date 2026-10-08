@@ -274,6 +274,7 @@ export type LogType =
   | 'delete'
   | 'file'
   | 'status'
+  | 'override'
   | 'communication'
   | 'failure'
   | 'other'
@@ -285,8 +286,13 @@ const FILE_ACTION_PREFIXES = [
   'Delete Document',
 ]
 
+// Developer Mode's manual status overrides (single-ticket and bulk) are
+// their own category, distinct from normal workflow status transitions
+// like Validate or Move to Post Closing — a developer bypassing the
+// pipeline is a different kind of event worth filtering on its own.
+const OVERRIDE_ACTION_PREFIXES = ['Developer Status Override']
+
 const STATUS_ACTION_PREFIXES = [
-  'Developer Status Override',
   'Update Ticket Status',
   'Validate Closing',
 ]
@@ -304,6 +310,11 @@ function classifyActionLabel(
 ): Exclude<LogType, 'create' | 'update' | 'delete' | 'failure'> {
   if (FILE_ACTION_PREFIXES.some((prefix) => action.startsWith(prefix))) {
     return 'file'
+  }
+  if (
+    OVERRIDE_ACTION_PREFIXES.some((prefix) => action.startsWith(prefix))
+  ) {
+    return 'override'
   }
   if (STATUS_ACTION_PREFIXES.some((prefix) => action.startsWith(prefix))) {
     return 'status'

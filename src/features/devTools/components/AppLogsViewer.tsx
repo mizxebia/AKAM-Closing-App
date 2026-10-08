@@ -36,6 +36,7 @@ const TYPE_OPTIONS: Array<{ value: '' | LogType; label: string }> = [
   { value: '', label: 'All types' },
   { value: 'file', label: 'File Logs' },
   { value: 'status', label: 'Status Logs' },
+  { value: 'override', label: 'Developer Override Logs' },
   { value: 'communication', label: 'Communication Logs' },
   { value: 'create', label: 'Create Logs' },
   { value: 'update', label: 'Update Logs' },
@@ -47,6 +48,7 @@ const TYPE_OPTIONS: Array<{ value: '' | LogType; label: string }> = [
 const TYPE_BADGE_CLASSES: Record<LogType, string> = {
   file: 'bg-indigo-100 text-indigo-700',
   status: 'bg-amber-100 text-amber-700',
+  override: 'bg-purple-100 text-purple-700',
   communication: 'bg-sky-100 text-sky-700',
   create: 'bg-emerald-100 text-emerald-700',
   update: 'bg-blue-100 text-blue-700',
@@ -58,6 +60,7 @@ const TYPE_BADGE_CLASSES: Record<LogType, string> = {
 const TYPE_BADGE_LABELS: Record<LogType, string> = {
   file: 'file',
   status: 'status',
+  override: 'override',
   communication: 'sent',
   create: 'create',
   update: 'update',
