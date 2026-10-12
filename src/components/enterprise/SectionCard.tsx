@@ -34,7 +34,7 @@ export function SectionCard({
             {title && (
               <h2
                 className="text-[#1E3A47]"
-                style={{ fontFamily: "'Playfair Display', Georgia, serif", fontWeight: 600, fontSize: '17px' }}
+                style={{ fontFamily: "'Fraunces', Georgia, serif", fontWeight: 600, fontSize: '17px' }}
               >
                 {title}
               </h2>

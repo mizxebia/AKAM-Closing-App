@@ -986,7 +986,7 @@ export function SendToATeamTab({
       <aside className="document-panel ar-document-panel">
         <div className="document-panel-inner">
           <div className="document-panel-header">
-            <div>
+            <div className="document-panel-filename">
               <h3>
                 {previewedDocument?.label ??
                   'Click an attachment to preview'}

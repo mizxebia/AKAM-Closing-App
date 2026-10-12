@@ -134,7 +134,7 @@ export function BuildingCodeLookup({
             </SheetDescription>
             <SheetTitle
               className="mt-1 text-xl font-semibold text-[#1E3A47]"
-              style={{ fontFamily: "'Playfair Display', Georgia, serif", fontStyle: 'italic' }}
+              style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: 'italic' }}
             >
               Building Lookup
             </SheetTitle>

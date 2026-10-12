@@ -48,7 +48,7 @@ export function PageHeader({
         <h1
           className="truncate text-2xl tracking-tight"
           style={{
-            fontFamily: "'Playfair Display', Georgia, serif",
+            fontFamily: "'Fraunces', Georgia, serif",
             fontWeight: 700,
             fontStyle: 'italic',
             color: dark ? '#F5F2EC' : '#1E3A47',

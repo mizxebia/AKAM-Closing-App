@@ -456,7 +456,7 @@ export function ClosingTicketPage() {
                 <SheetTitle
                   id="create-closing-title"
                   className="text-xl font-semibold text-[#1E3A47]"
-                  style={{ fontFamily: "'Playfair Display', Georgia, serif", fontStyle: 'italic' }}
+                  style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: 'italic' }}
                 >
                   New Closing Ticket
                 </SheetTitle>

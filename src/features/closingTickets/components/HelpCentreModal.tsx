@@ -1449,7 +1449,7 @@ export function HelpCentreModal({ open, onClose }: HelpCentreModalProps) {
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#C9A96E] opacity-75">Help Centre</p>
                 <h2 className="text-[20px] font-bold text-white leading-tight mt-0.5"
-                  style={{ fontFamily: "'Playfair Display', Georgia, serif", fontStyle: 'italic' }}>
+                  style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: 'italic' }}>
                   New Sales Closure
                 </h2>
                 <p className="text-[12px] text-slate-400 mt-0.5">Everything you need to complete a New Sales Closure.</p>

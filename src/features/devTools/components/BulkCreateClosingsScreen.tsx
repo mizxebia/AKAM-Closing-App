@@ -416,7 +416,7 @@ export function BulkCreateClosingsScreen({
           </p>
           <h1
             style={{
-              fontFamily: "'Playfair Display', Georgia, serif",
+              fontFamily: "'Fraunces', Georgia, serif",
               fontSize: '22px',
               fontWeight: 700,
               fontStyle: 'italic',

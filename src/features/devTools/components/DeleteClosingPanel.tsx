@@ -118,7 +118,7 @@ export function DeleteClosingPanel({
                 className="text-xl font-semibold text-[#1E3A47]"
                 style={{
                   fontFamily:
-                    "'Playfair Display', Georgia, serif",
+                    "'Fraunces', Georgia, serif",
                   fontStyle: 'italic',
                 }}
               >

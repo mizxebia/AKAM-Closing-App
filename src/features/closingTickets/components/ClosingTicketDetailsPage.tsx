@@ -560,7 +560,7 @@ export function ClosingTicketDetailsPage({
               Closing Workspace
             </p>
             <div className="flex flex-wrap items-center gap-2.5">
-              <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '22px', fontWeight: 700, color: '#1E3A47', letterSpacing: '-0.3px', fontVariantNumeric: 'lining-nums tabular-nums' }}>
+              <h1 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: '22px', fontWeight: 700, color: '#1E3A47', letterSpacing: '-0.3px', fontVariantNumeric: 'lining-nums tabular-nums' }}>
                 {record?.cr7de_ticketid ?? 'Closing Details'}
               </h1>
               {record && (
@@ -834,7 +834,7 @@ export function ClosingTicketDetailsPage({
                 </SheetDescription>
                 <SheetTitle
                   className="mt-1 text-xl font-semibold text-[#1E3A47]"
-                  style={{ fontFamily: "'Playfair Display', Georgia, serif", fontStyle: 'italic' }}
+                  style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: 'italic' }}
                 >
                   {record.cr7de_ticketid ?? 'Closing Ticket'}
                 </SheetTitle>

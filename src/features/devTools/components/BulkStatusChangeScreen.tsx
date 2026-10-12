@@ -176,7 +176,7 @@ export function BulkStatusChangeScreen({
           <h1
             style={{
               fontFamily:
-                "'Playfair Display', Georgia, serif",
+                "'Fraunces', Georgia, serif",
               fontSize: '22px',
               fontWeight: 700,
               fontStyle: 'italic',

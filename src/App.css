@@ -37,7 +37,7 @@ body {
 .app-title {
   margin: 0;
   color: #1E3A47;
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 1.85rem;
   font-weight: 700;
   font-style: italic;
@@ -287,7 +287,7 @@ body {
   margin: 0;
   color: #1E3A47;
   font-size: 1.05rem;
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-weight: 600;
 }
 
@@ -595,7 +595,7 @@ body {
 .modal-header h2 {
   margin: 4px 0 0;
   color: #1E3A47;
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 1.4rem;
   font-style: italic;
   line-height: 1.2;
@@ -1121,7 +1121,7 @@ body {
 .form-section h3 {
   margin: 0 0 10px;
   color: #1E3A47;
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 0.92rem;
   font-weight: 600;
 }
@@ -1630,7 +1630,7 @@ body {
 .details-header h1 {
   margin: 4px 0 0;
   color: #1E3A47;
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 1.6rem;
   font-style: italic;
   line-height: 1.15;
@@ -1791,7 +1791,7 @@ body {
 .workflow-card-header h3 {
   margin: 0;
   color: #1E3A47;
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 1rem;
   font-weight: 600;
 }
@@ -1920,14 +1920,25 @@ body {
   letter-spacing: 0.1em;
 }
 
-.new-owner-workflow-header h3,
-.document-panel-filename h3 {
+.new-owner-workflow-header h3 {
   margin: 2px 0 0;
   color: #1E3A47;
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 0.92rem;
   font-style: italic;
   line-height: 1.2;
+}
+
+/* Filenames are data, not a title — the elegant display serif reads
+   poorly on raw strings with underscores/extensions, so this uses the
+   body sans font instead. */
+.document-panel-filename h3 {
+  margin: 2px 0 0;
+  color: #1E3A47;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.88rem;
+  line-height: 1.3;
 }
 
 .new-owner-workflow-header span {
@@ -2268,7 +2279,7 @@ body {
 .invoice-header h2 {
   margin: 0;
   color: #1E3A47;
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 1.05rem;
   font-weight: 600;
 }
@@ -2753,7 +2764,7 @@ body {
 .dataverse-charges-toolbar h2 {
   margin: 0;
   color: #1E3A47;
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 1.12rem;
   font-weight: 650;
 }
