@@ -1447,6 +1447,86 @@ body {
   accent-color: #1E3A47;
 }
 
+/* Flags section — toggle-switch variant of .checkbox-field, same
+   bordered-box sizing so it still sits cleanly in the Flags grid. */
+.flag-toggle {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid #D5CBB8;
+  border-radius: 8px;
+  background: #ffffff;
+  cursor: pointer;
+  user-select: none;
+}
+
+.flag-toggle[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.flag-toggle-track {
+  position: relative;
+  flex-shrink: 0;
+  width: 36px;
+  height: 20px;
+}
+
+.flag-toggle-track input {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  margin: 0;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.flag-toggle-track input:disabled {
+  cursor: not-allowed;
+}
+
+.flag-toggle-thumb {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #D5CBB8;
+  transition: background-color 160ms ease;
+}
+
+.flag-toggle-thumb::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(30, 58, 71, 0.35);
+  transition: transform 160ms ease;
+}
+
+.flag-toggle-track input:checked + .flag-toggle-thumb {
+  background: #1E3A47;
+}
+
+.flag-toggle-track input:checked + .flag-toggle-thumb::before {
+  transform: translateX(16px);
+}
+
+.flag-toggle-track input:focus-visible + .flag-toggle-thumb {
+  outline: 2px solid #C9A96E;
+  outline-offset: 2px;
+}
+
+.flag-toggle-label {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #1E3A47;
+}
+
 .file-upload-field {
   display: grid;
   gap: 6px;

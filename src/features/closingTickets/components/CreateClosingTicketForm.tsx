@@ -2025,18 +2025,22 @@ function CheckboxField({
 }) {
   return (
     <label
-      className="checkbox-field"
+      className="flag-toggle"
+      aria-disabled={disabled}
       title={disabled ? title : undefined}
     >
-      <input
-        type="checkbox"
-        checked={checked}
-        disabled={disabled}
-        onChange={(event) =>
-          onChange(event.target.checked)
-        }
-      />
-      <span>{label}</span>
+      <span className="flag-toggle-track">
+        <input
+          type="checkbox"
+          checked={checked}
+          disabled={disabled}
+          onChange={(event) =>
+            onChange(event.target.checked)
+          }
+        />
+        <span className="flag-toggle-thumb" aria-hidden="true" />
+      </span>
+      <span className="flag-toggle-label">{label}</span>
     </label>
   )
 }
