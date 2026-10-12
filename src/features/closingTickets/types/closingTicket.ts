@@ -119,6 +119,7 @@ export type ClosingTicketCreateInput = Partial<
     | 'cr109_saleprice'
     | 'cr109_seller2name'
     | 'cr109_seller3'
+    | 'cr109_sendtoar'
     | 'cr109_shares'
     | 'cr109_transactiontypedeal'
     | 'cr7de_buildingaddress'
@@ -159,6 +160,7 @@ export type ClosingTicketFormState = {
   cr109_saleprice: string
   cr109_seller2name: string
   cr109_seller3: string
+  cr109_sendtoar: boolean
   cr109_shares: string
   cr109_transactiontypedeal:
     | ''

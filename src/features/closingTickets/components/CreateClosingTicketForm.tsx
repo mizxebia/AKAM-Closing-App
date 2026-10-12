@@ -88,6 +88,7 @@ const emptyFormState: ClosingTicketFormState = {
   cr109_saleprice: '',
   cr109_seller2name: '',
   cr109_seller3: '',
+  cr109_sendtoar: true,
   cr109_shares: '',
   cr109_transactiontypedeal: '',
   cr7de_buildingaddress: '',
@@ -147,6 +148,7 @@ function getRecordFormState(
     cr109_saleprice: record.cr109_saleprice ?? '',
     cr109_seller2name: record.cr109_seller2name ?? '',
     cr109_seller3: record.cr109_seller3 ?? '',
+    cr109_sendtoar: record.cr109_sendtoar ?? true,
     cr109_shares: record.cr109_shares ?? '',
     cr109_transactiontypedeal:
       record.cr109_transactiontypedeal ?? '',
@@ -326,6 +328,7 @@ function buildPayload(
     cr109_seller3: normalizeText(
       formState.cr109_seller3
     ),
+    cr109_sendtoar: formState.cr109_sendtoar,
     cr109_shares: normalizeText(formState.cr109_shares),
     cr109_transactiontypedeal:
       formState.cr109_transactiontypedeal ||
@@ -1565,6 +1568,14 @@ function ClosingTicketEditorForm({
               }
               updateField('cr7de_buyerexistsinyardi', checked)
             }}
+          />
+          <CheckboxField
+            label="Send to AR"
+            checked={formState.cr109_sendtoar}
+            title="When unchecked, this closing stops at Completed and will not move to the Sent to AR stage."
+            onChange={(checked) =>
+              updateField('cr109_sendtoar', checked)
+            }
           />
           </div>
         </section>

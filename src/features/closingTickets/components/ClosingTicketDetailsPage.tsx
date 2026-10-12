@@ -458,6 +458,10 @@ export function ClosingTicketDetailsPage({
     Number(record?.cr109_botstatus) === OWNER_RECORD_CREATED_BOT_STATUS
   const isSentToAR =
     Number(record?.cr7de_ticketstatus) === SENT_TO_AR_STATUS
+  // When the Send to AR flag is unchecked, the closing is meant to stop
+  // at Completed — the Send to AR Team tab (and the flow it triggers)
+  // never becomes available for it.
+  const canSendToAR = Boolean(record?.cr109_sendtoar)
 
   const workflowTabs = [
     { key: 'details' as const, label: 'Closing Details' },
@@ -466,7 +470,7 @@ export function ClosingTicketDetailsPage({
       { key: 'charges' as const, label: 'Yardi Charges' },
       { key: 'newOwner' as const, label: 'New Owner Ticket' },
     ] : []),
-    ...(isFullyCompleted || isSentToAR ? [
+    ...((isFullyCompleted && canSendToAR) || isSentToAR ? [
       { key: 'sendToATeam' as const, label: 'Send to AR Team' },
     ] : []),
   ]

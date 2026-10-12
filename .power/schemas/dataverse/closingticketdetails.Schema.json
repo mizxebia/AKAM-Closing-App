@@ -298,9 +298,50 @@
           "type": "string",
           "title": "Process Checkpoint",
           "x-ms-dataverse-attribute": "cr109_processcheckpoint",
-          "x-ms-dataverse-type": "StringType",
+          "x-ms-dataverse-type": "MultiSelectPicklistType",
           "x-ms-schema-name": "cr109_ProcessCheckpoint",
-          "maxLength": 100
+          "enum": [
+            "Buyer 1 Added",
+            "Buyer 2 Added",
+            "Buyer 3 Added",
+            "Additional Occupant 1 Added ",
+            "Additional Occupant 2 Added ",
+            "Additional Occupant 3 Added ",
+            "New Owner Ticket Document Uploaded",
+            "Manual Scheduled Charges Added"
+          ],
+          "x-ms-enum-values": [
+            396620000,
+            396620001,
+            396620002,
+            396620003,
+            396620004,
+            396620005,
+            396620006,
+            396620007
+          ],
+          "Color": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "98795e95-21c6-f111-aaaf-002248294ed2",
+          "x-ms-isGlobal": true,
+          "x-ms-optionsetdisplayname": "Create New Owner Checkpoint",
+          "x-ms-optionSetType": "Picklist"
+        },
+        "cr109_processcheckpointname": {
+          "type": "string",
+          "title": "cr109_processcheckpointname",
+          "x-ms-dataverse-attribute": "cr109_processcheckpointname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "cr109_processcheckpointName",
+          "x-ms-read-only": true
         },
         "cr109_purchaseapplicationform": {
           "type": "string",
@@ -359,6 +400,38 @@
           "x-ms-dataverse-type": "StringType",
           "x-ms-schema-name": "cr109_Seller3",
           "maxLength": 100
+        },
+        "cr109_sendtoar": {
+          "type": "string",
+          "title": "Send to AR",
+          "x-ms-dataverse-attribute": "cr109_sendtoar",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "cr109_SendtoAR",
+          "required": true,
+          "enum": [
+            "No",
+            "Yes"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "3fa1984d-31c6-f111-aaaf-7ced8dd99df9",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Send to AR",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "cr109_sendtoarname": {
+          "type": "string",
+          "title": "cr109_sendtoarname",
+          "x-ms-dataverse-attribute": "cr109_sendtoarname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "cr109_sendtoarName",
+          "x-ms-read-only": true
         },
         "cr109_shares": {
           "type": "string",
@@ -944,6 +1017,7 @@
         }
       },
       "required": [
+        "cr109_sendtoar",
         "cr7de_closingticketdetailsid",
         "createdbyyominame",
         "createdonbehalfbyyominame",

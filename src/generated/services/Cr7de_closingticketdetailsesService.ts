@@ -8,6 +8,7 @@ import type { GetEntityMetadataOptions, EntityMetadata } from '@microsoft/power-
 import type { IGetOptions, IGetAllOptions } from '../models/CommonModels';
 import type { IOperationResult } from '@microsoft/power-apps/data';
 import { dataSourcesInfo } from '../../../.power/schemas/appschemas/dataSourcesInfo';
+import { deserializeMultiSelectPicklistFields, serializeMultiSelectPicklistFields } from '@microsoft/power-apps/data';
 import { getClient } from '@microsoft/power-apps/data';
 
 
@@ -15,21 +16,28 @@ export class Cr7de_closingticketdetailsesService {
   private static readonly dataSourceName = 'cr7de_closingticketdetailses';
 
   private static readonly client = getClient(dataSourcesInfo);
+  private static readonly multiSelectPicklistFields = ['cr109_processcheckpoint'] as const;
 
   public static async create(record: Omit<Cr7de_closingticketdetailsesBase, 'cr7de_closingticketdetailsid'>): Promise<IOperationResult<Cr7de_closingticketdetailses>> {
-    const result = await Cr7de_closingticketdetailsesService.client.createRecordAsync<Omit<Cr7de_closingticketdetailsesBase, 'cr7de_closingticketdetailsid'>, Cr7de_closingticketdetailses>(
+    const result = await Cr7de_closingticketdetailsesService.client.createRecordAsync<Record<string, unknown>, Cr7de_closingticketdetailses>(
       Cr7de_closingticketdetailsesService.dataSourceName,
-      record
+      serializeMultiSelectPicklistFields(record as Record<string, unknown>, Cr7de_closingticketdetailsesService.multiSelectPicklistFields)
     );
+    if (result.data) {
+      deserializeMultiSelectPicklistFields(result.data as unknown as Record<string, unknown>, Cr7de_closingticketdetailsesService.multiSelectPicklistFields);
+    }
     return result;
   }
 
   public static async update(id: string, changedFields: Partial<Omit<Cr7de_closingticketdetailsesBase, 'cr7de_closingticketdetailsid'>>): Promise<IOperationResult<Cr7de_closingticketdetailses>> {
-    const result = await Cr7de_closingticketdetailsesService.client.updateRecordAsync<Partial<Omit<Cr7de_closingticketdetailsesBase, 'cr7de_closingticketdetailsid'>>, Cr7de_closingticketdetailses>(
+    const result = await Cr7de_closingticketdetailsesService.client.updateRecordAsync<Record<string, unknown>, Cr7de_closingticketdetailses>(
       Cr7de_closingticketdetailsesService.dataSourceName,
       id,
-      changedFields
+      serializeMultiSelectPicklistFields(changedFields as Record<string, unknown>, Cr7de_closingticketdetailsesService.multiSelectPicklistFields)
     );
+    if (result.data) {
+      deserializeMultiSelectPicklistFields(result.data as unknown as Record<string, unknown>, Cr7de_closingticketdetailsesService.multiSelectPicklistFields);
+    }
     return result;
   }
 
@@ -45,6 +53,9 @@ export class Cr7de_closingticketdetailsesService {
       id,
       options
     );
+    if (result.data) {
+      deserializeMultiSelectPicklistFields(result.data as unknown as Record<string, unknown>, Cr7de_closingticketdetailsesService.multiSelectPicklistFields);
+    }
     return result;
   }
 
@@ -53,6 +64,7 @@ export class Cr7de_closingticketdetailsesService {
       Cr7de_closingticketdetailsesService.dataSourceName,
       options
     );
+    result.data?.forEach(record => deserializeMultiSelectPicklistFields(record as unknown as Record<string, unknown>, Cr7de_closingticketdetailsesService.multiSelectPicklistFields));
     return result;
   }
 

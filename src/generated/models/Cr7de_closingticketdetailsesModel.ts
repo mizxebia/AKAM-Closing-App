@@ -35,6 +35,17 @@ export const Cr7de_closingticketdetailsescr109_packagetype = {
   396620002: 'coop_transfer'
 } as const;
 export type Cr7de_closingticketdetailsescr109_packagetype = keyof typeof Cr7de_closingticketdetailsescr109_packagetype;
+export const Cr7de_closingticketdetailsescr109_processcheckpoint = {
+  396620000: 'Buyer 1 Added',
+  396620001: 'Buyer 2 Added',
+  396620002: 'Buyer 3 Added',
+  396620003: 'Additional Occupant 1 Added ',
+  396620004: 'Additional Occupant 2 Added ',
+  396620005: 'Additional Occupant 3 Added ',
+  396620006: 'New Owner Ticket Document Uploaded',
+  396620007: 'Manual Scheduled Charges Added'
+} as const;
+export type Cr7de_closingticketdetailsescr109_processcheckpoint = keyof typeof Cr7de_closingticketdetailsescr109_processcheckpoint;
 export const Cr7de_closingticketdetailsescr109_transactiontypedeal = {
   396620000: 'All Cash',
   396620001: 'Financing',
@@ -78,10 +89,11 @@ export interface Cr7de_closingticketdetailsesBase {
   cr109_legalname?: string;
   cr109_locationofclosing?: string;
   cr109_packagetype?: Cr7de_closingticketdetailsescr109_packagetype;
-  cr109_processcheckpoint?: string;
+  cr109_processcheckpoint?: Cr7de_closingticketdetailsescr109_processcheckpoint[];
   cr109_saleprice?: string;
   cr109_seller2name?: string;
   cr109_seller3?: string;
+  cr109_sendtoar: boolean;
   cr109_shares?: string;
   cr109_transactiontypedeal?: Cr7de_closingticketdetailsescr109_transactiontypedeal;
   cr7de_buildingaddress?: string;
@@ -123,10 +135,12 @@ export interface Cr7de_closingticketdetailses extends Cr7de_closingticketdetails
   cr109_newownerticketpdf?: string;
   cr109_newownerticketpdf_name?: string;
   cr109_packagetypename?: string;
+  cr109_processcheckpointname?: string;
   cr109_purchaseapplicationform?: string;
   cr109_purchaseapplicationform_name?: string;
   cr109_rpttdocument?: string;
   cr109_rpttdocument_name?: string;
+  cr109_sendtoarname?: string;
   cr109_transactiontypedealname?: string;
   cr7de_buildingnotondomicilename?: string;
   cr7de_buyerexistsinyardiname?: string;
