@@ -43,10 +43,7 @@ import {
   type ClosingTicketDocumentKey,
 } from '../utils/dataverseFileUtils'
 import { buildClosingPayloadFromNewOwnerTicket } from '../utils/sharedTicketFields'
-import {
-  computeChargeDate,
-  getChargesCheckDateThreshold,
-} from '../utils/chargeDate'
+import { computeChargeDate } from '../utils/chargeDate'
 import { DocumentViewerPanel } from './DocumentViewerPanel'
 import { NewOwnerTicketForm } from './NewOwnerTicketForm'
 import { ProcessingDots } from '../../../components/feedback/ProcessingDots'
@@ -996,18 +993,15 @@ export function NewOwnerTicketTab({
 
   // Clicking Validate opens the Scheduled Charges Start Date dialog first —
   // actual validation only proceeds once that date is confirmed or set.
-  const openChargeDateConfirmation = useCallback(async () => {
+  const openChargeDateConfirmation = useCallback(() => {
     setChargeDateError(null)
 
     const closingDate = getDateInputValue(
       closingTicket.cr7de_closingdate
     )
-    const threshold = await getChargesCheckDateThreshold()
-
-    const computed =
-      closingDate && threshold !== null
-        ? computeChargeDate(closingDate, threshold)
-        : ''
+    const computed = closingDate
+      ? computeChargeDate(closingDate)
+      : ''
 
     setSuggestedChargeDate(computed)
     setCustomChargeDate(computed)
