@@ -1,4 +1,5 @@
 export { AppLogsViewer } from './components/AppLogsViewer'
+export { DataverseTablesReference } from './components/DataverseTablesReference'
 export { ManualDocumentUpload } from './components/ManualDocumentUpload'
 export { StatusOverridePanel } from './components/StatusOverridePanel'
 export { DeleteClosingPanel } from './components/DeleteClosingPanel'

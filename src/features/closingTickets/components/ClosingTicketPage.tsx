@@ -7,6 +7,7 @@ import {
   ScrollText,
   ListChecks,
   FilePlus2,
+  Database,
 } from 'lucide-react'
 import akamLogo from '../../../assets/akam_logo.png'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
@@ -44,6 +45,7 @@ import {
 } from '../../devScreenshots'
 import {
   AppLogsViewer,
+  DataverseTablesReference,
   BulkStatusChangeScreen,
   BulkCreateClosingsScreen,
 } from '../../devTools'
@@ -137,6 +139,7 @@ export function ClosingTicketPage() {
     useState<string | null>(null)
   const [helpOpen, setHelpOpen] = useState(false)
   const [logsViewerOpen, setLogsViewerOpen] = useState(false)
+  const [tablesReferenceOpen, setTablesReferenceOpen] = useState(false)
   const [bulkStatusScreenOpen, setBulkStatusScreenOpen] =
     useState(false)
   const [bulkCreateScreenOpen, setBulkCreateScreenOpen] =
@@ -358,6 +361,14 @@ export function ClosingTicketPage() {
                   <button
                     className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] transition hover:bg-[#F5F2EC]"
                     type="button"
+                    onClick={() => setTablesReferenceOpen(true)}
+                  >
+                    <Database className="size-4" />
+                    Dataverse Tables
+                  </button>
+                  <button
+                    className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] transition hover:bg-[#F5F2EC]"
+                    type="button"
                     onClick={() => setBulkStatusScreenOpen(true)}
                   >
                     <ListChecks className="size-4" />
@@ -484,6 +495,13 @@ export function ClosingTicketPage() {
           <AppLogsViewer
             open={logsViewerOpen}
             onOpenChange={setLogsViewerOpen}
+          />
+        )}
+
+        {developerMode.isAllowed && (
+          <DataverseTablesReference
+            open={tablesReferenceOpen}
+            onOpenChange={setTablesReferenceOpen}
           />
         )}
 

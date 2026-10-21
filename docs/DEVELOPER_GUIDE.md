@@ -296,13 +296,14 @@ Entity set: `crc5c_copyscheduledchargeses`. Populated by the charges desktop flo
 
 ### 5.6 Ledger Tables
 
-`crc5c_sellerledgers` and `crc5c_buyerledgers` — read-only from the app's perspective.
-Written by the `syncBuyerLedgerWithUnpaidCharge` function in `chargesService.ts` as a
-side-effect when an unpaid charge's Move flag is toggled.
+`crc5c_sellerledgers` and `crc5c_buyerledgers` — loaded from YARDI by the charges desktop flow.
+The app reads them on the Charges tab and also writes to them: `updateSellerLedgerChargeStatus`
+(Active/InActive) and `syncBuyerLedgerWithUnpaidCharge` (create/update/delete buyer rows when an
+unpaid charge's Move flag changes), plus payments/balance updates, all in `chargesService.ts`.
 
 ### 5.7 Audit Log — `cr7de_appchangelog`
 
-Entity set: `cr7de_appchangelogs`. Written by `writeChangeLog()`. Never read by the app.
+Entity set: `cr7de_appchangelogs`. Written by `writeChangeLog()`. Read only by the Developer Mode **View Logs** screen (`getChangeLogs()`); no end-user screen reads it.
 
 | Column | Notes |
 |---|---|
@@ -317,6 +318,44 @@ Entity set: `cr7de_appchangelogs`. Written by `writeChangeLog()`. Never read by 
 Used to create manual scheduled charges. Creating one also creates a corresponding
 `crc5c_copyscheduledcharges` row with `cr109_manual = true`. The 19-value picklist maps
 to YARDI charge codes: Assessment 1 (`specasmt`), Bike Storage (`bike`), etc.
+
+### 5.9 Table Usage in the Process (TDD / PDD reference)
+
+This is also available in the app: **Developer Mode → Dataverse Tables**, which has a **Download PDF**
+button (`src/features/devTools/utils/dataverseTablesPdf.ts`, built on `jspdf` + `jspdf-autotable`,
+loaded on demand). Source of truth:
+`src/features/devTools/data/dataverseTables.ts`. Update that file whenever a table, column or
+access pattern changes.
+
+| Table | Linked by | App reads | App writes | Also written by | Audit |
+|---|---|---|---|---|---|
+| `cr7de_closingticketdetails` | `cr7de_ticketid` (PK business key) | Dashboard, details, filters | create, update, upload/delete file, delete (Dev Mode) | Automation: bot status, PDFs, seller/building data | Yes |
+| `cr7de_invoicedetails` | `cr7de_ticketid` | Invoice tab | create, update, delete | — (read by `NSC_Generate_Invoice`) | Yes |
+| `cr7de_newownerticketdetails` | `cr7de_ticketid` | New Owner Ticket tab, validation | create/sync on closing create, update on save | PAF data-extraction flow | Yes |
+| `crc5c_unpaidcharges` | `crc5c_ticketid` | Charges tab | update (Move / Partially Paid) | `NSC Fetch YARDI Charges` | Yes |
+| `crc5c_copyscheduledcharges` | `crc5c_ticketid` | Charges tab, Dev Mode filter | update, create (manual), delete (manual only) | `NSC Fetch YARDI Charges` | Yes |
+| `crc5c_manualcharges` | `crc5c_ticketid` | Never | create | — | Yes |
+| `crc5c_sellerledgers` | `crc5c_ticketid` | Charges tab | charge status, payments, balance | YARDI charges flow | Yes |
+| `crc5c_buyerledgers` | `crc5c_ticketid` | Charges tab, sync matching | create/update/delete via Move sync, payments, balance | YARDI charges flow | Yes |
+| `cr7de_appchangelogs` | `cr7de_ticketid` | Dev Mode View Logs | create (fire-and-forget) | — | n/a |
+
+**Process stage → tables touched**
+
+1. **Create closing** — Building List (SharePoint, read) → closing ticket (create, bot status Draft) → new owner ticket (create/sync) → audit log.
+2. **Automation intake** — flows advance `cr109_botstatus` on the closing ticket and fill the PAF/new-owner data.
+3. **RPTT upload & charge fetch** — closing ticket file column; flows populate unpaid/scheduled charges and both ledgers.
+4. **Invoice & charges review** — invoice lines CRUD; Move flags on charges drive buyer-ledger rows and seller-ledger Active/InActive; manual charges write a manual-charge row **and** a scheduled-charge row; Auto Move sets `YardiChargesUpdated`.
+5. **Validate & lock** — reads new owner ticket and scheduled charges (a `TBD` amount blocks validation); sets `InformationValidated`.
+6. **YARDI update** — desktop flows set `SellerDetailsUpdated` → `OwnerRecordCreated` (or a `Failed*` status).
+
+**Testing rules of thumb**
+
+- Join on the business key (`cr7de_ticketid` / `crc5c_ticketid`), never the GUID, and OData-escape it.
+- Dataverse updates return `204 No Content` — mock both empty and populated responses.
+- Amounts are decimal **strings**; parse at the boundary.
+- Every service write must produce a `writeChangeLog()` entry with `extractOldValues()`; log failures must not break the user action.
+- `deleteClosingTicket` does not cascade — child rows in other tables are not removed by the app.
+- Fixtures live in `src/test/fixtures/` (`closingTickets`, `invoices`, `charges`, `newOwnerTicketFormStates`).
 
 
 ---

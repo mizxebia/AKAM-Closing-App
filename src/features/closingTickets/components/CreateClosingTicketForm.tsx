@@ -293,16 +293,42 @@ function normalizeText(value: string) {
     : trimmedValue
 }
 
+export function normalizePartyName(value: string) {
+  return normalizeText(value) ?? 'N/A'
+}
+
+function normalizePartyNames(
+  formState: ClosingTicketFormState
+): ClosingTicketFormState {
+  return {
+    ...formState,
+    cr109_buyer2name: normalizePartyName(
+      formState.cr109_buyer2name
+    ),
+    cr109_buyer3: normalizePartyName(formState.cr109_buyer3),
+    cr109_seller2name: normalizePartyName(
+      formState.cr109_seller2name
+    ),
+    cr109_seller3: normalizePartyName(formState.cr109_seller3),
+    cr7de_buyername: normalizePartyName(
+      formState.cr7de_buyername
+    ),
+    cr7de_sellername: normalizePartyName(
+      formState.cr7de_sellername
+    ),
+  }
+}
+
 function buildPayload(
   formState: ClosingTicketFormState
 ): ClosingTicketCreateInput {
   return {
     cr109_botstatus:
       formState.cr109_botstatus || undefined,
-    cr109_buyer2name: normalizeText(
+    cr109_buyer2name: normalizePartyName(
       formState.cr109_buyer2name
     ),
-    cr109_buyer3: normalizeText(
+    cr109_buyer3: normalizePartyName(
       formState.cr109_buyer3
     ),
     cr109_buyerunitnumber: normalizeText(
@@ -322,10 +348,10 @@ function buildPayload(
     cr109_saleprice: normalizeText(
       formState.cr109_saleprice
     ),
-    cr109_seller2name: normalizeText(
+    cr109_seller2name: normalizePartyName(
       formState.cr109_seller2name
     ),
-    cr109_seller3: normalizeText(
+    cr109_seller3: normalizePartyName(
       formState.cr109_seller3
     ),
     cr109_sendtoar: formState.cr109_sendtoar,
@@ -343,7 +369,7 @@ function buildPayload(
       formState.cr7de_buildingnotondomicile,
     cr7de_buyerexistsinyardi:
       formState.cr7de_buyerexistsinyardi,
-    cr7de_buyername: normalizeText(
+    cr7de_buyername: normalizePartyName(
       formState.cr7de_buyername
     ),
     cr7de_buyertcode: normalizeText(
@@ -364,7 +390,7 @@ function buildPayload(
     cr7de_nyccode: normalizeText(
       formState.cr7de_nyccode
     ),
-    cr7de_sellername: normalizeText(
+    cr7de_sellername: normalizePartyName(
       formState.cr7de_sellername
     ),
     cr7de_sellertcode: normalizeText(
@@ -921,10 +947,13 @@ function ClosingTicketEditorForm({
     setSaving(true)
 
     try {
-      await onSubmit(formState, pendingFiles)
+      const submittedFormState = normalizePartyNames(formState)
+      await onSubmit(submittedFormState, pendingFiles)
       if (mode === 'create') {
         setFormState(createInitialFormState())
         setPendingFiles({})
+      } else {
+        setFormState(submittedFormState)
       }
       if (
         submitIntentRef.current === 'submit' &&
