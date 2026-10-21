@@ -22,7 +22,13 @@ export interface TicketScreenshot {
 async function resolveScreenshotFolderPath(): Promise<string> {
   const context = await getContext()
   const envSegment =
-    ENVIRONMENT_FOLDER_SEGMENTS[context.app.environmentId] ?? 'DEV'
+    ENVIRONMENT_FOLDER_SEGMENTS[context.app.environmentId]
+
+  if (!envSegment) {
+    throw new Error(
+      `No screenshot folder is configured for Power Apps environment ${context.app.environmentId}.`
+    )
+  }
 
   return SCREENSHOT_ROOT_TEMPLATE.replace('{env}', envSegment)
 }
@@ -63,15 +69,13 @@ export async function findTicketScreenshots(
     const status = error && 'status' in error ? error.status : undefined
     const message = error?.message ?? ''
 
-    // The bot only creates a ticket's screenshot folder once it captures
-    // its first screenshot — a missing folder just means none exist yet,
-    // not a real failure, so don't surface it as an error.
-    if (status === 404 || /folder not found/i.test(message)) {
-      return []
-    }
-
+    const details =
+      message ||
+      (status === 404
+        ? 'Folder not found or inaccessible.'
+        : 'The search request failed.')
     throw new Error(
-      message || 'Failed to search the screenshot folder.'
+      `Unable to search screenshot folder "${folderPath}": ${details}`
     )
   }
 

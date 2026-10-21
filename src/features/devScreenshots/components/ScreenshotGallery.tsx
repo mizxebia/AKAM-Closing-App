@@ -15,6 +15,7 @@ import {
 
 interface ScreenshotWithDataUrl extends TicketScreenshot {
   dataUrl: string | null
+  loadError?: string
 }
 
 interface ScreenshotGalleryProps {
@@ -59,9 +60,26 @@ export function ScreenshotGallery({
                   : existing
               )
             )
-          } catch {
-            // Skip screenshots that fail to load individually — the rest
-            // of the gallery should still render.
+          } catch (err) {
+            const message =
+              err instanceof Error
+                ? err.message
+                : 'Unable to load screenshot.'
+            setScreenshots((current) =>
+              current.map((existing) =>
+                existing.id === item.id
+                  ? { ...existing, loadError: message }
+                  : existing
+              )
+            )
+            setError((current) =>
+              [
+                current,
+                `Unable to load ${item.name}: ${message}`,
+              ]
+                .filter(Boolean)
+                .join('\n')
+            )
           }
         }
       } catch (err) {
@@ -124,6 +142,14 @@ export function ScreenshotGallery({
                     )}
                     className="h-full w-full object-contain"
                   />
+                ) : screenshot.loadError ? (
+                  <div
+                    className="flex flex-col items-center gap-1 text-xs text-[#b91c1c]"
+                    title={screenshot.loadError}
+                  >
+                    <ImageOff className="size-4" />
+                    <span>Unable to load</span>
+                  </div>
                 ) : (
                   <RefreshCw className="size-4 animate-spin text-[#94a3b8]" />
                 )}
