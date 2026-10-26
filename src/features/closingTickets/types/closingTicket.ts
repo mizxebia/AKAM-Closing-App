@@ -26,6 +26,9 @@ export type ClosingTicketColumnKey =
 export type ClosingTicketColumn = {
   key: ClosingTicketColumnKey
   label: string
+  /** Fixed CSS width (e.g. "110px") so the column doesn't resize when the
+   * list is sorted or its content changes — see ClosingTicketTable. */
+  width: string
 }
 
 export type ClosingTicketFilters = {

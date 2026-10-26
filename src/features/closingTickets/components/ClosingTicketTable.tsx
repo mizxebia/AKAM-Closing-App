@@ -137,11 +137,14 @@ export function ClosingTicketTable({
       className="overflow-hidden"
     >
       <div className="-m-3 overflow-x-auto">
-        <table className="min-w-[1100px] w-full border-collapse">
+        <table className="min-w-[1100px] w-full table-fixed border-collapse">
           <thead className="sticky top-0 z-[1] bg-[#EDE8E0]">
             <tr>
               {selectable && (
-                <th className="border-b border-[#D5CBB8] px-4 py-2.5 text-left">
+                <th
+                  className="border-b border-[#D5CBB8] px-4 py-2.5 text-left"
+                  style={{ width: '40px' }}
+                >
                   <input
                     type="checkbox"
                     aria-label="Select all rows on this page"
@@ -175,17 +178,23 @@ export function ClosingTicketTable({
                   <th
                     key={column.key}
                     className="border-b border-[#D5CBB8] px-4 py-2.5 text-left font-semibold uppercase text-[#5F5E5A]"
-                    style={{ fontSize: '10px', letterSpacing: '0.1em' }}
+                    style={{
+                      fontSize: '10px',
+                      letterSpacing: '0.1em',
+                      width: column.width,
+                    }}
                   >
                     <button
                       type="button"
                       onClick={() => handleSortClick(column.key)}
-                      className={`inline-flex items-center gap-1 transition hover:text-[#1E3A47] ${
+                      className={`inline-flex items-center gap-1 truncate transition hover:text-[#1E3A47] ${
                         isActive ? 'text-[#1E3A47]' : ''
                       }`}
                     >
-                      {column.label}
-                      <SortIcon className="size-3" />
+                      <span className="truncate">
+                        {column.label}
+                      </span>
+                      <SortIcon className="size-3 shrink-0" />
                     </button>
                   </th>
                 )
@@ -193,7 +202,11 @@ export function ClosingTicketTable({
               {showArchiveActions && (
                 <th
                   className="border-b border-[#D5CBB8] px-4 py-2.5 text-left font-semibold uppercase text-[#5F5E5A]"
-                  style={{ fontSize: '10px', letterSpacing: '0.1em' }}
+                  style={{
+                    fontSize: '10px',
+                    letterSpacing: '0.1em',
+                    width: '110px',
+                  }}
                 >
                   Archive
                 </th>
