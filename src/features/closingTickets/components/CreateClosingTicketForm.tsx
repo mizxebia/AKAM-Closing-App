@@ -26,6 +26,7 @@ import {
   uploadClosingTicketFile,
   UPLOAD_COLUMN_LABELS,
 } from '../api/closingTicketsService'
+import type { DuplicateClosingTicketMatch } from '../api/closingTicketsService'
 import { syncNewOwnerTicketFromClosingTicket } from '../../newOwnerTickets/api/newOwnerTicketService'
 import { BuildingCodeLookup } from './BuildingCodeLookup'
 import type {
@@ -43,7 +44,10 @@ import {
 } from '../../auditLog/api/auditLogService'
 import {
   COOP_TRANSFER_PACKAGE_TYPE,
+  DOMECILE_DUMP_RETRIEVED_BOT_STATUS_VALUE,
+  ENABLED_PACKAGE_TYPES,
   generateTicketId,
+  SPONSER_PACKAGE_TYPE,
 } from '../utils/ticketCreation'
 
 type FormErrors = Partial<
@@ -66,6 +70,9 @@ const emptyUploadedFileNames: UploadedFileNames = {}
 interface CreateClosingTicketFormProps {
   onCancel: () => void
   onCreated: () => Promise<void>
+  /** Called when the user chooses to view the existing ticket from the
+   * duplicate-ticket confirmation dialog, with its closing ticket details id. */
+  onViewExistingTicket?: (recordId: string) => void
 }
 
 interface EditClosingTicketFormProps {
@@ -522,11 +529,11 @@ async function uploadPendingFiles(
 const DRAFT_TICKET_STATUS_VALUE = 716070000
 const PROCESSING_TICKET_STATUS_VALUE = 716070005
 const FORM_DOWNLOADED_BOT_STATUS_VALUE = 396620001
-const DOMECILE_DUMP_RETRIEVED_BOT_STATUS_VALUE = 396620006
 
 export function CreateClosingTicketForm({
   onCancel,
   onCreated,
+  onViewExistingTicket,
 }: CreateClosingTicketFormProps) {
   return (
     <ClosingTicketEditorForm
@@ -535,11 +542,16 @@ export function CreateClosingTicketForm({
       submitLabel="Save"
       savingLabel="Saving..."
       onCancel={onCancel}
+      onViewExistingTicket={onViewExistingTicket}
       onSubmit={async (formState, pendingFiles) => {
         // When the building is not on Domecile, the ticket skips the automated
         // Domecile/Seller retrieval stages and goes straight to Processing with
         // bot status FormDownloaded — the user has manually provided the form.
         const isNotOnDomecile = formState.cr7de_buildingnotondomicile
+        // A Sponser-package draft also skips the automated Domecile retrieval
+        // stage, so it's created straight at bot status "Domecile Dump Retrieved".
+        const isSponser =
+          Number(formState.cr109_packagetype) === SPONSER_PACKAGE_TYPE
         const payload = buildPayload({
           ...formState,
           ...(isNotOnDomecile
@@ -547,7 +559,11 @@ export function CreateClosingTicketForm({
                 cr7de_ticketstatus: PROCESSING_TICKET_STATUS_VALUE as ClosingTicketFormState['cr7de_ticketstatus'],
                 cr109_botstatus: FORM_DOWNLOADED_BOT_STATUS_VALUE as ClosingTicketFormState['cr109_botstatus'],
               }
-            : {}),
+            : isSponser
+              ? {
+                  cr109_botstatus: DOMECILE_DUMP_RETRIEVED_BOT_STATUS_VALUE as ClosingTicketFormState['cr109_botstatus'],
+                }
+              : {}),
         })
         const record = await createClosingTicket(payload)
         await syncNewOwnerTicketFromClosingTicket(record)
@@ -624,6 +640,7 @@ function ClosingTicketEditorForm({
   onSubmit,
   onSuccess,
   onSubmitAndClose,
+  onViewExistingTicket,
   readOnly = false,
   isCompleted = false,
   lockedMessage = 'Completed Successfully — this ticket is locked.',
@@ -644,6 +661,7 @@ function ClosingTicketEditorForm({
   ) => Promise<void>
   onSuccess: () => Promise<void>
   onSubmitAndClose?: () => Promise<void>
+  onViewExistingTicket?: (recordId: string) => void
   readOnly?: boolean
   isCompleted?: boolean
   lockedMessage?: string
@@ -665,6 +683,8 @@ function ClosingTicketEditorForm({
     useState(false)
   const [domicileUncheckWarningOpen, setDomicileUncheckWarningOpen] =
     useState(false)
+  const [duplicateMatch, setDuplicateMatch] =
+    useState<DuplicateClosingTicketMatch | null>(null)
   const [packageTypeChangedAt, setPackageTypeChangedAt] =
     useState<number | null>(null)
   const submitIntentRef = useRef<'save' | 'submit'>(
@@ -932,48 +952,7 @@ function ClosingTicketEditorForm({
     }))
   }
 
-  const handleSubmit = async (
-    event: FormEvent<HTMLFormElement>
-  ) => {
-    event.preventDefault()
-
-    const validationErrors = validateForm(formState, pendingFiles, uploadedFileNames)
-    setErrors(validationErrors)
-    setSaveError(null)
-
-    if (Object.keys(validationErrors).length > 0) {
-      return
-    }
-
-    if (mode === 'create') {
-      try {
-        const duplicate = await findActiveDuplicateClosingTicket({
-          unitNumber: formState.cr7de_unitnumber,
-          nycCode: formState.cr7de_nyccode,
-          sellerTCode: formState.cr7de_sellertcode,
-        })
-
-        if (duplicate) {
-          setErrors((currentErrors) => ({
-            ...currentErrors,
-            cr7de_unitnumber:
-              'An active closing already exists for this unit, building code, and T-code.',
-          }))
-          setSaveError(
-            `A closing ticket for this unit, building code, and T-code is already active: ${duplicate.ticketId}.`
-          )
-          return
-        }
-      } catch (error) {
-        setSaveError(
-          error instanceof Error
-            ? error.message
-            : 'Unable to check for an existing closing ticket.'
-        )
-        return
-      }
-    }
-
+  const performSave = async () => {
     setSaving(true)
 
     try {
@@ -1011,6 +990,56 @@ function ClosingTicketEditorForm({
     } finally {
       setSaving(false)
     }
+  }
+
+  const handleSubmit = async (
+    event: FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault()
+
+    const validationErrors = validateForm(formState, pendingFiles, uploadedFileNames)
+    setErrors(validationErrors)
+    setSaveError(null)
+
+    if (Object.keys(validationErrors).length > 0) {
+      return
+    }
+
+    if (mode === 'create') {
+      try {
+        const duplicate = await findActiveDuplicateClosingTicket({
+          unitNumber: formState.cr7de_unitnumber,
+          nycCode: formState.cr7de_nyccode,
+          sellerTCode: formState.cr7de_sellertcode,
+        })
+
+        if (duplicate) {
+          setDuplicateMatch(duplicate)
+          return
+        }
+      } catch (error) {
+        setSaveError(
+          error instanceof Error
+            ? error.message
+            : 'Unable to check for an existing closing ticket.'
+        )
+        return
+      }
+    }
+
+    await performSave()
+  }
+
+  const handleCreateAnyway = async () => {
+    setDuplicateMatch(null)
+    await performSave()
+  }
+
+  const handleViewExistingTicket = () => {
+    if (duplicateMatch) {
+      onViewExistingTicket?.(duplicateMatch.closingTicketDetailsId)
+    }
+    setDuplicateMatch(null)
   }
 
   return (
@@ -1158,14 +1187,21 @@ function ClosingTicketEditorForm({
               }}
             >
               <option value="">Select package</option>
-              {packageTypeOptions.map((option) => (
-                <option
-                  key={option.value}
-                  value={option.value}
-                >
-                  {formatChoiceLabel(option.label)}
-                </option>
-              ))}
+              {packageTypeOptions.map((option) => {
+                const isEnabled = ENABLED_PACKAGE_TYPES.has(
+                  Number(option.value)
+                )
+                return (
+                  <option
+                    key={option.value}
+                    value={option.value}
+                    disabled={!isEnabled}
+                  >
+                    {formatChoiceLabel(option.label)}
+                    {isEnabled ? '' : ' (Upcoming)'}
+                  </option>
+                )
+              })}
             </select>
           </FormField>
 
@@ -1876,6 +1912,46 @@ function ClosingTicketEditorForm({
               onClick={() => setDomicileUncheckWarningOpen(false)}
             >
               Understood
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={duplicateMatch !== null}
+        onOpenChange={(open) => {
+          if (!open) setDuplicateMatch(null)
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Possible Duplicate Closing
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              An active closing ticket already exists for this
+              unit, building code, and T-code:{' '}
+              {duplicateMatch?.ticketId}. You can open that
+              ticket instead, or create this one anyway if it's
+              genuinely a separate closing.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-white text-[#1E3A47] border border-[#1E3A47] hover:bg-[#1E3A47]/5">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-white text-[#1E3A47] border border-[#1E3A47] hover:bg-[#1E3A47]/5"
+              onClick={handleViewExistingTicket}
+            >
+              View Existing Ticket
+            </AlertDialogAction>
+            <AlertDialogAction
+              className="bg-[#1E3A47] text-[#F5F2EC] hover:bg-[#152d38]"
+              onClick={handleCreateAnyway}
+            >
+              Create Anyway
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -84,7 +84,9 @@ function matchesBotStatusFilter(
 const PACKAGE_TYPE_FILTER_LABELS: Record<string, string> = {
   condo_sale: 'Condo Sale',
   coop_sale: 'Co-op Sale',
-  coop_transfer: 'Co-op Transfer',
+  Sponser: 'Sponsor',
+  'Tranfer New T Code': 'Transfer New T-Code',
+  'Coop Tranfer': 'Co-op Transfer',
 }
 
 /** Options for the developer-mode "Package Type" filter dropdown. */

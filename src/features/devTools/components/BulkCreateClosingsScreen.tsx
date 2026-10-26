@@ -15,6 +15,9 @@ import { Cr7de_closingticketdetailsescr109_packagetype } from '../../../generate
 import {
   generateTicketId,
   COOP_TRANSFER_PACKAGE_TYPE,
+  DOMECILE_DUMP_RETRIEVED_BOT_STATUS_VALUE,
+  ENABLED_PACKAGE_TYPES,
+  SPONSER_PACKAGE_TYPE,
 } from '../../closingTickets/utils/ticketCreation'
 import { createClosingTicket } from '../../closingTickets/api/closingTicketsService'
 import type { ClosingTicketCreateInput } from '../../closingTickets/types/closingTicket'
@@ -316,6 +319,7 @@ export function BulkCreateClosingsScreen({
       try {
         const isCoopTransfer =
           row.packageType === COOP_TRANSFER_PACKAGE_TYPE
+        const isSponser = row.packageType === SPONSER_PACKAGE_TYPE
         const payload: ClosingTicketCreateInput = {
           cr7de_ticketid: rowTicketId,
           cr7de_ticketstatus: 716070000,
@@ -332,6 +336,9 @@ export function BulkCreateClosingsScreen({
           cr109_locationofclosing:
             row.locationOfClosing.trim() || DEFAULT_LOCATION,
           cr109_legalname: row.buildingLabel,
+          cr109_botstatus: isSponser
+            ? (DOMECILE_DUMP_RETRIEVED_BOT_STATUS_VALUE as ClosingTicketCreateInput['cr109_botstatus'])
+            : undefined,
         }
 
         const created = await createClosingTicket(payload)
@@ -631,11 +638,21 @@ export function BulkCreateClosingsScreen({
                       }
                     >
                       <option value="">Select...</option>
-                      {PACKAGE_TYPE_OPTIONS.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
+                      {PACKAGE_TYPE_OPTIONS.map((option) => {
+                        const isEnabled = ENABLED_PACKAGE_TYPES.has(
+                          option.value
+                        )
+                        return (
+                          <option
+                            key={option.value}
+                            value={option.value}
+                            disabled={!isEnabled}
+                          >
+                            {option.label}
+                            {isEnabled ? '' : ' (Upcoming)'}
+                          </option>
+                        )
+                      })}
                     </select>
                   </td>
                   <td className="border-b border-[#EDE8E0] px-2 py-1.5">

@@ -303,14 +303,20 @@
           "enum": [
             "condo_sale",
             "coop_sale",
-            "coop_transfer"
+            "Sponser",
+            "Tranfer New T Code",
+            "Coop Tranfer"
           ],
           "x-ms-enum-values": [
             396620000,
             396620001,
-            396620002
+            396620002,
+            396620003,
+            396620004
           ],
           "Color": [
+            null,
+            null,
             null,
             null,
             null

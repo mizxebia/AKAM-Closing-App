@@ -580,6 +580,10 @@ export function ClosingTicketPage() {
               <CreateClosingTicketForm
                 onCancel={() => setCreateFormOpen(false)}
                 onCreated={handleCreateClosing}
+                onViewExistingTicket={(recordId) => {
+                  setCreateFormOpen(false)
+                  setSelectedRecordId(recordId)
+                }}
               />
             </div>
           </SheetContent>
