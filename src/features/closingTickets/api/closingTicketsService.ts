@@ -52,6 +52,81 @@ export async function getClosingTickets(): Promise<
   return (response.data ?? []) as ClosingTicketRecord[]
 }
 
+function escapeODataString(value: string) {
+  return value.replace(/'/g, "''")
+}
+
+export interface DuplicateClosingTicketMatch {
+  ticketId: string
+  closingTicketDetailsId: string
+}
+
+// Ticket Status values that mean "this closing is done" — an existing
+// ticket in one of these statuses for the same unit/building/T-code
+// doesn't count as an active duplicate (e.g. a prior sale that's long
+// since closed, or one that failed and is being redone).
+const ACTIVE_DUPLICATE_EXCLUDED_STATUSES = [
+  716070008, // Completed
+  396620001, // Sent to AR
+  716070007, // Failed
+]
+
+/**
+ * Checks for an existing, still-active closing ticket with the same unit
+ * number, NYC/building code, and seller T-code — used to block creating an
+ * accidental duplicate. Returns the matching ticket, or null when none is
+ * found (or when any of the three fields is blank, since a partial match
+ * isn't meaningful).
+ */
+export async function findActiveDuplicateClosingTicket(params: {
+  unitNumber: string
+  nycCode: string
+  sellerTCode: string
+}): Promise<DuplicateClosingTicketMatch | null> {
+  const unitNumber = params.unitNumber.trim()
+  const nycCode = params.nycCode.trim()
+  const sellerTCode = params.sellerTCode.trim()
+
+  if (!unitNumber || !nycCode || !sellerTCode) {
+    return null
+  }
+
+  const filter = [
+    `cr7de_unitnumber eq '${escapeODataString(unitNumber)}'`,
+    `cr7de_nyccode eq '${escapeODataString(nycCode)}'`,
+    `cr7de_sellertcode eq '${escapeODataString(sellerTCode)}'`,
+  ].join(' and ')
+
+  const response = await Cr7de_closingticketdetailsesService.getAll({
+    filter,
+    top: 10,
+  })
+
+  if (!response.success) {
+    throw new Error(
+      response.error?.message ||
+        'Failed to check for an existing closing with the same unit, building code, and T-code.'
+    )
+  }
+
+  const match = (response.data ?? []).find(
+    (record) =>
+      !ACTIVE_DUPLICATE_EXCLUDED_STATUSES.includes(
+        Number(record.cr7de_ticketstatus)
+      )
+  )
+
+  if (!match) {
+    return null
+  }
+
+  return {
+    ticketId:
+      match.cr7de_ticketid ?? match.cr7de_closingticketdetailsid,
+    closingTicketDetailsId: match.cr7de_closingticketdetailsid,
+  }
+}
+
 export async function createClosingTicket(
   newRecord: ClosingTicketCreateInput
 ): Promise<ClosingTicketRecord> {

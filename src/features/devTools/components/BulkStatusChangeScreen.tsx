@@ -48,6 +48,7 @@ export function BulkStatusChangeScreen({
     setBotStatusFilter,
     setPackageTypeFilter,
     setClosingDateFilter,
+    setShowArchived,
   } = useClosingTicketFilters(records, { userName, userId })
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
@@ -291,6 +292,8 @@ export function BulkStatusChangeScreen({
         showDeveloperStatusTabs
         showClosingDateFilter
         onClosingDateFilterChange={setClosingDateFilter}
+        showArchivedToggle
+        onShowArchivedChange={setShowArchived}
       />
 
       {filteredRecords.length === 0 ? (

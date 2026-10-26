@@ -26,7 +26,8 @@ export const Cr7de_closingticketdetailsescr109_botstatus = {
   396620019: 'Failed RPTT Extraction',
   396620020: 'RPTT Extracted',
   396620022: 'Sent To AR',
-  396620023: 'Failed to Send to AR'
+  396620023: 'Failed to Send to AR',
+  396620024: 'Failed Create New Owner Backfill'
 } as const;
 export type Cr7de_closingticketdetailsescr109_botstatus = keyof typeof Cr7de_closingticketdetailsescr109_botstatus;
 export const Cr7de_closingticketdetailsescr109_packagetype = {
@@ -43,7 +44,9 @@ export const Cr7de_closingticketdetailsescr109_processcheckpoint = {
   396620004: 'Additional Occupant 2 Added ',
   396620005: 'Additional Occupant 3 Added ',
   396620006: 'New Owner Ticket Document Uploaded',
-  396620007: 'Manual Scheduled Charges Added'
+  396620007: 'Manual Scheduled Charges Added',
+  396620008: 'Seller Ledger Added',
+  396620009: 'Buyer Ledger Added'
 } as const;
 export type Cr7de_closingticketdetailsescr109_processcheckpoint = keyof typeof Cr7de_closingticketdetailsescr109_processcheckpoint;
 export const Cr7de_closingticketdetailsescr109_transactiontypedeal = {
@@ -77,6 +80,7 @@ export const Cr7de_closingticketdetailsesstatuscode = {
 export type Cr7de_closingticketdetailsesstatuscode = keyof typeof Cr7de_closingticketdetailsesstatuscode;
 
 export interface Cr7de_closingticketdetailsesBase {
+  cr109_archivalstatus?: boolean;
   cr109_botstatus?: Cr7de_closingticketdetailsescr109_botstatus;
   cr109_buyer2name?: string;
   cr109_buyer3?: string;
@@ -126,6 +130,7 @@ export interface Cr7de_closingticketdetailsesBase {
 }
 
 export interface Cr7de_closingticketdetailses extends Cr7de_closingticketdetailsesBase {
+  cr109_archivalstatusname?: string;
   cr109_batchdocument?: string;
   cr109_batchdocument_name?: string;
   cr109_botstatusname?: string;

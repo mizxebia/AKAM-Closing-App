@@ -39,6 +39,9 @@ interface ClosingTicketFiltersProps {
   onClosingDateFilterChange: (
     value: Partial<ClosingTicketFilters['closingDateFilter']>
   ) => void
+  /** Developer Mode only — bypasses the archived-ticket hide rule entirely. */
+  showArchivedToggle?: boolean
+  onShowArchivedChange: (value: boolean) => void
 }
 
 export function ClosingTicketFilters({
@@ -56,6 +59,8 @@ export function ClosingTicketFilters({
   showDeveloperStatusTabs = false,
   showClosingDateFilter = false,
   onClosingDateFilterChange,
+  showArchivedToggle = false,
+  onShowArchivedChange,
 }: ClosingTicketFiltersProps) {
   const visibleStatusOptions = showDeveloperStatusTabs
     ? closingTicketStatusOptions
@@ -257,6 +262,24 @@ export function ClosingTicketFilters({
               />
             </div>
           </div>
+        )}
+
+        {showArchivedToggle && (
+          <label
+            className="flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-md border border-[#D5CBB8] bg-white px-2.5 text-xs font-medium text-[#1E3A47]"
+            htmlFor="closing-ticket-show-archived"
+          >
+            <input
+              id="closing-ticket-show-archived"
+              type="checkbox"
+              className="size-3.5 accent-[#1E3A47]"
+              checked={filters.showArchived}
+              onChange={(event) =>
+                onShowArchivedChange(event.target.checked)
+              }
+            />
+            Show Archived
+          </label>
         )}
       </div>
     </section>

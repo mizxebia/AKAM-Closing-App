@@ -13,6 +13,7 @@ const defaultFilters: ClosingTicketFilters = {
   botStatusFilter: '',
   packageTypeFilter: '',
   closingDateFilter: { from: '', to: '' },
+  showArchived: false,
 }
 
 export function useClosingTicketFilters(
@@ -98,6 +99,13 @@ export function useClosingTicketFilters(
     }))
   }
 
+  const setShowArchived = (showArchived: boolean) => {
+    setFilters((currentFilters) => ({
+      ...currentFilters,
+      showArchived,
+    }))
+  }
+
   const clearFilters = () => {
     setFilters(defaultFilters)
   }
@@ -112,6 +120,7 @@ export function useClosingTicketFilters(
     setBotStatusFilter,
     setPackageTypeFilter,
     setClosingDateFilter,
+    setShowArchived,
     clearFilters,
   }
 }

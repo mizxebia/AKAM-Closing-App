@@ -31,6 +31,12 @@ import {
 import { useClosingTicketFilters } from '../hooks/useClosingTicketFilters'
 import { getTicketIdsWithScheduledCharges } from '../../charges/api/chargesService'
 import { useClosingTickets } from '../hooks/useClosingTickets'
+import { findTicketsNeedingAutoArchive } from '../utils/closingTicketArchiving'
+import { updateClosingTicket } from '../api/closingTicketsService'
+import {
+  writeActionLog,
+  logAppFailure,
+} from '../../auditLog/api/auditLogService'
 import { ClosingTicketDashboard } from './ClosingTicketDashboard'
 import { ClosingTicketFilters } from './ClosingTicketFilters'
 import { ClosingTicketTable } from './ClosingTicketTable'
@@ -187,12 +193,96 @@ export function ClosingTicketPage() {
     setBotStatusFilter,
     setPackageTypeFilter,
     setClosingDateFilter,
+    setShowArchived,
     clearFilters,
   } = useClosingTicketFilters(
     records,
     { userName, userId },
     ticketIdsWithCharges
   )
+
+  // Auto-archive: tickets that have aged past their status's window
+  // (Sent to AR > 10 days, Completed > 15 days) get flagged
+  // cr109_archivalstatus = true so they're correctly reflected in
+  // Dataverse, not just hidden client-side. The hide itself already
+  // happens immediately via isEffectivelyArchived() in the filter, so this
+  // sweep is purely to persist the flag — fire-and-forget, no need to
+  // block or refetch.
+  const archiveSweepRan = useRef(new Set<string>())
+  useEffect(() => {
+    const candidates = findTicketsNeedingAutoArchive(records).filter(
+      (record) =>
+        !archiveSweepRan.current.has(
+          record.cr7de_closingticketdetailsid
+        )
+    )
+    if (candidates.length === 0) return
+
+    for (const record of candidates) {
+      archiveSweepRan.current.add(record.cr7de_closingticketdetailsid)
+      void updateClosingTicket(
+        record.cr7de_closingticketdetailsid,
+        { cr109_archivalstatus: true },
+        record
+      )
+        .then(() => {
+          writeActionLog({
+            ticketId:
+              record.cr7de_ticketid ??
+              record.cr7de_closingticketdetailsid,
+            tableName: 'cr7de_closingticketdetailses',
+            action: 'Auto-Archived',
+            details: {
+              ticketStatus: record.cr7de_ticketstatus,
+              lastModified: record.modifiedon,
+            },
+          })
+        })
+        .catch((error) => {
+          logAppFailure({
+            ticketId:
+              record.cr7de_ticketid ??
+              record.cr7de_closingticketdetailsid,
+            tableName: 'cr7de_closingticketdetailses',
+            context: 'Auto-Archive',
+            error,
+          })
+        })
+    }
+  }, [records])
+
+  const handleToggleArchive = async (
+    recordId: string,
+    nextArchived: boolean
+  ) => {
+    const record = records.find(
+      (r) => r.cr7de_closingticketdetailsid === recordId
+    )
+    const ticketId = record?.cr7de_ticketid ?? recordId
+
+    try {
+      await updateClosingTicket(
+        recordId,
+        { cr109_archivalstatus: nextArchived },
+        record
+      )
+      writeActionLog({
+        ticketId,
+        tableName: 'cr7de_closingticketdetailses',
+        action: nextArchived
+          ? 'Developer Status Override — Archived'
+          : 'Developer Status Override — Unarchived',
+      })
+      await refresh()
+    } catch (error) {
+      logAppFailure({
+        ticketId,
+        tableName: 'cr7de_closingticketdetailses',
+        context: nextArchived ? 'Archive Ticket' : 'Unarchive Ticket',
+        error,
+      })
+    }
+  }
 
   const isDashboardVisible =
     !selectedRecordId && !bulkStatusScreenOpen && !bulkCreateScreenOpen
@@ -436,6 +526,8 @@ export function ClosingTicketPage() {
                 showDeveloperStatusTabs={developerMode.enabled}
                 showClosingDateFilter={developerMode.enabled}
                 onClosingDateFilterChange={setClosingDateFilter}
+                showArchivedToggle={developerMode.enabled}
+                onShowArchivedChange={setShowArchived}
               />
 
               {filteredRecords.length === 0 ? (
@@ -451,6 +543,8 @@ export function ClosingTicketPage() {
                     setCreateSuccessMessage(null)
                     setSelectedRecordId(recordId)
                   }}
+                  showArchiveActions={developerMode.enabled}
+                  onToggleArchive={handleToggleArchive}
                 />
               )}
             </div>

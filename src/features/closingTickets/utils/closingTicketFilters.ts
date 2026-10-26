@@ -8,6 +8,7 @@ import {
 } from '../../newOwnerTickets/utils/dataverseFileUtils'
 import { formatGeneratedLabel } from '../../invoices/utils/invoiceFormatters'
 import { BOT_STATUS_OPTIONS } from '../../devTools/utils/statusOptions'
+import { isEffectivelyArchived } from './closingTicketArchiving'
 import { Cr7de_closingticketdetailsescr109_packagetype } from '../../../generated/models/Cr7de_closingticketdetailsesModel'
 import type {
   ClosingTicketFilters,
@@ -240,6 +241,7 @@ export function filterClosingTickets(
 ) {
   return records.filter(
     (record) =>
+      (filters.showArchived || !isEffectivelyArchived(record)) &&
       matchesStatus(record, filters, currentUser) &&
       matchesGeneralSearch(record, filters.search) &&
       matchesDocumentFilter(record, filters.documentFilter) &&

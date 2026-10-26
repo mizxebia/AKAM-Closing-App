@@ -64,6 +64,13 @@ export type ClosingTicketFilters = {
     from: string
     to: string
   }
+  /**
+   * Developer-mode-only — when false (default), tickets that are archived
+   * (cr109_archivalstatus = true, whether set manually or by the automatic
+   * age-based archiving) are hidden from the main list. When true, every
+   * ticket is shown regardless of archive state.
+   */
+  showArchived: boolean
 }
 
 export type ClosingTicketStatusLabel =
@@ -105,6 +112,7 @@ export type TicketStatusOption = {
 export type ClosingTicketCreateInput = Partial<
   Pick<
     Cr7de_closingticketdetailses,
+    | 'cr109_archivalstatus'
     | 'cr109_botstatus'
     | 'cr109_buyer2name'
     | 'cr109_buyer3'

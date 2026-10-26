@@ -10,6 +10,37 @@
       "x-ms-dataverse-primary-id": "cr7de_closingticketdetailsid",
       "x-ms-dataverse-primary-name": "cr7de_ticketid",
       "properties": {
+        "cr109_archivalstatus": {
+          "type": "string",
+          "title": "Archival Status",
+          "x-ms-dataverse-attribute": "cr109_archivalstatus",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "cr109_ArchivalStatus",
+          "enum": [
+            "No",
+            "Yes"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "099015d6-dace-f111-a05a-3833c5de19e2",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Archival Status",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "cr109_archivalstatusname": {
+          "type": "string",
+          "title": "cr109_archivalstatusname",
+          "x-ms-dataverse-attribute": "cr109_archivalstatusname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "cr109_archivalstatusName",
+          "x-ms-read-only": true
+        },
         "cr109_batchdocument": {
           "type": "string",
           "title": "Batch And Cheque Document",
@@ -57,7 +88,8 @@
             "Failed RPTT Extraction",
             "RPTT Extracted",
             "Sent To AR",
-            "Failed to Send to AR"
+            "Failed to Send to AR",
+            "Failed Create New Owner Backfill"
           ],
           "x-ms-enum-values": [
             396620004,
@@ -83,9 +115,11 @@
             396620019,
             396620020,
             396620022,
-            396620023
+            396620023,
+            396620024
           ],
           "Color": [
+            null,
             null,
             null,
             null,
@@ -308,7 +342,9 @@
             "Additional Occupant 2 Added ",
             "Additional Occupant 3 Added ",
             "New Owner Ticket Document Uploaded",
-            "Manual Scheduled Charges Added"
+            "Manual Scheduled Charges Added",
+            "Seller Ledger Added",
+            "Buyer Ledger Added"
           ],
           "x-ms-enum-values": [
             396620000,
@@ -318,9 +354,13 @@
             396620004,
             396620005,
             396620006,
-            396620007
+            396620007,
+            396620008,
+            396620009
           ],
           "Color": [
+            null,
+            null,
             null,
             null,
             null,

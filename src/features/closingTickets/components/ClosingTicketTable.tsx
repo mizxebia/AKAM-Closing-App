@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
-  ArrowDownWideNarrow,
-  ArrowUpWideNarrow,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
@@ -11,6 +12,7 @@ import {
 } from '../../../components/enterprise'
 import type {
   ClosingTicketColumn,
+  ClosingTicketColumnKey,
   ClosingTicketRecord,
 } from '../types/closingTicket'
 import {
@@ -23,7 +25,40 @@ import { getFailureReason } from '../utils/closingTicketFailureReasons'
 
 const PAGE_SIZE = 15
 
-type CreatedSortDirection = 'desc' | 'asc'
+type SortDirection = 'asc' | 'desc'
+
+// Columns whose values are naturally ordered newest/highest-first on first
+// click; everything else defaults to A-Z on first click.
+const DATE_COLUMNS = new Set<ClosingTicketColumnKey>([
+  'createdon',
+  'modifiedon',
+])
+
+function getSortValue(
+  record: ClosingTicketRecord,
+  key: ClosingTicketColumnKey
+): string | number {
+  switch (key) {
+    case 'createdon':
+    case 'modifiedon': {
+      const raw = record[key]
+      return raw ? new Date(raw).getTime() : 0
+    }
+    case 'cr7de_ticketstatus':
+      return Number(record.cr7de_ticketstatus ?? -1)
+    case 'cr109_botstatus':
+      return record.cr109_botstatus !== undefined &&
+        String(record.cr109_botstatus).trim() !== ''
+        ? Number(record.cr109_botstatus)
+        : -1
+    case 'failureReason':
+      return (getFailureReason(record) ?? '').toLowerCase()
+    default:
+      return String(
+        formatClosingTicketValue(record, key) ?? ''
+      ).toLowerCase()
+  }
+}
 
 interface ClosingTicketTableProps {
   records: ClosingTicketRecord[]
@@ -34,6 +69,12 @@ interface ClosingTicketTableProps {
   selectedIds?: Set<string>
   onToggleSelect?: (recordId: string) => void
   onToggleSelectAll?: (recordIds: string[]) => void
+  /** Developer Mode only — shows an Archive/Unarchive action column. */
+  showArchiveActions?: boolean
+  onToggleArchive?: (
+    recordId: string,
+    nextArchived: boolean
+  ) => void
 }
 
 export function ClosingTicketTable({
@@ -44,34 +85,41 @@ export function ClosingTicketTable({
   selectedIds,
   onToggleSelect,
   onToggleSelectAll,
+  showArchiveActions = false,
+  onToggleArchive,
 }: ClosingTicketTableProps) {
   const [page, setPage] = useState(0)
-  const [createdSortDirection, setCreatedSortDirection] =
-    useState<CreatedSortDirection>('desc')
+  const [sortColumn, setSortColumn] =
+    useState<ClosingTicketColumnKey>('createdon')
+  const [sortDirection, setSortDirection] =
+    useState<SortDirection>('desc')
 
   const sortedRecords = useMemo(() => {
     return [...records].sort((a, b) => {
-      const firstCreated = a.createdon
-        ? new Date(a.createdon).getTime()
-        : 0
-      const secondCreated = b.createdon
-        ? new Date(b.createdon).getTime()
-        : 0
-
-      return createdSortDirection === 'desc'
-        ? secondCreated - firstCreated
-        : firstCreated - secondCreated
+      const av = getSortValue(a, sortColumn)
+      const bv = getSortValue(b, sortColumn)
+      const cmp =
+        typeof av === 'number' && typeof bv === 'number'
+          ? av - bv
+          : String(av).localeCompare(String(bv))
+      return sortDirection === 'asc' ? cmp : -cmp
     })
-  }, [records, createdSortDirection])
+  }, [records, sortColumn, sortDirection])
 
   useEffect(() => {
     setPage(0)
-  }, [records, createdSortDirection])
+  }, [records, sortColumn, sortDirection])
 
-  const toggleCreatedSort = () => {
-    setCreatedSortDirection((currentDirection) =>
-      currentDirection === 'desc' ? 'asc' : 'desc'
-    )
+  const handleSortClick = (key: ClosingTicketColumnKey) => {
+    if (key === sortColumn) {
+      setSortDirection((current) =>
+        current === 'asc' ? 'desc' : 'asc'
+      )
+      return
+    }
+
+    setSortColumn(key)
+    setSortDirection(DATE_COLUMNS.has(key) ? 'desc' : 'asc')
   }
 
   const pageCount = Math.ceil(sortedRecords.length / PAGE_SIZE)
@@ -85,30 +133,7 @@ export function ClosingTicketTable({
   return (
     <SectionCard
       title="Recent Closings"
-      description={`${records.length} records match the current view.`}
-      actions={
-        <button
-          type="button"
-          onClick={toggleCreatedSort}
-          className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] shadow-sm transition hover:border-[#1E3A47] hover:bg-[#F8F6F1] focus:outline-none focus:ring-2 focus:ring-[#D5CBB8]"
-          aria-label={`Sort created date ${
-            createdSortDirection === 'desc'
-              ? 'oldest first'
-              : 'newest first'
-          }`}
-        >
-          {createdSortDirection === 'desc' ? (
-            <ArrowDownWideNarrow className="size-4" />
-          ) : (
-            <ArrowUpWideNarrow className="size-4" />
-          )}
-          <span>
-            {createdSortDirection === 'desc'
-              ? 'Newest First'
-              : 'Oldest First'}
-          </span>
-        </button>
-      }
+      description={`${records.length} records match the current view. Click a column header to sort.`}
       className="overflow-hidden"
     >
       <div className="-m-3 overflow-x-auto">
@@ -138,15 +163,41 @@ export function ClosingTicketTable({
                   />
                 </th>
               )}
-              {columns.map((column) => (
+              {columns.map((column) => {
+                const isActive = column.key === sortColumn
+                const SortIcon = !isActive
+                  ? ArrowUpDown
+                  : sortDirection === 'asc'
+                    ? ArrowUp
+                    : ArrowDown
+
+                return (
+                  <th
+                    key={column.key}
+                    className="border-b border-[#D5CBB8] px-4 py-2.5 text-left font-semibold uppercase text-[#5F5E5A]"
+                    style={{ fontSize: '10px', letterSpacing: '0.1em' }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => handleSortClick(column.key)}
+                      className={`inline-flex items-center gap-1 transition hover:text-[#1E3A47] ${
+                        isActive ? 'text-[#1E3A47]' : ''
+                      }`}
+                    >
+                      {column.label}
+                      <SortIcon className="size-3" />
+                    </button>
+                  </th>
+                )
+              })}
+              {showArchiveActions && (
                 <th
-                  key={column.key}
                   className="border-b border-[#D5CBB8] px-4 py-2.5 text-left font-semibold uppercase text-[#5F5E5A]"
                   style={{ fontSize: '10px', letterSpacing: '0.1em' }}
                 >
-                  {column.label}
+                  Archive
                 </th>
-              ))}
+              )}
             </tr>
           </thead>
 
@@ -221,6 +272,27 @@ export function ClosingTicketTable({
                     </td>
                   )
                 })}
+                {showArchiveActions && (
+                  <td
+                    className="border-b border-[#EDE8E0] px-4 py-1.5"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <button
+                      type="button"
+                      className="inline-flex h-6 items-center rounded-md border border-[#D5CBB8] bg-white px-2 text-[10px] font-semibold uppercase tracking-[0.06em] text-[#1E3A47] hover:bg-[#F5F2EC]"
+                      onClick={() =>
+                        onToggleArchive?.(
+                          record.cr7de_closingticketdetailsid,
+                          !record.cr109_archivalstatus
+                        )
+                      }
+                    >
+                      {record.cr109_archivalstatus
+                        ? 'Unarchive'
+                        : 'Archive'}
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

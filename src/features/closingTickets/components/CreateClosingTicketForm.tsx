@@ -21,6 +21,7 @@ import {
 import {
   createClosingTicket,
   deleteClosingTicketFile,
+  findActiveDuplicateClosingTicket,
   updateClosingTicket,
   uploadClosingTicketFile,
   UPLOAD_COLUMN_LABELS,
@@ -942,6 +943,35 @@ function ClosingTicketEditorForm({
 
     if (Object.keys(validationErrors).length > 0) {
       return
+    }
+
+    if (mode === 'create') {
+      try {
+        const duplicate = await findActiveDuplicateClosingTicket({
+          unitNumber: formState.cr7de_unitnumber,
+          nycCode: formState.cr7de_nyccode,
+          sellerTCode: formState.cr7de_sellertcode,
+        })
+
+        if (duplicate) {
+          setErrors((currentErrors) => ({
+            ...currentErrors,
+            cr7de_unitnumber:
+              'An active closing already exists for this unit, building code, and T-code.',
+          }))
+          setSaveError(
+            `A closing ticket for this unit, building code, and T-code is already active: ${duplicate.ticketId}.`
+          )
+          return
+        }
+      } catch (error) {
+        setSaveError(
+          error instanceof Error
+            ? error.message
+            : 'Unable to check for an existing closing ticket.'
+        )
+        return
+      }
     }
 
     setSaving(true)
