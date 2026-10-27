@@ -257,21 +257,22 @@ export function ClosingTicketTable({
                 return (
                   <th
                     key={column.key}
-                    className={`border-b border-[#D5CBB8] ${densityStyle.headerPadding} text-left font-semibold uppercase text-[#5F5E5A]`}
+                    className={`overflow-hidden border-b border-[#D5CBB8] ${densityStyle.headerPadding} text-left font-semibold uppercase text-[#5F5E5A]`}
                     style={{
                       fontSize: '10px',
                       letterSpacing: '0.1em',
                       width: column.width,
+                      maxWidth: column.width,
                     }}
                   >
                     <button
                       type="button"
                       onClick={() => handleSortClick(column.key)}
-                      className={`inline-flex items-center gap-1 truncate transition hover:text-[#1E3A47] ${
+                      className={`flex w-full min-w-0 items-center gap-1 transition hover:text-[#1E3A47] ${
                         isActive ? 'text-[#1E3A47]' : ''
                       }`}
                     >
-                      <span className="truncate">
+                      <span className="min-w-0 truncate">
                         {column.label}
                       </span>
                       <SortIcon className="size-3 shrink-0" />

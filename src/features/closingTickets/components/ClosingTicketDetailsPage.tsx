@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
 import {
   ArrowLeft,
   AlertTriangle,
@@ -607,7 +608,12 @@ export function ClosingTicketDetailsPage({
         />
       </div>
 
-      <main className="mx-auto grid w-full max-w-[1500px] gap-3 px-4 py-3 sm:px-6 lg:px-8">
+      <motion.main
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.22 }}
+        className="mx-auto grid w-full max-w-[1500px] gap-3 px-4 py-3 sm:px-6 lg:px-8"
+      >
 
       {record && getFailureReason(record) && (
         <div
@@ -823,7 +829,7 @@ export function ClosingTicketDetailsPage({
           )}
         </WorkflowTabs>
       )}
-    </main>
+    </motion.main>
 
       {record && (
         <Sheet

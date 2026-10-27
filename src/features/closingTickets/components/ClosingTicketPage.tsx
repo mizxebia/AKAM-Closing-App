@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import akamLogo from '../../../assets/akam_logo.png'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
+import { LoadingScreen } from '../../../components/feedback/LoadingScreen'
 import {
   EmptyState,
   LoadingSkeleton,
@@ -390,6 +391,10 @@ export function ClosingTicketPage() {
           <UserActivityPanel
             records={records}
             onBack={() => setUserActivityOpen(false)}
+            onSelectTicket={(recordId) => {
+              setUserActivityOpen(false)
+              setSelectedRecordId(recordId)
+            }}
           />
         </div>
       </>
@@ -410,6 +415,10 @@ export function ClosingTicketPage() {
         </div>
       </>
     )
+  }
+
+  if (loading && records.length === 0 && !error) {
+    return <LoadingScreen />
   }
 
   return (
@@ -450,17 +459,30 @@ export function ClosingTicketPage() {
           />
 
           {developerMode.isAllowed && (
-            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[#D5CBB8] bg-white px-4 py-2.5 shadow-sm">
-              <span className="mr-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#94a3b8]">
-                Admin Tools
-              </span>
-              <DeveloperModeToggle
-                enabled={developerMode.enabled}
-                onToggle={developerMode.toggle}
-                size="compact"
-              />
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#D5CBB8] bg-white px-4 py-2.5 shadow-sm">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="mr-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#94a3b8]">
+                  Admin Tools
+                </span>
+                <DeveloperModeToggle
+                  enabled={developerMode.enabled}
+                  onToggle={developerMode.toggle}
+                  size="compact"
+                />
+                {developerMode.enabled && (
+                  <button
+                    className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] transition hover:bg-[#F5F2EC]"
+                    type="button"
+                    onClick={() => setUserActivityOpen(true)}
+                  >
+                    <PieChart className="size-4" />
+                    User Activity
+                  </button>
+                )}
+              </div>
+
               {developerMode.enabled && (
-                <>
+                <div className="flex flex-wrap items-center gap-2">
                   <button
                     className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] transition hover:bg-[#F5F2EC]"
                     type="button"
@@ -493,15 +515,7 @@ export function ClosingTicketPage() {
                     <FilePlus2 className="size-4" />
                     Bulk Create Closings
                   </button>
-                  <button
-                    className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] transition hover:bg-[#F5F2EC]"
-                    type="button"
-                    onClick={() => setUserActivityOpen(true)}
-                  >
-                    <PieChart className="size-4" />
-                    User Activity
-                  </button>
-                </>
+                </div>
               )}
             </div>
           )}

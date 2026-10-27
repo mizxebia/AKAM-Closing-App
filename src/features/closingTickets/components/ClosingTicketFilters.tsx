@@ -174,7 +174,7 @@ export function ClosingTicketFilters({
         })}
       </div>
 
-      <div className="flex flex-wrap items-end gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <div className="min-w-[220px] flex-1">
           <SearchFilter
             id="closing-ticket-general-search"
@@ -185,158 +185,9 @@ export function ClosingTicketFilters({
           />
         </div>
 
-        {showDocumentFilter && (
-          <label
-            className="flex flex-col gap-1 text-xs font-medium text-[#5F5E5A]"
-            htmlFor="closing-ticket-document-filter"
-          >
-            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94a3b8]">
-              Documents
-            </span>
-            <select
-              id="closing-ticket-document-filter"
-              className="h-9 min-w-[170px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
-              value={filters.documentFilter}
-              onChange={(event) =>
-                onDocumentFilterChange(event.target.value)
-              }
-            >
-              <option value="">All documents</option>
-              {CLOSING_DOCUMENT_FILTER_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-
-        {showChargesFilter && (
-          <label
-            className="flex flex-col gap-1 text-xs font-medium text-[#5F5E5A]"
-            htmlFor="closing-ticket-charges-filter"
-          >
-            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94a3b8]">
-              Yardi Charges
-            </span>
-            <select
-              id="closing-ticket-charges-filter"
-              className="h-9 min-w-[170px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
-              value={filters.chargesFilter}
-              onChange={(event) =>
-                onChargesFilterChange(
-                  event.target
-                    .value as ClosingTicketFilters['chargesFilter']
-                )
-              }
-            >
-              <option value="">All</option>
-              <option value="present">Has Yardi Charges</option>
-              <option value="missing">Missing Yardi Charges</option>
-            </select>
-          </label>
-        )}
-
-        {showBotStatusFilter && (
-          <label
-            className="flex flex-col gap-1 text-xs font-medium text-[#5F5E5A]"
-            htmlFor="closing-ticket-bot-status-filter"
-          >
-            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94a3b8]">
-              Bot Status
-            </span>
-            <select
-              id="closing-ticket-bot-status-filter"
-              className="h-9 min-w-[170px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
-              value={filters.botStatusFilter}
-              onChange={(event) =>
-                onBotStatusFilterChange(
-                  event.target.value === ''
-                    ? ''
-                    : Number(event.target.value)
-                )
-              }
-            >
-              <option value="">All bot statuses</option>
-              {BOT_STATUS_FILTER_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-
-        {showPackageTypeFilter && (
-          <label
-            className="flex flex-col gap-1 text-xs font-medium text-[#5F5E5A]"
-            htmlFor="closing-ticket-package-type-filter"
-          >
-            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94a3b8]">
-              Package Type
-            </span>
-            <select
-              id="closing-ticket-package-type-filter"
-              className="h-9 min-w-[170px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
-              value={filters.packageTypeFilter}
-              onChange={(event) =>
-                onPackageTypeFilterChange(
-                  event.target.value === ''
-                    ? ''
-                    : Number(event.target.value)
-                )
-              }
-            >
-              <option value="">All package types</option>
-              {PACKAGE_TYPE_FILTER_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-
-        {showClosingDateFilter && (
-          <div className="flex flex-col gap-1 text-xs font-medium text-[#5F5E5A]">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94a3b8]">
-              Closing Date
-            </span>
-            <div className="flex items-center gap-1">
-              <label className="sr-only" htmlFor="closing-ticket-closing-date-from">
-                Closing date from
-              </label>
-              <input
-                id="closing-ticket-closing-date-from"
-                type="date"
-                className="h-9 w-[130px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
-                value={filters.closingDateFilter.from}
-                max={filters.closingDateFilter.to || undefined}
-                onChange={(event) =>
-                  onClosingDateFilterChange({ from: event.target.value })
-                }
-              />
-              <span className="text-[#94a3b8]">to</span>
-              <label className="sr-only" htmlFor="closing-ticket-closing-date-to">
-                Closing date to
-              </label>
-              <input
-                id="closing-ticket-closing-date-to"
-                type="date"
-                className="h-9 w-[130px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
-                value={filters.closingDateFilter.to}
-                min={filters.closingDateFilter.from || undefined}
-                onChange={(event) =>
-                  onClosingDateFilterChange({ to: event.target.value })
-                }
-              />
-            </div>
-          </div>
-        )}
-
         {showArchivedToggle && (
           <label
-            className="flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-md border border-[#D5CBB8] bg-white px-2.5 text-xs font-medium text-[#1E3A47]"
+            className="flex h-8 shrink-0 cursor-pointer items-center gap-2 rounded-md border border-[#D5CBB8] bg-white px-2.5 text-xs font-medium text-[#1E3A47]"
             htmlFor="closing-ticket-show-archived"
           >
             <input
@@ -352,6 +203,163 @@ export function ClosingTicketFilters({
           </label>
         )}
       </div>
+
+      {(showDocumentFilter ||
+        showChargesFilter ||
+        showBotStatusFilter ||
+        showPackageTypeFilter ||
+        showClosingDateFilter) && (
+        <div className="flex flex-wrap items-end gap-2">
+          {showDocumentFilter && (
+            <label
+              className="flex flex-col gap-0.5 text-xs font-medium text-[#5F5E5A]"
+              htmlFor="closing-ticket-document-filter"
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94a3b8]">
+                Documents
+              </span>
+              <select
+                id="closing-ticket-document-filter"
+                className="h-8 min-w-[170px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
+                value={filters.documentFilter}
+                onChange={(event) =>
+                  onDocumentFilterChange(event.target.value)
+                }
+              >
+                <option value="">All documents</option>
+                {CLOSING_DOCUMENT_FILTER_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
+          {showChargesFilter && (
+            <label
+              className="flex flex-col gap-0.5 text-xs font-medium text-[#5F5E5A]"
+              htmlFor="closing-ticket-charges-filter"
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94a3b8]">
+                Yardi Charges
+              </span>
+              <select
+                id="closing-ticket-charges-filter"
+                className="h-8 min-w-[170px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
+                value={filters.chargesFilter}
+                onChange={(event) =>
+                  onChargesFilterChange(
+                    event.target
+                      .value as ClosingTicketFilters['chargesFilter']
+                  )
+                }
+              >
+                <option value="">All</option>
+                <option value="present">Has Yardi Charges</option>
+                <option value="missing">Missing Yardi Charges</option>
+              </select>
+            </label>
+          )}
+
+          {showBotStatusFilter && (
+            <label
+              className="flex flex-col gap-0.5 text-xs font-medium text-[#5F5E5A]"
+              htmlFor="closing-ticket-bot-status-filter"
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94a3b8]">
+                Bot Status
+              </span>
+              <select
+                id="closing-ticket-bot-status-filter"
+                className="h-8 min-w-[170px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
+                value={filters.botStatusFilter}
+                onChange={(event) =>
+                  onBotStatusFilterChange(
+                    event.target.value === ''
+                      ? ''
+                      : Number(event.target.value)
+                  )
+                }
+              >
+                <option value="">All bot statuses</option>
+                {BOT_STATUS_FILTER_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
+          {showPackageTypeFilter && (
+            <label
+              className="flex flex-col gap-0.5 text-xs font-medium text-[#5F5E5A]"
+              htmlFor="closing-ticket-package-type-filter"
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94a3b8]">
+                Package Type
+              </span>
+              <select
+                id="closing-ticket-package-type-filter"
+                className="h-8 min-w-[170px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
+                value={filters.packageTypeFilter}
+                onChange={(event) =>
+                  onPackageTypeFilterChange(
+                    event.target.value === ''
+                      ? ''
+                      : Number(event.target.value)
+                  )
+                }
+              >
+                <option value="">All package types</option>
+                {PACKAGE_TYPE_FILTER_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
+          {showClosingDateFilter && (
+            <div className="flex flex-col gap-0.5 text-xs font-medium text-[#5F5E5A]">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94a3b8]">
+                Closing Date
+              </span>
+              <div className="flex items-center gap-1">
+                <label className="sr-only" htmlFor="closing-ticket-closing-date-from">
+                  Closing date from
+                </label>
+                <input
+                  id="closing-ticket-closing-date-from"
+                  type="date"
+                  className="h-8 w-[130px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
+                  value={filters.closingDateFilter.from}
+                  max={filters.closingDateFilter.to || undefined}
+                  onChange={(event) =>
+                    onClosingDateFilterChange({ from: event.target.value })
+                  }
+                />
+                <span className="text-[#94a3b8]">to</span>
+                <label className="sr-only" htmlFor="closing-ticket-closing-date-to">
+                  Closing date to
+                </label>
+                <input
+                  id="closing-ticket-closing-date-to"
+                  type="date"
+                  className="h-8 w-[130px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
+                  value={filters.closingDateFilter.to}
+                  min={filters.closingDateFilter.from || undefined}
+                  onChange={(event) =>
+                    onClosingDateFilterChange({ to: event.target.value })
+                  }
+                />
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </section>
   )
 }
