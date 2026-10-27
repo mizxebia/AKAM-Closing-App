@@ -5,8 +5,11 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
+  Rows2,
+  Rows3,
 } from 'lucide-react'
 import {
+  Avatar,
   SectionCard,
   StatusBadge as EnterpriseStatusBadge,
 } from '../../../components/enterprise'
@@ -26,6 +29,51 @@ import { getFailureReason } from '../utils/closingTicketFailureReasons'
 const PAGE_SIZE = 15
 
 type SortDirection = 'asc' | 'desc'
+type Density = 'compact' | 'comfortable'
+
+const DENSITY_STORAGE_KEY = 'akam-table-density'
+
+function readStoredDensity(): Density {
+  try {
+    const stored = window.localStorage.getItem(
+      DENSITY_STORAGE_KEY
+    )
+    return stored === 'comfortable' ? 'comfortable' : 'compact'
+  } catch {
+    return 'compact'
+  }
+}
+
+function storeDensity(density: Density) {
+  try {
+    window.localStorage.setItem(DENSITY_STORAGE_KEY, density)
+  } catch {
+    // Ignore — worst case the preference isn't remembered next visit.
+  }
+}
+
+const DENSITY_STYLES: Record<
+  Density,
+  {
+    rowHeight: string
+    cellPadding: string
+    headerPadding: string
+    fontSize: string
+  }
+> = {
+  compact: {
+    rowHeight: '28px',
+    cellPadding: 'px-3 py-1',
+    headerPadding: 'px-3 py-1.5',
+    fontSize: '11px',
+  },
+  comfortable: {
+    rowHeight: '34px',
+    cellPadding: 'px-4 py-1.5',
+    headerPadding: 'px-4 py-2.5',
+    fontSize: '12px',
+  },
+}
 
 // Columns whose values are naturally ordered newest/highest-first on first
 // click; everything else defaults to A-Z on first click.
@@ -89,6 +137,19 @@ export function ClosingTicketTable({
   onToggleArchive,
 }: ClosingTicketTableProps) {
   const [page, setPage] = useState(0)
+  const [density, setDensity] = useState<Density>(
+    readStoredDensity
+  )
+  const densityStyle = DENSITY_STYLES[density]
+
+  const toggleDensity = () => {
+    setDensity((current) => {
+      const next =
+        current === 'compact' ? 'comfortable' : 'compact'
+      storeDensity(next)
+      return next
+    })
+  }
   const [sortColumn, setSortColumn] =
     useState<ClosingTicketColumnKey>('createdon')
   const [sortDirection, setSortDirection] =
@@ -135,6 +196,25 @@ export function ClosingTicketTable({
       title="Recent Closings"
       description={`${records.length} records match the current view. Click a column header to sort.`}
       className="overflow-hidden"
+      actions={
+        <button
+          type="button"
+          onClick={toggleDensity}
+          className="inline-flex h-8 items-center gap-1.5 rounded-md border border-[#D5CBB8] bg-white px-2.5 text-xs font-semibold text-[#1E3A47] transition hover:bg-[#F5F2EC]"
+          title={
+            density === 'compact'
+              ? 'Switch to comfortable row spacing'
+              : 'Switch to compact row spacing'
+          }
+        >
+          {density === 'compact' ? (
+            <Rows3 className="size-3.5" />
+          ) : (
+            <Rows2 className="size-3.5" />
+          )}
+          {density === 'compact' ? 'Compact' : 'Comfortable'}
+        </button>
+      }
     >
       <div className="-m-3 overflow-x-auto">
         <table className="min-w-[1100px] w-full table-fixed border-collapse">
@@ -142,7 +222,7 @@ export function ClosingTicketTable({
             <tr>
               {selectable && (
                 <th
-                  className="border-b border-[#D5CBB8] px-4 py-2.5 text-left"
+                  className={`border-b border-[#D5CBB8] ${densityStyle.headerPadding} text-left`}
                   style={{ width: '40px' }}
                 >
                   <input
@@ -177,7 +257,7 @@ export function ClosingTicketTable({
                 return (
                   <th
                     key={column.key}
-                    className="border-b border-[#D5CBB8] px-4 py-2.5 text-left font-semibold uppercase text-[#5F5E5A]"
+                    className={`border-b border-[#D5CBB8] ${densityStyle.headerPadding} text-left font-semibold uppercase text-[#5F5E5A]`}
                     style={{
                       fontSize: '10px',
                       letterSpacing: '0.1em',
@@ -201,7 +281,7 @@ export function ClosingTicketTable({
               })}
               {showArchiveActions && (
                 <th
-                  className="border-b border-[#D5CBB8] px-4 py-2.5 text-left font-semibold uppercase text-[#5F5E5A]"
+                  className={`border-b border-[#D5CBB8] ${densityStyle.headerPadding} text-left font-semibold uppercase text-[#5F5E5A]`}
                   style={{
                     fontSize: '10px',
                     letterSpacing: '0.1em',
@@ -219,7 +299,7 @@ export function ClosingTicketTable({
               <tr
                 key={record.cr7de_closingticketdetailsid}
                 className="cursor-pointer odd:bg-white even:bg-[#faf8f4] transition hover:bg-[#F5F2EC] focus:outline-none focus:ring-2 focus:ring-[#D5CBB8]"
-                style={{ height: '34px' }}
+                style={{ height: densityStyle.rowHeight }}
                 onClick={() =>
                   onRecordSelect(
                     record.cr7de_closingticketdetailsid
@@ -240,7 +320,7 @@ export function ClosingTicketTable({
               >
                 {selectable && (
                   <td
-                    className="border-b border-[#EDE8E0] px-4 py-1.5"
+                    className={`border-b border-[#EDE8E0] ${densityStyle.cellPadding}`}
                     onClick={(event) => event.stopPropagation()}
                   >
                     <input
@@ -269,7 +349,8 @@ export function ClosingTicketTable({
                     <td
                       key={column.key}
                       title={failureReason ?? undefined}
-                      className={`max-w-[220px] truncate px-4 py-1.5 text-xs text-[#4B5563] first:font-semibold first:text-[#1E3A47]${colIndex > 0 ? ' border-b border-[#EDE8E0]' : ''}`}
+                      className={`max-w-[220px] truncate text-[#4B5563] first:font-semibold first:text-[#1E3A47] ${densityStyle.cellPadding}${colIndex > 0 ? ' border-b border-[#EDE8E0]' : ''}`}
+                      style={{ fontSize: densityStyle.fontSize }}
                     >
                       {column.key === 'cr7de_ticketstatus' ? (
                         <StatusBadge record={record} />
@@ -279,6 +360,8 @@ export function ClosingTicketTable({
                         failureReason ?? (
                           <span className="text-[#B0B5BC]">—</span>
                         )
+                      ) : column.key === 'createdbyname' ? (
+                        <CreatedByCell record={record} />
                       ) : (
                         formatClosingTicketValue(record, column.key)
                       )}
@@ -287,7 +370,7 @@ export function ClosingTicketTable({
                 })}
                 {showArchiveActions && (
                   <td
-                    className="border-b border-[#EDE8E0] px-4 py-1.5"
+                    className={`border-b border-[#EDE8E0] ${densityStyle.cellPadding}`}
                     onClick={(event) => event.stopPropagation()}
                   >
                     <button
@@ -392,5 +475,21 @@ function BotStatusBadge({
       )}
       tone="default"
     />
+  )
+}
+
+function CreatedByCell({
+  record,
+}: {
+  record: ClosingTicketRecord
+}) {
+  const name = formatClosingTicketValue(record, 'createdbyname')
+  const label = name === '-' ? null : name
+
+  return (
+    <span className="flex items-center gap-1.5">
+      <Avatar name={label} size="xs" />
+      <span className="truncate">{label ?? '-'}</span>
+    </span>
   )
 }

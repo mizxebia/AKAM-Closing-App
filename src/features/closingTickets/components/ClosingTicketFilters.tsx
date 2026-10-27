@@ -1,3 +1,16 @@
+import {
+  Building2,
+  CheckCircle2,
+  Clock,
+  FileCheck,
+  FileEdit,
+  LayoutGrid,
+  Send,
+  ShieldCheck,
+  UserRound,
+  XCircle,
+} from 'lucide-react'
+import type { ComponentType } from 'react'
 import { SearchFilter } from '../../../components/filters/SearchFilter'
 import { closingTicketStatusOptions } from '../utils/closingTicketFormatters'
 import {
@@ -7,6 +20,23 @@ import {
 } from '../utils/closingTicketFilters'
 import { developerOnlyClosingTicketTabs } from '../constants/closingTicketMetadata'
 import type { ClosingTicketFilters } from '../types/closingTicket'
+
+const STATUS_TAB_ICONS: Record<
+  string,
+  ComponentType<{ className?: string }>
+> = {
+  All: LayoutGrid,
+  'My Tickets': UserRound,
+  Draft: FileEdit,
+  Processing: Clock,
+  'Ready for Post Closing': ShieldCheck,
+  'Post Closing': FileCheck,
+  'Validate Closings': ShieldCheck,
+  'Transferring Building': Building2,
+  Completed: CheckCircle2,
+  'Sent to AR': Send,
+  Failed: XCircle,
+}
 
 interface ClosingTicketFiltersProps {
   filters: ClosingTicketFilters
@@ -77,31 +107,35 @@ export function ClosingTicketFilters({
         className="flex flex-wrap gap-1"
         aria-label="Filter closings by status"
       >
-        {visibleStatusOptions.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            className={
-              filters.status === option.value
-                ? 'px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#F5F2EC] transition'
-                : 'px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#5F5E5A] transition hover:text-[#1E3A47]'
-            }
-            style={
-              filters.status === option.value
-                ? {
-                    backgroundColor: '#1E3A47',
-                    borderRadius: '6px',
-                  }
-                : {
-                    background: 'transparent',
-                    borderRadius: '6px',
-                  }
-            }
-            onClick={() => onStatusChange(option.value)}
-          >
-            {option.label}
-          </button>
-        ))}
+        {visibleStatusOptions.map((option) => {
+          const Icon = STATUS_TAB_ICONS[option.value] ?? LayoutGrid
+          return (
+            <button
+              key={option.value}
+              type="button"
+              className={
+                filters.status === option.value
+                  ? 'inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#F5F2EC] transition'
+                  : 'inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#5F5E5A] transition hover:text-[#1E3A47]'
+              }
+              style={
+                filters.status === option.value
+                  ? {
+                      backgroundColor: '#1E3A47',
+                      borderRadius: '6px',
+                    }
+                  : {
+                      background: 'transparent',
+                      borderRadius: '6px',
+                    }
+              }
+              onClick={() => onStatusChange(option.value)}
+            >
+              <Icon className="size-3" />
+              {option.label}
+            </button>
+          )
+        })}
       </div>
 
       <div className="flex flex-wrap items-end gap-2">

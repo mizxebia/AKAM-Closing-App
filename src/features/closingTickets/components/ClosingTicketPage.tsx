@@ -8,6 +8,7 @@ import {
   ListChecks,
   FilePlus2,
   Database,
+  PieChart,
 } from 'lucide-react'
 import akamLogo from '../../../assets/akam_logo.png'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
@@ -38,6 +39,7 @@ import {
   logAppFailure,
 } from '../../auditLog/api/auditLogService'
 import { ClosingTicketDashboard } from './ClosingTicketDashboard'
+import { UserActivityPanel } from './UserActivityPanel'
 import { ClosingTicketFilters } from './ClosingTicketFilters'
 import { ClosingTicketTable } from './ClosingTicketTable'
 import { useCurrentUser } from '../hooks/useCurrentUser'
@@ -150,6 +152,7 @@ export function ClosingTicketPage() {
     useState(false)
   const [bulkCreateScreenOpen, setBulkCreateScreenOpen] =
     useState(false)
+  const [userActivityOpen, setUserActivityOpen] = useState(false)
   const developerMode = useDeveloperMode()
 
   const {
@@ -285,7 +288,10 @@ export function ClosingTicketPage() {
   }
 
   const isDashboardVisible =
-    !selectedRecordId && !bulkStatusScreenOpen && !bulkCreateScreenOpen
+    !selectedRecordId &&
+    !bulkStatusScreenOpen &&
+    !bulkCreateScreenOpen &&
+    !userActivityOpen
 
   // The dashboard subtree unmounts while a details/bulk screen is open and
   // remounts when the user navigates back — but useClosingTickets() lives
@@ -369,6 +375,21 @@ export function ClosingTicketPage() {
           <BulkCreateClosingsScreen
             onBack={() => setBulkCreateScreenOpen(false)}
             onApplied={refresh}
+          />
+        </div>
+      </>
+    )
+  }
+
+  if (userActivityOpen) {
+    return (
+      <>
+        <TopNav userName={userName} onHelp={() => setHelpOpen(true)} />
+        <HelpCentreModal open={helpOpen} onClose={() => setHelpOpen(false)} />
+        <div className="min-h-screen bg-[#F5F2EC]">
+          <UserActivityPanel
+            records={records}
+            onBack={() => setUserActivityOpen(false)}
           />
         </div>
       </>
@@ -471,6 +492,14 @@ export function ClosingTicketPage() {
                   >
                     <FilePlus2 className="size-4" />
                     Bulk Create Closings
+                  </button>
+                  <button
+                    className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] transition hover:bg-[#F5F2EC]"
+                    type="button"
+                    onClick={() => setUserActivityOpen(true)}
+                  >
+                    <PieChart className="size-4" />
+                    User Activity
                   </button>
                 </>
               )}

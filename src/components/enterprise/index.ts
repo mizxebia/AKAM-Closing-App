@@ -1,3 +1,5 @@
+export { Avatar } from './Avatar'
+export { getColorForName } from './avatarColors'
 export { EmptyState } from './EmptyState'
 export { LoadingSkeleton } from './LoadingSkeleton'
 export { PageHeader } from './PageHeader'
