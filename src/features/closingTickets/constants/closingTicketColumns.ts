@@ -24,7 +24,7 @@ export const closingTicketColumns: ClosingTicketColumn[] = [
   {
     key: 'cr7de_ticketstatus',
     label: 'Status',
-    width: '160px',
+    width: '200px',
   },
   {
     key: 'createdbyname',

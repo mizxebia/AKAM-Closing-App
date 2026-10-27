@@ -103,7 +103,9 @@ export function ClosingTicketFilters({
   onShowArchivedChange,
 }: ClosingTicketFiltersProps) {
   const visibleStatusOptions = showDeveloperStatusTabs
-    ? closingTicketStatusOptions
+    ? closingTicketStatusOptions.filter(
+        (option) => option.value !== 'My Tickets'
+      )
     : closingTicketStatusOptions.filter(
         (option) => !developerOnlyClosingTicketTabs.has(option.value)
       )
@@ -128,7 +130,7 @@ export function ClosingTicketFilters({
       style={{ borderRadius: '12px' }}
     >
       <div
-        className="flex flex-wrap gap-1"
+        className="flex flex-nowrap items-center gap-0.5 overflow-x-auto"
         aria-label="Filter closings by status"
       >
         {visibleStatusOptions.map((option) => {
@@ -140,8 +142,8 @@ export function ClosingTicketFilters({
               type="button"
               className={
                 filters.status === option.value
-                  ? 'inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#F5F2EC] transition'
-                  : 'inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#5F5E5A] transition hover:text-[#1E3A47]'
+                  ? 'inline-flex shrink-0 items-center gap-1 px-1.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.04em] text-[#F5F2EC] transition'
+                  : 'inline-flex shrink-0 items-center gap-1 px-1.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.04em] text-[#5F5E5A] transition hover:text-[#1E3A47]'
               }
               style={
                 filters.status === option.value
@@ -156,14 +158,14 @@ export function ClosingTicketFilters({
               }
               onClick={() => onStatusChange(option.value)}
             >
-              <Icon className="size-3" />
+              <Icon className="size-2.5 shrink-0" />
               {option.label}
               {count !== undefined && (
                 <span
                   className={
                     filters.status === option.value
-                      ? 'rounded-full bg-[rgba(245,242,236,0.2)] px-1.5 text-[10px] font-semibold'
-                      : 'rounded-full bg-[#F1EFE8] px-1.5 text-[10px] font-semibold text-[#8a8578]'
+                      ? 'rounded-full bg-[rgba(245,242,236,0.2)] px-1 text-[9px] font-semibold'
+                      : 'rounded-full bg-[#F1EFE8] px-1 text-[9px] font-semibold text-[#8a8578]'
                   }
                 >
                   {count}

@@ -67,6 +67,49 @@ function daysSince(dateString?: string): number | null {
   )
 }
 
+type PageRange = 'thisMonth' | 'last3' | 'last6' | 'allTime'
+
+const PAGE_RANGE_OPTIONS: { value: PageRange; label: string }[] = [
+  { value: 'thisMonth', label: 'This Month' },
+  { value: 'last3', label: 'Last 3 Months' },
+  { value: 'last6', label: 'Last 6 Months' },
+  { value: 'allTime', label: 'All Time' },
+]
+
+function pageRangeBounds(range: PageRange): { from: Date | null } {
+  if (range === 'allTime') return { from: null }
+  const now = new Date()
+  if (range === 'thisMonth') {
+    return { from: new Date(now.getFullYear(), now.getMonth(), 1) }
+  }
+  const monthsBack = range === 'last3' ? 2 : 5
+  return {
+    from: new Date(now.getFullYear(), now.getMonth() - monthsBack, 1),
+  }
+}
+
+/** Filters by createdon falling within [from, to] (inclusive). Either
+ * bound may be omitted/null to leave that side open. */
+function filterByCreatedRange(
+  records: ClosingTicketRecord[],
+  from: Date | null,
+  to: Date | null
+) {
+  if (!from && !to) return records
+  return records.filter((record) => {
+    if (!record.createdon) return false
+    const created = new Date(record.createdon).getTime()
+    if (Number.isNaN(created)) return false
+    if (from && created < from.getTime()) return false
+    if (to && created > to.getTime()) return false
+    return true
+  })
+}
+
+function toDateInputValue(date: Date) {
+  return date.toISOString().slice(0, 10)
+}
+
 // A Completed closing that will never go to AR (sendtoar = false) is fully
 // done — it shouldn't count toward anyone's active workload anymore.
 function isFullyDone(record: ClosingTicketRecord) {
@@ -337,44 +380,56 @@ export function UserActivityPanel({
   onBack,
   onSelectTicket,
 }: UserActivityPanelProps) {
+  const [pageRange, setPageRange] = useState<PageRange>('allTime')
+  const scopedRecords = useMemo(() => {
+    const { from } = pageRangeBounds(pageRange)
+    return filterByCreatedRange(records, from, null)
+  }, [records, pageRange])
+  const pageRangeLabel =
+    PAGE_RANGE_OPTIONS.find((o) => o.value === pageRange)?.label ??
+    'All Time'
+
   const agents = useMemo(
-    () => buildAgentActivity(records, isActiveRecord),
-    [records]
+    () => buildAgentActivity(scopedRecords, isActiveRecord),
+    [scopedRecords]
   )
   const pieData = useMemo(() => capEntries(agents), [agents])
   const statusBreakdown = useMemo(
-    () => buildStatusBreakdown(records),
-    [records]
+    () => buildStatusBreakdown(scopedRecords),
+    [scopedRecords]
   )
   const pendingActions = useMemo(
     () =>
       capEntries(
-        buildAgentActivity(records, (r) => {
+        buildAgentActivity(scopedRecords, (r) => {
           const status = Number(r.cr7de_ticketstatus)
           return status !== SENT_TO_AR_STATUS && status !== COMPLETED_STATUS
         })
       ),
-    [records]
+    [scopedRecords]
   )
   const failedQueue = useMemo(
     () =>
       buildQueue(
-        records,
+        scopedRecords,
         (r) => Number(r.cr7de_ticketstatus) === FAILED_STATUS,
         (r) => getFailureReason(r) ?? 'An unexpected error occurred.'
       ),
-    [records]
+    [scopedRecords]
   )
   const waitingOnUserByStatus = useMemo(
-    () => buildWaitingOnUserByStatus(records),
-    [records]
+    () => buildWaitingOnUserByStatus(scopedRecords),
+    [scopedRecords]
   )
   const waitingOnUserByAgent = useMemo(
     () =>
       capEntries(
-        buildAgentActivity(records, (r) => waitingOnUserBucket(r) !== null)
+        buildAgentActivity(
+          scopedRecords,
+          (r) => waitingOnUserBucket(r) !== null
+        )
       ),
-    [records]
+    [scopedRecords]
   )
   const totalWaitingOnUser = waitingOnUserByStatus.reduce(
     (sum, entry) => sum + entry.count,
@@ -383,14 +438,42 @@ export function UserActivityPanel({
   const [waitingView, setWaitingView] = useState<'status' | 'user'>(
     'status'
   )
+
+  // All-Time Status Distribution has its own slicer, bounded from the
+  // earliest Completed closing (across every record, not just the page's
+  // current range) through today — independent of the page-level filter
+  // above so it can always answer "show me the full history."
+  const firstCompletedDate = useMemo(() => {
+    const dates = records
+      .filter((r) => Number(r.cr7de_ticketstatus) === COMPLETED_STATUS)
+      .map((r) => r.createdon)
+      .filter((d): d is string => Boolean(d))
+    if (dates.length === 0) return null
+    return dates.reduce((min, d) => (d < min ? d : min), dates[0])
+  }, [records])
+  const today = useMemo(() => toDateInputValue(new Date()), [])
+  const [statusRangeFrom, setStatusRangeFrom] = useState('')
+  const [statusRangeTo, setStatusRangeTo] = useState('')
+  const statusRangeRecords = useMemo(() => {
+    if (!statusRangeFrom && !statusRangeTo) return scopedRecords
+    return filterByCreatedRange(
+      records,
+      statusRangeFrom ? new Date(statusRangeFrom) : null,
+      statusRangeTo ? new Date(`${statusRangeTo}T23:59:59`) : null
+    )
+  }, [records, scopedRecords, statusRangeFrom, statusRangeTo])
   const allStatusCounts = useMemo(
-    () => buildAllStatusCounts(records),
-    [records]
+    () => buildAllStatusCounts(statusRangeRecords),
+    [statusRangeRecords]
   )
-  const trendData = useMemo(() => buildMonthlyTrend(records), [records])
+
+  const trendData = useMemo(
+    () => buildMonthlyTrend(scopedRecords),
+    [scopedRecords]
+  )
   const performance = useMemo(
-    () => buildPerformanceStats(records),
-    [records]
+    () => buildPerformanceStats(scopedRecords),
+    [scopedRecords]
   )
 
   const pendingBarHover = useBarHover()
@@ -440,13 +523,30 @@ export function UserActivityPanel({
             User Activity
           </h1>
         </div>
+
+        <div className="flex shrink-0 rounded-md border border-[#D5CBB8] p-0.5 text-[10px] font-semibold uppercase tracking-[0.04em]">
+          {PAGE_RANGE_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => setPageRange(option.value)}
+              className={`rounded px-2.5 py-1.5 transition ${
+                pageRange === option.value
+                  ? 'bg-[#1E3A47] text-[#F5F2EC]'
+                  : 'text-[#5F5E5A] hover:text-[#1E3A47]'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-5">
         <StatTile
           label="Active Closings"
           value={totalActive}
-          description="Excludes Sent to AR & fully-done"
+          description={`Excludes Sent to AR & fully-done • ${pageRangeLabel}`}
         />
         <StatTile
           label="Closing Agents"
@@ -699,11 +799,48 @@ export function UserActivityPanel({
 
       <div className="grid gap-4 lg:grid-cols-5">
         <section className="rounded-xl border border-[#D5CBB8] bg-white p-4 shadow-sm lg:col-span-3">
-          <div className="mb-3 flex items-center gap-2">
-            <BarChart3 className="size-4 text-[#1E3A47]" />
-            <h2 className="text-sm font-semibold text-[#1E3A47]">
-              All-Time Status Distribution
-            </h2>
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="size-4 text-[#1E3A47]" />
+              <h2 className="text-sm font-semibold text-[#1E3A47]">
+                All-Time Status Distribution
+              </h2>
+            </div>
+            {firstCompletedDate && (
+              <div className="flex items-center gap-1.5 text-xs text-[#5F5E5A]">
+                <input
+                  type="date"
+                  aria-label="Status distribution range from"
+                  className="h-7 rounded-md border border-[#D5CBB8] bg-white px-1.5 text-[11px] text-[#1E3A47]"
+                  value={statusRangeFrom}
+                  min={firstCompletedDate.slice(0, 10)}
+                  max={statusRangeTo || today}
+                  onChange={(e) => setStatusRangeFrom(e.target.value)}
+                />
+                <span>to</span>
+                <input
+                  type="date"
+                  aria-label="Status distribution range to"
+                  className="h-7 rounded-md border border-[#D5CBB8] bg-white px-1.5 text-[11px] text-[#1E3A47]"
+                  value={statusRangeTo}
+                  min={statusRangeFrom || firstCompletedDate.slice(0, 10)}
+                  max={today}
+                  onChange={(e) => setStatusRangeTo(e.target.value)}
+                />
+                {(statusRangeFrom || statusRangeTo) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStatusRangeFrom('')
+                      setStatusRangeTo('')
+                    }}
+                    className="font-semibold text-[#1E3A47] underline-offset-2 hover:underline"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           <div style={{ width: '100%', height: 260 }}>
@@ -872,7 +1009,7 @@ export function UserActivityPanel({
         <StatTile
           label="Total Closings"
           value={performance.total}
-          description="All-time, every status"
+          description={`Every status • ${pageRangeLabel}`}
         />
         <StatTile
           label="Completed"

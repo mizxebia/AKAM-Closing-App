@@ -15,7 +15,6 @@ import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import { LoadingScreen } from '../../../components/feedback/LoadingScreen'
 import {
   EmptyState,
-  LoadingSkeleton,
   PageHeader,
 } from '../../../components/enterprise'
 import {
@@ -417,7 +416,7 @@ export function ClosingTicketPage() {
     )
   }
 
-  if (loading && records.length === 0 && !error) {
+  if (loading && !error) {
     return <LoadingScreen />
   }
 
@@ -518,10 +517,6 @@ export function ClosingTicketPage() {
                 </div>
               )}
             </div>
-          )}
-
-          {loading && (
-            <LoadingSkeleton />
           )}
 
           {error && (

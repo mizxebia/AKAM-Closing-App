@@ -82,9 +82,11 @@ const DATE_COLUMNS = new Set<ClosingTicketColumnKey>([
   'modifiedon',
 ])
 
+type SortKey = ClosingTicketColumnKey | 'archived'
+
 function getSortValue(
   record: ClosingTicketRecord,
-  key: ClosingTicketColumnKey
+  key: SortKey
 ): string | number {
   switch (key) {
     case 'createdon':
@@ -101,6 +103,8 @@ function getSortValue(
         : -1
     case 'failureReason':
       return (getFailureReason(record) ?? '').toLowerCase()
+    case 'archived':
+      return record.cr109_archivalstatus ? 1 : 0
     default:
       return String(
         formatClosingTicketValue(record, key) ?? ''
@@ -151,7 +155,7 @@ export function ClosingTicketTable({
     })
   }
   const [sortColumn, setSortColumn] =
-    useState<ClosingTicketColumnKey>('createdon')
+    useState<SortKey>('createdon')
   const [sortDirection, setSortDirection] =
     useState<SortDirection>('desc')
 
@@ -171,7 +175,7 @@ export function ClosingTicketTable({
     setPage(0)
   }, [records, sortColumn, sortDirection])
 
-  const handleSortClick = (key: ClosingTicketColumnKey) => {
+  const handleSortClick = (key: SortKey) => {
     if (key === sortColumn) {
       setSortDirection((current) =>
         current === 'asc' ? 'desc' : 'asc'
@@ -180,7 +184,9 @@ export function ClosingTicketTable({
     }
 
     setSortColumn(key)
-    setSortDirection(DATE_COLUMNS.has(key) ? 'desc' : 'asc')
+    setSortDirection(
+      DATE_COLUMNS.has(key as ClosingTicketColumnKey) ? 'desc' : 'asc'
+    )
   }
 
   const pageCount = Math.ceil(sortedRecords.length / PAGE_SIZE)
@@ -282,14 +288,30 @@ export function ClosingTicketTable({
               })}
               {showArchiveActions && (
                 <th
-                  className={`border-b border-[#D5CBB8] ${densityStyle.headerPadding} text-left font-semibold uppercase text-[#5F5E5A]`}
+                  className={`overflow-hidden border-b border-[#D5CBB8] ${densityStyle.headerPadding} text-left font-semibold uppercase text-[#5F5E5A]`}
                   style={{
                     fontSize: '10px',
                     letterSpacing: '0.1em',
                     width: '110px',
+                    maxWidth: '110px',
                   }}
                 >
-                  Archive
+                  <button
+                    type="button"
+                    onClick={() => handleSortClick('archived')}
+                    className={`flex w-full min-w-0 items-center gap-1 transition hover:text-[#1E3A47] ${
+                      sortColumn === 'archived' ? 'text-[#1E3A47]' : ''
+                    }`}
+                  >
+                    <span className="min-w-0 truncate">Archive</span>
+                    {sortColumn !== 'archived' ? (
+                      <ArrowUpDown className="size-3 shrink-0" />
+                    ) : sortDirection === 'asc' ? (
+                      <ArrowUp className="size-3 shrink-0" />
+                    ) : (
+                      <ArrowDown className="size-3 shrink-0" />
+                    )}
+                  </button>
                 </th>
               )}
             </tr>

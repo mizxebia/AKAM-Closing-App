@@ -1158,6 +1158,73 @@ body {
   font-weight: 600;
 }
 
+/* Opt-in extra-compact spacing for the Closing Details page's tabs,
+   toggled by the Compact/Comfortable button in its header. Tightens the
+   same shared classes used by the Closing Details, Invoice, and Charges
+   tabs (and the Create Closing sheet, since EditClosingTicketForm reuses
+   it) without touching their per-field markup. */
+.details-compact .form-section {
+  padding: 7px;
+}
+
+.details-compact .form-section h3 {
+  margin-bottom: 4px;
+  font-size: 0.8rem;
+}
+
+.details-compact .form-grid {
+  gap: 6px;
+}
+
+.details-compact .form-field {
+  gap: 3px;
+}
+
+.details-compact .form-field span {
+  font-size: 0.72rem;
+}
+
+.details-compact .form-field input,
+.details-compact .form-field select,
+.details-compact .form-field textarea {
+  min-height: 28px;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+}
+
+.details-compact .form-field textarea {
+  min-height: 64px;
+}
+
+.details-compact .create-closing-form-scroll {
+  gap: 5px;
+  padding: 7px 10px 7px;
+}
+
+.details-compact .workflow-card {
+  padding: 8px;
+}
+
+.details-compact .workflow-card-header {
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.details-compact .charges-workspace,
+.details-compact .dataverse-charges-workspace {
+  gap: 6px;
+}
+
+.details-compact .charge-entry-table th,
+.details-compact .charge-entry-table td {
+  padding: 4px;
+}
+
+.details-compact .charge-entry-table input,
+.details-compact .charge-entry-table select {
+  min-height: 28px;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

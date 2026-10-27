@@ -7,11 +7,14 @@ import {
   Info,
   ReceiptText,
   RefreshCw,
+  Rows2,
+  Rows3,
   UserPlus,
   X,
 } from 'lucide-react'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
-import { LoadingSkeleton, StatusBadge } from '../../../components/enterprise'
+import { StatusBadge } from '../../../components/enterprise'
+import { LoadingScreen } from '../../../components/feedback/LoadingScreen'
 import {
   Sheet,
   SheetContent,
@@ -81,6 +84,7 @@ import {
   getMissingPartyNamesInvoiceWarning,
 } from '../utils/closingTicketPartyWarnings'
 
+const MIN_LOADING_SCREEN_MS = 1000
 const PROCESSING_TICKET_STATUS = 716070005
 const TRANSFERRING_BUILDING_STATUS = 716070002
 const COMPLETED_STATUS = 716070008
@@ -116,6 +120,29 @@ export function ClosingTicketDetailsPage({
   ] = useState(false)
   const [activeTab, setActiveTab] =
     useState<WorkflowTabKey>('details')
+  const [compactTabs, setCompactTabs] = useState(() => {
+    try {
+      return (
+        window.localStorage.getItem('akam-details-compact') === 'true'
+      )
+    } catch {
+      return false
+    }
+  })
+  const toggleCompactTabs = () => {
+    setCompactTabs((current) => {
+      const next = !current
+      try {
+        window.localStorage.setItem(
+          'akam-details-compact',
+          String(next)
+        )
+      } catch {
+        // Ignore — worst case the preference isn't remembered next visit.
+      }
+      return next
+    })
+  }
   const [invoiceViewerOpen, setInvoiceViewerOpen] =
     useState(false)
   const [logsViewerOpen, setLogsViewerOpen] = useState(false)
@@ -147,6 +174,7 @@ export function ClosingTicketDetailsPage({
     async function loadRecord() {
       setLoading(true)
       setError(null)
+      const startedAt = Date.now()
 
       try {
         const data = await getClosingTicketById(recordId)
@@ -163,6 +191,15 @@ export function ClosingTicketDetailsPage({
           )
         }
       } finally {
+        // Keep the loading screen up for at least a second — if the fetch
+        // resolves faster than that (a warm cache, a small ticket), the
+        // screen would otherwise flash and disappear almost instantly.
+        const elapsed = Date.now() - startedAt
+        if (elapsed < MIN_LOADING_SCREEN_MS) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, MIN_LOADING_SCREEN_MS - elapsed)
+          )
+        }
         if (isMounted) {
           setLoading(false)
         }
@@ -438,6 +475,24 @@ export function ClosingTicketDetailsPage({
         )}
 
         <button
+          className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-xs font-semibold uppercase tracking-[0.06em] text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC]"
+          type="button"
+          onClick={toggleCompactTabs}
+          title={
+            compactTabs
+              ? 'Switch to comfortable spacing'
+              : 'Switch to compact spacing'
+          }
+        >
+          {compactTabs ? (
+            <Rows2 className="size-4" />
+          ) : (
+            <Rows3 className="size-4" />
+          )}
+          {compactTabs ? 'Comfortable' : 'Compact'}
+        </button>
+
+        <button
           className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-sm font-semibold text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC]"
           type="button"
           onClick={onBack}
@@ -556,8 +611,13 @@ export function ClosingTicketDetailsPage({
       </button>
     ) : null
 
+  if (loading && !record) {
+    return <LoadingScreen />
+  }
+
   return (
     <TabBarActionsPortalProvider value={actionsPortalNode}>
+      <div className={compactTabs ? 'details-compact' : undefined}>
       <div className="sticky top-[48px] z-20" style={{ background: '#ffffff', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
         <div className="flex items-center justify-between px-6 py-2 border-b border-[#e4e2dc]">
           <div>
@@ -724,10 +784,6 @@ export function ClosingTicketDetailsPage({
 
           <ScreenshotGallery ticketId={ticketId} />
         </>
-      )}
-
-      {loading && (
-        <LoadingSkeleton />
       )}
 
       {error && (
@@ -908,6 +964,7 @@ export function ClosingTicketDetailsPage({
           onCancel={developerMode.cancelPrompt}
         />
       )}
+      </div>
     </TabBarActionsPortalProvider>
   )
 }
