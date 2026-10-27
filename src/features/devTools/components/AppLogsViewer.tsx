@@ -36,7 +36,7 @@ const TYPE_OPTIONS: Array<{ value: '' | LogType; label: string }> = [
   { value: '', label: 'All types' },
   { value: 'file', label: 'File Logs' },
   { value: 'status', label: 'Status Logs' },
-  { value: 'override', label: 'Developer Override Logs' },
+  { value: 'override', label: 'Admin Override Logs' },
   { value: 'communication', label: 'Communication Logs' },
   { value: 'create', label: 'Create Logs' },
   { value: 'update', label: 'Update Logs' },
@@ -194,7 +194,7 @@ export function AppLogsViewer({
         <SheetHeader className="invoice-viewer-sheet-header">
           <div>
             <SheetDescription className="text-xs font-semibold uppercase tracking-wide text-[#4B5563]">
-              Developer Mode
+              Admin Mode
             </SheetDescription>
             <SheetTitle
               className="mt-1 text-xl font-semibold text-[#1E3A47]"

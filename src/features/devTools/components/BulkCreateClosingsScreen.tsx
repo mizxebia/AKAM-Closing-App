@@ -16,7 +16,6 @@ import {
   generateTicketId,
   COOP_TRANSFER_PACKAGE_TYPE,
   DOMECILE_DUMP_RETRIEVED_BOT_STATUS_VALUE,
-  ENABLED_PACKAGE_TYPES,
   SPONSER_PACKAGE_TYPE,
 } from '../../closingTickets/utils/ticketCreation'
 import { createClosingTicket } from '../../closingTickets/api/closingTicketsService'
@@ -419,7 +418,7 @@ export function BulkCreateClosingsScreen({
               color: '#b89a5a',
             }}
           >
-            Developer Mode
+            Admin Mode
           </p>
           <h1
             style={{
@@ -639,17 +638,14 @@ export function BulkCreateClosingsScreen({
                     >
                       <option value="">Select...</option>
                       {PACKAGE_TYPE_OPTIONS.map((option) => {
-                        const isEnabled = ENABLED_PACKAGE_TYPES.has(
-                          option.value
-                        )
+                        // This screen is only reachable from Developer Mode,
+                        // so every package type is selectable here.
                         return (
                           <option
                             key={option.value}
                             value={option.value}
-                            disabled={!isEnabled}
                           >
                             {option.label}
-                            {isEnabled ? '' : ' (Upcoming)'}
                           </option>
                         )
                       })}

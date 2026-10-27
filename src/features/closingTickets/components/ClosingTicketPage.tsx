@@ -431,7 +431,7 @@ export function ClosingTicketPage() {
           {developerMode.isAllowed && (
             <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[#D5CBB8] bg-white px-4 py-2.5 shadow-sm">
               <span className="mr-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#94a3b8]">
-                Developer Tools
+                Admin Tools
               </span>
               <DeveloperModeToggle
                 enabled={developerMode.enabled}
@@ -584,6 +584,7 @@ export function ClosingTicketPage() {
                   setCreateFormOpen(false)
                   setSelectedRecordId(recordId)
                 }}
+                developerModeEnabled={developerMode.enabled}
               />
             </div>
           </SheetContent>

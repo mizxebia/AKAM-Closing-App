@@ -74,7 +74,7 @@ export function useDeveloperMode() {
       setPromptOpen(false)
       setPasswordError(null)
       setEnabled(true)
-      toast.success('Developer Mode unlocked.')
+      toast.success('Admin Mode unlocked.')
       return true
     }
 

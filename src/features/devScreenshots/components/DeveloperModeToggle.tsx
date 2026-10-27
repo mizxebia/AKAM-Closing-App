@@ -32,10 +32,10 @@ export function DeveloperModeToggle({
           ? `inline-flex items-center justify-center gap-2 rounded-lg border border-[#1E3A47] bg-[#1E3A47] text-[#F5F2EC] shadow-sm transition ${sizeClasses}`
           : `inline-flex items-center justify-center gap-2 rounded-lg border border-[#D5CBB8] bg-white text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC] ${sizeClasses}`
       }
-      title="Toggle Developer Mode"
+      title="Toggle Admin Mode"
     >
       <Bug className="size-4" />
-      Developer Mode
+      Admin Mode
     </button>
   )
 }

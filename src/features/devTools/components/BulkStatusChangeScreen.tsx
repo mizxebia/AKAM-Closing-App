@@ -172,7 +172,7 @@ export function BulkStatusChangeScreen({
               color: '#b89a5a',
             }}
           >
-            Developer Mode
+            Admin Mode
           </p>
           <h1
             style={{

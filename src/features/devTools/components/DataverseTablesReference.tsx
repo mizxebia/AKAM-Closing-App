@@ -215,7 +215,7 @@ export function DataverseTablesReference({
         <SheetHeader className="invoice-viewer-sheet-header">
           <div>
             <SheetDescription className="text-xs font-semibold uppercase tracking-wide text-[#4B5563]">
-              Developer Mode
+              Admin Mode
             </SheetDescription>
             <SheetTitle
               className="mt-1 text-xl font-semibold text-[#1E3A47]"

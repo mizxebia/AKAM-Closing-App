@@ -94,7 +94,7 @@ export async function downloadDataverseTablesPdf(
   doc.setFontSize(9)
   doc.setTextColor(...GOLD)
   doc.text(
-    `Closing Suite - Developer Mode - Generated ${new Date().toLocaleString()}`,
+    `Closing Suite - Admin Mode - Generated ${new Date().toLocaleString()}`,
     MARGIN,
     21
   )

@@ -665,7 +665,7 @@ export function ClosingTicketDetailsPage({
         <>
           <section className="form-section">
             <div className="flex items-center justify-between">
-              <h3>Developer Tools</h3>
+              <h3>Admin Tools</h3>
               <button
                 type="button"
                 className="inline-flex h-8 items-center gap-1.5 rounded-md border border-[#D5CBB8] bg-white px-3 text-xs font-semibold text-[#1E3A47] hover:bg-[#F5F2EC]"

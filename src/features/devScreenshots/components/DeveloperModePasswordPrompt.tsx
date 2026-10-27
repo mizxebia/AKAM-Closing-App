@@ -70,12 +70,12 @@ export function DeveloperModePasswordPrompt({
                 fontStyle: 'italic',
               }}
             >
-              Developer Mode
+              Admin Mode
             </h2>
           </DialogTitle>
           <p className="text-xs leading-relaxed text-[#8a8578]">
             This area is restricted to service accounts. Enter
-            the password to unlock developer tools for this
+            the password to unlock admin tools for this
             session.
           </p>
         </div>

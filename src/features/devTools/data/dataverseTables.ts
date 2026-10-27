@@ -61,9 +61,9 @@ export const DATAVERSE_TABLES: DataverseTableDoc[] = [
       'Primary entity. One row per closing. Holds status, bot status, package type, building/T-codes and the uploaded/generated documents.',
     linkedBy: 'cr7de_ticketid (CL-XXXXXXXXX) is the business key every other table joins on.',
     access: {
-      appReads: 'Dashboard list, details page, filters, Developer Mode bulk screens.',
+      appReads: 'Dashboard list, details page, filters, Admin Mode bulk screens.',
       appWrites:
-        'Create, update (status, notes, T-codes, flags), file upload/delete, delete (Developer Mode only).',
+        'Create, update (status, notes, T-codes, flags), file upload/delete, delete (Admin Mode only).',
       automationWrites:
         'cr109_botstatus progression, generated PDFs, building/seller data pulled from Domecile/YARDI.',
     },
@@ -82,9 +82,9 @@ export const DATAVERSE_TABLES: DataverseTableDoc[] = [
       { where: 'Create Closing form / Bulk Create (Dev Mode)', how: 'create, then syncNewOwnerTicketFromClosingTicket() seeds the New Owner Ticket row.' },
       { where: 'Dashboard + filters', how: 'getAll() on load; status tabs, bot status, package type, document and date filters run client-side.' },
       { where: 'Details tabs (Send to A-Team, Invoice, Charges, New Owner Ticket)', how: 'updateClosingTicket() for status/bot-status changes, uploads, validation lock.' },
-      { where: 'Developer Mode — Status Override / Bulk Status Change', how: 'updateClosingTicket() with an override action log.' },
-      { where: 'Developer Mode — Manual Document Upload', how: 'uploadClosingTicketFile() to a file column.' },
-      { where: 'Developer Mode — Delete Closing', how: 'deleteClosingTicket() removes only this row. The app does not cascade to child tables.' },
+      { where: 'Admin Mode — Status Override / Bulk Status Change', how: 'updateClosingTicket() with an override action log.' },
+      { where: 'Admin Mode — Manual Document Upload', how: 'uploadClosingTicketFile() to a file column.' },
+      { where: 'Admin Mode — Delete Closing', how: 'deleteClosingTicket() removes only this row. The app does not cascade to child tables.' },
     ],
     testingNotes: [
       'Fixtures: src/test/fixtures/closingTickets.ts. Assert on cr7de_ticketid, never the GUID.',
@@ -205,7 +205,7 @@ export const DATAVERSE_TABLES: DataverseTableDoc[] = [
     purpose: 'Scheduled YARDI charges (bot-created) plus user-created manual ones.',
     linkedBy: 'crc5c_ticketid (string).',
     access: {
-      appReads: 'Charges tab; one bulk read for the Developer Mode "Yardi Charges" dashboard filter.',
+      appReads: 'Charges tab; one bulk read for the Admin Mode "Yardi Charges" dashboard filter.',
       appWrites: 'Update flags; create (via manual charge); delete — manual rows only.',
       automationWrites: 'Created by the YARDI charges desktop flow (cr109_manual = false).',
     },
@@ -220,7 +220,7 @@ export const DATAVERSE_TABLES: DataverseTableDoc[] = [
       { where: 'Charges tab', how: 'updateScheduledCharge(), deleteScheduledCharge() (manual only).' },
       { where: 'Add Manual Charge', how: 'createManualCharge() writes a Manual Charges row AND a Scheduled Charges row (manual = true, move = true).' },
       { where: 'Validate Closing', how: 'getUnconfirmedScheduledCharges() blocks validation while any amount is TBD.' },
-      { where: 'Developer Mode dashboard filter', how: 'getTicketIdsWithScheduledCharges() — single bulk read, only when Developer Mode is on.' },
+      { where: 'Admin Mode dashboard filter', how: 'getTicketIdsWithScheduledCharges() — single bulk read, only when Admin Mode is on.' },
     ],
     testingNotes: [
       'Test the TBD-amount validation (src/features/charges/utils/scheduledChargeValidation.ts).',
@@ -315,7 +315,7 @@ export const DATAVERSE_TABLES: DataverseTableDoc[] = [
     purpose: 'Append-only audit trail of every create/update/delete, action, override and failure made through the app.',
     linkedBy: 'cr7de_ticketid (CL- reference); cr7de_tablename holds the entity set of the changed table.',
     access: {
-      appReads: 'Developer Mode → View Logs only (getChangeLogs).',
+      appReads: 'Admin Mode → View Logs only (getChangeLogs).',
       appWrites: 'Fire-and-forget via writeChangeLog / writeActionLog / logAppFailure.',
       automationWrites: 'None.',
     },
@@ -327,7 +327,7 @@ export const DATAVERSE_TABLES: DataverseTableDoc[] = [
     ],
     usage: [
       { where: 'Every service write', how: 'writeChangeLog() with extractOldValues() for a field-level diff.' },
-      { where: 'Developer Mode overrides', how: 'writeActionLog() records the override so it is distinguishable from normal edits.' },
+      { where: 'Admin Mode overrides', how: 'writeActionLog() records the override so it is distinguishable from normal edits.' },
     ],
     testingNotes: [
       'A log-write failure must never break the user action (fire-and-forget).',
@@ -360,7 +360,7 @@ export const DATAVERSE_TABLES: DataverseTableDoc[] = [
 export const PROCESS_STAGES: ProcessStageDoc[] = [
   {
     stage: '1. Create closing',
-    trigger: 'User (or Developer Mode Bulk Create) submits the Create Closing form.',
+    trigger: 'User (or Admin Mode Bulk Create) submits the Create Closing form.',
     tablesTouched: [
       { tableId: 'buildinglist', effect: 'Read — building + Yardi code lookup.' },
       { tableId: 'closingticket', effect: 'Create with bot status Draft.' },
@@ -417,11 +417,11 @@ export const PROCESS_STAGES: ProcessStageDoc[] = [
     ],
   },
   {
-    stage: 'Cross-cutting — Audit & Developer Mode',
-    trigger: 'Every write made by the app, plus Developer Mode overrides.',
+    stage: 'Cross-cutting — Audit & Admin Mode',
+    trigger: 'Every write made by the app, plus Admin Mode overrides.',
     tablesTouched: [
       { tableId: 'auditlog', effect: 'Written on every create/update/delete/action; read only by View Logs.' },
-      { tableId: 'closingticket', effect: 'Developer Mode: status override, bulk status change, manual upload, delete.' },
+      { tableId: 'closingticket', effect: 'Admin Mode: status override, bulk status change, manual upload, delete.' },
     ],
   },
 ]
