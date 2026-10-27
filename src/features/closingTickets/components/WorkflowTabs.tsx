@@ -1,4 +1,11 @@
-import type { ReactNode } from 'react'
+import type { ComponentType, ReactNode } from 'react'
+import {
+  Banknote,
+  FileText,
+  Receipt,
+  Send,
+  UserPlus,
+} from 'lucide-react'
 
 export type WorkflowTabKey =
   | 'details'
@@ -12,6 +19,17 @@ export type WorkflowTab = {
   label: string
 }
 
+const WORKFLOW_TAB_ICONS: Record<
+  WorkflowTabKey,
+  ComponentType<{ className?: string }>
+> = {
+  details: FileText,
+  invoice: Receipt,
+  charges: Banknote,
+  newOwner: UserPlus,
+  sendToATeam: Send,
+}
+
 interface WorkflowTabsProps {
   tabs: WorkflowTab[]
   activeTab: WorkflowTabKey
@@ -23,10 +41,11 @@ export function WorkflowTabs({
   children,
 }: WorkflowTabsProps) {
   return (
-    <section className="border border-slate-200 bg-white shadow-sm shadow-slate-200/60 rounded-xl">
-      <div className="bg-slate-50 p-4">
-        {children}
-      </div>
+    <section
+      className="border border-[#D5CBB8] bg-white shadow-sm"
+      style={{ borderRadius: '12px' }}
+    >
+      <div className="bg-[#FAF8F4] p-3">{children}</div>
     </section>
   )
 }
@@ -56,22 +75,27 @@ export function WorkflowTabBar({
   actionsContainerRef,
 }: WorkflowTabBarProps) {
   return (
-    <div className="flex items-center justify-between gap-3 bg-white px-4 py-2 border-b border-slate-200">
+    <div className="flex items-center justify-between gap-3 border-b border-[#D5CBB8] bg-white px-4 py-1.5">
       <div className="flex min-w-0 gap-1 overflow-x-auto">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            type="button"
-            className={
-              activeTab === tab.key
-                ? 'relative shrink-0 rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white shadow-sm'
-                : 'shrink-0 rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-950'
-            }
-            onClick={() => onTabChange(tab.key)}
-          >
-            {tab.label}
-          </button>
-        ))}
+        {tabs.map((tab) => {
+          const Icon = WORKFLOW_TAB_ICONS[tab.key]
+          const isActive = activeTab === tab.key
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              className={
+                isActive
+                  ? 'relative inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-[#1E3A47] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.04em] text-[#F5F2EC] shadow-sm transition'
+                  : 'inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.04em] text-[#5F5E5A] transition hover:bg-[#F5F2EC] hover:text-[#1E3A47]'
+              }
+              onClick={() => onTabChange(tab.key)}
+            >
+              <Icon className="size-3.5" />
+              {tab.label}
+            </button>
+          )
+        })}
       </div>
 
       <div

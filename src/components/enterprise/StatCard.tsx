@@ -24,8 +24,8 @@ export function StatCard({
     <motion.article
       className="group border border-[#D5CBB8] bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-[#C8BBA9] hover:shadow-md"
       style={{
-        borderRadius: '12px',
-        padding: '8px 12px',
+        borderRadius: '10px',
+        padding: '6px 10px',
         ...(accentColor ? { borderLeft: `3px solid ${accentColor}` } : {}),
       }}
       initial={{ opacity: 0, y: 10 }}
@@ -42,8 +42,8 @@ export function StatCard({
             {label}
           </p>
           <strong
-            className="mt-0.5 block font-semibold tracking-tight text-[#1E3A47]"
-            style={{ fontSize: '20px', lineHeight: 1.1 }}
+            className="block font-semibold tracking-tight text-[#1E3A47]"
+            style={{ fontSize: '17px', lineHeight: 1.2 }}
           >
             {value}
           </strong>
@@ -53,12 +53,12 @@ export function StatCard({
         </div>
         <div
           className="grid shrink-0 place-items-center bg-[#E8EFF2] text-[#1E3A47]"
-          style={{ width: '26px', height: '26px', borderRadius: '6px', flexShrink: 0 }}
+          style={{ width: '22px', height: '22px', borderRadius: '6px', flexShrink: 0 }}
         >
           <Icon className="size-3.5" />
         </div>
       </div>
-      <div className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-[#4B5563]">
+      <div className="mt-1 flex items-center gap-1.5 text-xs font-medium text-[#4B5563]">
         <TrendingUp className="size-3.5 shrink-0 text-[#1a7a52]" />
         <span className="truncate">{trend}</span>
       </div>

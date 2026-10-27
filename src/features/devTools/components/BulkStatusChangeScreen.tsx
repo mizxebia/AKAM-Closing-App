@@ -280,6 +280,7 @@ export function BulkStatusChangeScreen({
 
       <ClosingTicketFilters
         filters={filters}
+        records={records}
         onStatusChange={setStatus}
         onSearchChange={setSearch}
         showDocumentFilter

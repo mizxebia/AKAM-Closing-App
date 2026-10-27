@@ -542,6 +542,7 @@ export function ClosingTicketPage() {
 
               <ClosingTicketFilters
                 filters={filters}
+                records={records}
                 onStatusChange={setStatus}
                 onSearchChange={setSearch}
                 showDocumentFilter={developerMode.enabled}

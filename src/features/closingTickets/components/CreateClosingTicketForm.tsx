@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { CalendarDays, Trash2, HelpCircle } from 'lucide-react'
 import { Button } from '../../../components/ui/button'
+import { Avatar } from '../../../components/enterprise'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -1575,7 +1576,10 @@ function ClosingTicketEditorForm({
         )}
 
         <section className="form-section">
-          <h3>Closing Agent</h3>
+          <h3 className="flex items-center gap-2">
+            <Avatar name={formState.cr7de_closingagentname} size="sm" />
+            Closing Agent
+          </h3>
           <div className="form-grid">
           <FormField label="Agent Name">
             <input

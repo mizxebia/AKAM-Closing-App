@@ -26,7 +26,7 @@ import { getBotStatusLabel } from '../../devTools/utils/statusOptions'
 import { formatGeneratedLabel } from '../../invoices/utils/invoiceFormatters'
 import { getFailureReason } from '../utils/closingTicketFailureReasons'
 
-const PAGE_SIZE = 15
+const PAGE_SIZE = 20
 
 type SortDirection = 'asc' | 'desc'
 type Density = 'compact' | 'comfortable'

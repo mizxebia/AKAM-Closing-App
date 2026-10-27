@@ -34,12 +34,12 @@ export const closingTicketColumns: ClosingTicketColumn[] = [
   {
     key: 'createdon',
     label: 'Created Date',
-    width: '110px',
+    width: '82px',
   },
   {
     key: 'modifiedon',
     label: 'Last Modified',
-    width: '110px',
+    width: '82px',
   },
 ]
 

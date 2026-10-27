@@ -278,15 +278,15 @@ body {
 
 .filter-search input {
   width: 100%;
-  min-height: 34px;
+  min-height: 30px;
   box-sizing: border-box;
   border: 1px solid #D5CBB8;
   border-radius: 8px;
-  padding: 6px 10px 6px 34px;
+  padding: 5px 10px 5px 32px;
   background: #ffffff;
   color: #1E3A47;
   font: inherit;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
 }
 
 .filter-search input::placeholder {
@@ -1135,10 +1135,10 @@ body {
 .create-closing-form-scroll {
   display: grid;
   min-height: 0;
-  gap: 10px;
+  gap: 8px;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 14px 18px 12px;
+  padding: 10px 14px 10px;
   overscroll-behavior: contain;
 }
 
@@ -1146,15 +1146,15 @@ body {
   background: #ffffff;
   border: 1px solid #D5CBB8;
   border-radius: 10px;
-  padding: 14px;
+  padding: 11px;
   box-shadow: 0 1px 2px rgba(30, 58, 71, 0.04);
 }
 
 .form-section h3 {
-  margin: 0 0 10px;
+  margin: 0 0 7px;
   color: #1E3A47;
   font-family: 'Fraunces', Georgia, serif;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 600;
 }
 
@@ -1888,7 +1888,7 @@ body {
   border: 1px solid #D5CBB8;
   border-radius: 12px;
   background: #ffffff;
-  padding: 16px;
+  padding: 12px;
   box-shadow: 0 1px 2px rgba(30, 58, 71, 0.04);
 }
 
@@ -1896,8 +1896,8 @@ body {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 14px;
-  margin-bottom: 14px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .workflow-card-header h3 {
@@ -1916,7 +1916,7 @@ body {
 
 .charges-workspace {
   display: grid;
-  gap: 14px;
+  gap: 10px;
 }
 
 .charge-form-toolbar {
@@ -1939,7 +1939,7 @@ body {
 .charge-entry-table th,
 .charge-entry-table td {
   border-top: 1px solid #E2DAD0;
-  padding: 8px;
+  padding: 6px;
   text-align: left;
 }
 
@@ -2858,7 +2858,7 @@ body {
 
 .dataverse-charges-workspace {
   display: grid;
-  gap: 14px;
+  gap: 10px;
 }
 
 .dataverse-charges-toolbar {

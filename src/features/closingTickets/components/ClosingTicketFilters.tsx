@@ -10,16 +10,23 @@ import {
   UserRound,
   XCircle,
 } from 'lucide-react'
+import { useMemo } from 'react'
 import type { ComponentType } from 'react'
 import { SearchFilter } from '../../../components/filters/SearchFilter'
-import { closingTicketStatusOptions } from '../utils/closingTicketFormatters'
+import {
+  closingTicketStatusOptions,
+  formatClosingTicketStatus,
+} from '../utils/closingTicketFormatters'
 import {
   CLOSING_DOCUMENT_FILTER_OPTIONS,
   BOT_STATUS_FILTER_OPTIONS,
   PACKAGE_TYPE_FILTER_OPTIONS,
 } from '../utils/closingTicketFilters'
 import { developerOnlyClosingTicketTabs } from '../constants/closingTicketMetadata'
-import type { ClosingTicketFilters } from '../types/closingTicket'
+import type {
+  ClosingTicketFilters,
+  ClosingTicketRecord,
+} from '../types/closingTicket'
 
 const STATUS_TAB_ICONS: Record<
   string,
@@ -40,6 +47,8 @@ const STATUS_TAB_ICONS: Record<
 
 interface ClosingTicketFiltersProps {
   filters: ClosingTicketFilters
+  /** Full, unfiltered record set — used only to show a per-tab count badge. */
+  records: ClosingTicketRecord[]
   onStatusChange: (
     value: ClosingTicketFilters['status']
   ) => void
@@ -76,6 +85,7 @@ interface ClosingTicketFiltersProps {
 
 export function ClosingTicketFilters({
   filters,
+  records,
   onStatusChange,
   onSearchChange,
   showDocumentFilter = false,
@@ -98,9 +108,23 @@ export function ClosingTicketFilters({
         (option) => !developerOnlyClosingTicketTabs.has(option.value)
       )
 
+  // Per-tab counts against the full record set (not the other active
+  // filters) — "My Tickets" is skipped since matching it needs the current
+  // user's identity, which isn't available here.
+  const tabCounts = useMemo(() => {
+    const counts: Record<string, number> = { All: records.length }
+    for (const record of records) {
+      const label = formatClosingTicketStatus(
+        record.cr7de_ticketstatus
+      )
+      counts[label] = (counts[label] ?? 0) + 1
+    }
+    return counts
+  }, [records])
+
   return (
     <section
-      className="sticky top-[48px] z-10 grid gap-2 border border-[#E2DAD0] bg-white px-3 py-2 shadow-sm"
+      className="sticky top-[48px] z-10 grid gap-1.5 border border-[#E2DAD0] bg-white px-3 py-1.5 shadow-sm"
       style={{ borderRadius: '12px' }}
     >
       <div
@@ -109,6 +133,7 @@ export function ClosingTicketFilters({
       >
         {visibleStatusOptions.map((option) => {
           const Icon = STATUS_TAB_ICONS[option.value] ?? LayoutGrid
+          const count = tabCounts[option.value]
           return (
             <button
               key={option.value}
@@ -133,6 +158,17 @@ export function ClosingTicketFilters({
             >
               <Icon className="size-3" />
               {option.label}
+              {count !== undefined && (
+                <span
+                  className={
+                    filters.status === option.value
+                      ? 'rounded-full bg-[rgba(245,242,236,0.2)] px-1.5 text-[10px] font-semibold'
+                      : 'rounded-full bg-[#F1EFE8] px-1.5 text-[10px] font-semibold text-[#8a8578]'
+                  }
+                >
+                  {count}
+                </span>
+              )}
             </button>
           )
         })}

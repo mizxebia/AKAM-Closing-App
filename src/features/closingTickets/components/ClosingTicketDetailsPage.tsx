@@ -437,7 +437,7 @@ export function ClosingTicketDetailsPage({
         )}
 
         <button
-          className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-sm font-semibold text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC]"
+          className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-sm font-semibold text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC]"
           type="button"
           onClick={onBack}
         >
@@ -558,13 +558,13 @@ export function ClosingTicketDetailsPage({
   return (
     <TabBarActionsPortalProvider value={actionsPortalNode}>
       <div className="sticky top-[48px] z-20" style={{ background: '#ffffff', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
-        <div className="flex items-center justify-between px-7 py-3 border-b border-[#e4e2dc]">
+        <div className="flex items-center justify-between px-6 py-2 border-b border-[#e4e2dc]">
           <div>
             <p className="font-semibold uppercase" style={{ fontSize: '10px', letterSpacing: '0.14em', color: '#b89a5a' }}>
               Closing Workspace
             </p>
             <div className="flex flex-wrap items-center gap-2.5">
-              <h1 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: '22px', fontWeight: 700, color: '#1E3A47', letterSpacing: '-0.3px', fontVariantNumeric: 'lining-nums tabular-nums' }}>
+              <h1 style={{ fontFamily: "'Fraunces', Georgia, serif", fontSize: '19px', fontWeight: 700, color: '#1E3A47', letterSpacing: '-0.3px', fontVariantNumeric: 'lining-nums tabular-nums' }}>
                 {record?.cr7de_ticketid ?? 'Closing Details'}
               </h1>
               {record && (
@@ -607,7 +607,7 @@ export function ClosingTicketDetailsPage({
         />
       </div>
 
-      <main className="mx-auto grid w-full max-w-[1500px] gap-5 px-4 py-5 sm:px-6 lg:px-8">
+      <main className="mx-auto grid w-full max-w-[1500px] gap-3 px-4 py-3 sm:px-6 lg:px-8">
 
       {record && getFailureReason(record) && (
         <div
