@@ -476,11 +476,12 @@ function validateForm(
   }
 
   // When building is not on Domecile, a purchase application form is
-  // required — except for Coop Transfer, where it's optional since there's
-  // no sale/purchase transaction to document.
+  // required — except for Coop Transfer and Sponser, where it's not
+  // applicable (no sale/purchase transaction to document).
   if (
     formState.cr7de_buildingnotondomicile &&
-    formState.cr109_packagetype !== COOP_TRANSFER_PACKAGE_TYPE
+    formState.cr109_packagetype !== COOP_TRANSFER_PACKAGE_TYPE &&
+    formState.cr109_packagetype !== SPONSER_PACKAGE_TYPE
   ) {
     const hasPendingForm =
       pendingFiles?.cr109_purchaseapplicationform instanceof File
@@ -1192,6 +1193,11 @@ function ClosingTicketEditorForm({
                   updateField('cr7de_buyerexistsinyardi', false)
                   updateField('cr7de_buyertcode', '')
                 }
+                // Sponser closings aren't on Domecile and have no
+                // purchase application form to upload for them.
+                if (nextValue === SPONSER_PACKAGE_TYPE) {
+                  updateField('cr7de_buildingnotondomicile', true)
+                }
               }}
             >
               <option value="">Select package</option>
@@ -1691,7 +1697,9 @@ function ClosingTicketEditorForm({
             <h3>Documents</h3>
             {formState.cr7de_buildingnotondomicile &&
               formState.cr109_packagetype !==
-                COOP_TRANSFER_PACKAGE_TYPE && (
+                COOP_TRANSFER_PACKAGE_TYPE &&
+              formState.cr109_packagetype !==
+                SPONSER_PACKAGE_TYPE && (
                 <div className="documents-info-banner">
                   <svg
                     className="documents-info-icon"
@@ -1737,7 +1745,8 @@ function ClosingTicketEditorForm({
             )}
             <div className="form-grid">
             {formState.cr109_packagetype !==
-              COOP_TRANSFER_PACKAGE_TYPE && (
+              COOP_TRANSFER_PACKAGE_TYPE &&
+              formState.cr109_packagetype !== SPONSER_PACKAGE_TYPE && (
               <FileUploadField
                 label="Purchase Application Form"
                 required={formState.cr7de_buildingnotondomicile}
