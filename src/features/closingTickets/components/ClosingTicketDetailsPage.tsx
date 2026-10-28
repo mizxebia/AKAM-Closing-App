@@ -610,7 +610,12 @@ export function ClosingTicketDetailsPage({
       </button>
     ) : null
 
-  if (loading && !record) {
+  // Gated on `loading` alone (not `loading && !record`) — the record can
+  // resolve before the artificial minimum display time in loadRecord()
+  // finishes, and the tab content below is itself gated on `!loading`.
+  // Splitting the two conditions let the loading screen disappear while
+  // the tab content was still hidden, showing a blank gap between them.
+  if (loading) {
     return <LoadingScreen />
   }
 
