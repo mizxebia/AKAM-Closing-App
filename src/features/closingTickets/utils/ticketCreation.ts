@@ -13,6 +13,11 @@ export const ENABLED_PACKAGE_TYPES = new Set([
 
 export const SPONSER_PACKAGE_TYPE = 396620002
 
+/** A buyer created fresh under a new T-code — unlike Coop Transfer, they
+ * don't already exist in Yardi, so there's no Buyer T-Code to collect and
+ * "Buyer exists in Yardi" is always false for this package type. */
+export const TRANSFER_NEW_TCODE_PACKAGE_TYPE = 396620003
+
 /** cr109_botstatus value for "Domecile Dump Retrieved". A Sponser-package
  * draft skips the automated Domecile retrieval stage, so it's created
  * straight at this bot status. */

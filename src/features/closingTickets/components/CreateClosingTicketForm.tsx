@@ -49,6 +49,7 @@ import {
   ENABLED_PACKAGE_TYPES,
   generateTicketId,
   SPONSER_PACKAGE_TYPE,
+  TRANSFER_NEW_TCODE_PACKAGE_TYPE,
 } from '../utils/ticketCreation'
 
 type FormErrors = Partial<
@@ -1650,6 +1651,10 @@ function ClosingTicketEditorForm({
             checked={
               formState.cr7de_buildingnotondomicile
             }
+            disabled={
+              formState.cr109_packagetype === SPONSER_PACKAGE_TYPE
+            }
+            title="Building not on domicile cannot be changed while Package Type is Sponser."
             onChange={(checked) => {
               if (!checked && hasPurchaseApplicationForm) {
                 setDomicileUncheckWarningOpen(true)
@@ -1666,9 +1671,16 @@ function ClosingTicketEditorForm({
             checked={formState.cr7de_buyerexistsinyardi}
             disabled={
               formState.cr109_packagetype ===
-              COOP_TRANSFER_PACKAGE_TYPE
+                COOP_TRANSFER_PACKAGE_TYPE ||
+              formState.cr109_packagetype ===
+                TRANSFER_NEW_TCODE_PACKAGE_TYPE
             }
-            title="Buyer exists in Yardi cannot be unchecked while Package Type is Coop Transfer."
+            title={
+              formState.cr109_packagetype ===
+              TRANSFER_NEW_TCODE_PACKAGE_TYPE
+                ? 'Buyer exists in Yardi cannot be checked while Package Type is Tranfer New T Code — the buyer is new to Yardi by definition.'
+                : 'Buyer exists in Yardi cannot be unchecked while Package Type is Coop Transfer.'
+            }
             onChange={(checked) => {
               if (
                 checked &&
