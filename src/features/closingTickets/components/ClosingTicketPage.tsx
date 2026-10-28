@@ -309,20 +309,6 @@ export function ClosingTicketPage() {
     void refresh()
   }, [isDashboardVisible, refresh])
 
-  // Also refresh when the browser tab itself regains visibility (the user
-  // switched back from another tab/app) while the dashboard is the active
-  // view, so data doesn't go stale while the tab was in the background.
-  useEffect(() => {
-    function handleVisibilityChange() {
-      if (document.visibilityState === 'visible' && isDashboardVisible) {
-        void refresh()
-      }
-    }
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    return () =>
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-  }, [isDashboardVisible, refresh])
-
   const dashboardColumns = useMemo(
     () =>
       developerMode.enabled

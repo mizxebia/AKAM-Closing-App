@@ -32,9 +32,7 @@ export function PageHeader({
         borderRadius: className?.includes('rounded-none') ? '0' : '12px',
         ...(gradient ? { background: gradient } : {}),
       }}
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.24 }}
+      initial={false}
     >
       <div className="min-w-0">
         {eyebrow && (

@@ -24,9 +24,7 @@ export function SectionCard({
         className
       )}
       style={{ borderRadius: '12px' }}
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.22 }}
+      initial={false}
     >
       {(title || description || actions) && (
         <div className="flex flex-col gap-2 border-b border-[#E2DAD0] px-4 py-2.5 md:flex-row md:items-center md:justify-between">
