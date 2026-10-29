@@ -328,7 +328,37 @@ function buildPerformanceStats(records: ClosingTicketRecord[]) {
         (1000 * 60 * 60 * 24)
       : 0
 
-  return { total, completed, failed, completionRate, failureRate, avgTurnaroundDays }
+  // How long, on average, has automation taken to reach wherever a ticket
+  // currently stands (its last bot stage) — createdon to modifiedon across
+  // every bot-tracked ticket, not just Completed ones.
+  const botTrackedWithDates = records.filter(
+    (r) =>
+      r.cr109_botstatus !== undefined &&
+      String(r.cr109_botstatus).trim() !== '' &&
+      r.createdon &&
+      r.modifiedon
+  )
+  const avgAutomationAgingDays =
+    botTrackedWithDates.length > 0
+      ? botTrackedWithDates.reduce((sum, r) => {
+          const created = new Date(r.createdon as string).getTime()
+          const modified = new Date(r.modifiedon as string).getTime()
+          return sum + (modified - created)
+        }, 0) /
+        botTrackedWithDates.length /
+        (1000 * 60 * 60 * 24)
+      : 0
+
+  return {
+    total,
+    completed,
+    failed,
+    completionRate,
+    failureRate,
+    avgTurnaroundDays,
+    avgAutomationAgingDays,
+    botTrackedCount: botTrackedWithDates.length,
+  }
 }
 
 interface ActiveSectorProps {
@@ -1005,7 +1035,7 @@ export function UserActivityPanel({
         </h2>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-5">
         <StatTile
           label="Total Closings"
           value={performance.total}
@@ -1020,6 +1050,11 @@ export function UserActivityPanel({
           label="Avg. Turnaround"
           value={`${performance.avgTurnaroundDays.toFixed(1)}d`}
           description="Created → Completed"
+        />
+        <StatTile
+          label="Avg. Automation Aging"
+          value={`${performance.avgAutomationAgingDays.toFixed(1)}d`}
+          description={`Created → last stage • ${performance.botTrackedCount} tracked`}
         />
         <StatTile
           label="Failure Rate"
