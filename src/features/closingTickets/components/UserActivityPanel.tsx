@@ -206,6 +206,10 @@ function buildStatusBreakdown(
     .sort((a, b) => b.count - a.count)
 }
 
+// Sent to AR is excluded from the bars — it's a terminal status that
+// accumulates every closing that's ever finished, so it dwarfs every
+// other (much more actionable) status on the same scale. Shown instead
+// as its own KPI tile next to the chart.
 function buildAllStatusCounts(records: ClosingTicketRecord[]) {
   const counts = new Map<number, number>()
   for (const record of records) {
@@ -215,10 +219,12 @@ function buildAllStatusCounts(records: ClosingTicketRecord[]) {
 
   return Object.entries(
     Cr7de_closingticketdetailsescr7de_ticketstatus
-  ).map(([value, label]) => ({
-    name: label,
-    count: counts.get(Number(value)) ?? 0,
-  }))
+  )
+    .filter(([value]) => Number(value) !== SENT_TO_AR_STATUS)
+    .map(([value, label]) => ({
+      name: label,
+      count: counts.get(Number(value)) ?? 0,
+    }))
 }
 
 function buildQueue(
@@ -507,6 +513,13 @@ export function UserActivityPanel({
   }, [records, scopedRecords, statusRangeFrom, statusRangeTo])
   const allStatusCounts = useMemo(
     () => buildAllStatusCounts(statusRangeRecords),
+    [statusRangeRecords]
+  )
+  const sentToArCount = useMemo(
+    () =>
+      statusRangeRecords.filter(
+        (r) => Number(r.cr7de_ticketstatus) === SENT_TO_AR_STATUS
+      ).length,
     [statusRangeRecords]
   )
 
@@ -848,6 +861,10 @@ export function UserActivityPanel({
               <h2 className="text-sm font-semibold text-[#1E3A47]">
                 All-Time Status Distribution
               </h2>
+              <span className="flex items-center gap-1.5 rounded-full border border-[#bfdbfe] bg-[#EFF6FF] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.04em] text-[#1d4ed8]">
+                <Send className="size-2.5" />
+                Sent to AR {sentToArCount}
+              </span>
             </div>
             {firstCompletedDate && (
               <div className="flex items-center gap-1.5 text-xs text-[#5F5E5A]">
