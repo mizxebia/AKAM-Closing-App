@@ -43,6 +43,7 @@ const TYPE_OPTIONS: Array<{ value: '' | LogType; label: string }> = [
   { value: 'delete', label: 'Delete Logs' },
   { value: 'failure', label: 'Failure Logs' },
   { value: 'other', label: 'Other Logs' },
+  { value: 'archival', label: 'Archival Logs' },
 ]
 
 const TYPE_BADGE_CLASSES: Record<LogType, string> = {
@@ -55,6 +56,7 @@ const TYPE_BADGE_CLASSES: Record<LogType, string> = {
   delete: 'bg-red-100 text-red-700',
   failure: 'bg-red-100 text-red-700',
   other: 'bg-slate-100 text-slate-700',
+  archival: 'bg-stone-200 text-stone-700',
 }
 
 const TYPE_BADGE_LABELS: Record<LogType, string> = {
@@ -67,6 +69,7 @@ const TYPE_BADGE_LABELS: Record<LogType, string> = {
   delete: 'delete',
   failure: 'failed',
   other: 'action',
+  archival: 'archive',
 }
 
 function formatTableLabel(tableName: string) {

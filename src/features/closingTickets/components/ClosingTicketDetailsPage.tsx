@@ -4,10 +4,12 @@ import {
   AlertTriangle,
   Eye,
   Info,
+  Lock,
   ReceiptText,
   RefreshCw,
   Rows2,
   Rows3,
+  Unlock,
   UserPlus,
   X,
 } from 'lucide-react'
@@ -142,6 +144,16 @@ export function ClosingTicketDetailsPage({
       return next
     })
   }
+  // Admin Mode escape hatch — lets a developer edit a closing regardless
+  // of its status (Completed, Sent to AR, Processing, Transferring
+  // Building all normally lock the form). Stores which ticket it was
+  // enabled for (rather than a plain boolean reset via an effect) so it
+  // derives back to "off" the moment recordId changes — it can never
+  // silently carry over to a different ticket.
+  const [forceEditableForId, setForceEditableForId] = useState<
+    string | null
+  >(null)
+  const adminForceEditable = forceEditableForId === recordId
   const [invoiceViewerOpen, setInvoiceViewerOpen] =
     useState(false)
   const [logsViewerOpen, setLogsViewerOpen] = useState(false)
@@ -491,6 +503,36 @@ export function ClosingTicketDetailsPage({
           {compactTabs ? 'Comfortable' : 'Compact'}
         </button>
 
+        {developerMode.enabled && (
+          <button
+            className={
+              adminForceEditable
+                ? 'inline-flex h-9 items-center gap-2 rounded-lg border border-[#b91c1c] bg-[#FEF2F2] px-3 text-xs font-semibold uppercase tracking-[0.06em] text-[#b91c1c] shadow-sm transition hover:bg-[#fde3e3]'
+                : 'inline-flex h-9 items-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-xs font-semibold uppercase tracking-[0.06em] text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC]'
+            }
+            type="button"
+            onClick={() => {
+              const next = !adminForceEditable
+              writeActionLog({
+                ticketId: ticketId ?? recordId,
+                tableName: 'cr7de_closingticketdetailses',
+                action: next
+                  ? 'Developer Status Override — Force Editable Enabled'
+                  : 'Developer Status Override — Force Editable Disabled',
+              })
+              setForceEditableForId(next ? recordId : null)
+            }}
+            title="Admin Mode: edit this closing regardless of its status."
+          >
+            {adminForceEditable ? (
+              <Unlock className="size-4" />
+            ) : (
+              <Lock className="size-4" />
+            )}
+            {adminForceEditable ? 'Editing Unlocked' : 'Make Editable'}
+          </button>
+        )}
+
         <button
           className="inline-flex h-9 items-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-sm font-semibold text-[#1E3A47] shadow-sm transition hover:bg-[#F5F2EC]"
           type="button"
@@ -505,9 +547,10 @@ export function ClosingTicketDetailsPage({
 
   const isDraft = Number(record?.cr7de_ticketstatus) === 716070000
   const isReadOnly =
-    Number(record?.cr7de_ticketstatus) === TRANSFERRING_BUILDING_STATUS ||
-    Number(record?.cr7de_ticketstatus) === COMPLETED_STATUS ||
-    Number(record?.cr7de_ticketstatus) === SENT_TO_AR_STATUS
+    !adminForceEditable &&
+    (Number(record?.cr7de_ticketstatus) === TRANSFERRING_BUILDING_STATUS ||
+      Number(record?.cr7de_ticketstatus) === COMPLETED_STATUS ||
+      Number(record?.cr7de_ticketstatus) === SENT_TO_AR_STATUS)
   const isFullyCompleted =
     Number(record?.cr7de_ticketstatus) === COMPLETED_STATUS &&
     Number(record?.cr109_botstatus) === OWNER_RECORD_CREATED_BOT_STATUS
@@ -818,8 +861,9 @@ export function ClosingTicketDetailsPage({
                     : 'Completed Successfully — this ticket is locked.'
                 }
                 readOnly={
-                  Number(record.cr7de_ticketstatus) === PROCESSING_TICKET_STATUS ||
-                  isReadOnly
+                  !adminForceEditable &&
+                  (Number(record.cr7de_ticketstatus) === PROCESSING_TICKET_STATUS ||
+                    isReadOnly)
                 }
               />
             </div>
@@ -835,8 +879,9 @@ export function ClosingTicketDetailsPage({
               error={invoicesError}
               onRefresh={refreshInvoicesAndRecord}
               readOnly={
+                !adminForceEditable &&
                 Number(record.cr7de_ticketstatus) ===
-                TRANSFERRING_BUILDING_STATUS
+                  TRANSFERRING_BUILDING_STATUS
               }
             />
           )}
@@ -868,8 +913,9 @@ export function ClosingTicketDetailsPage({
               onGenerateTicket={handleGenerateNewOwnerTicket}
               isCompleted={Number(record.cr7de_ticketstatus) === COMPLETED_STATUS || isSentToAR}
               readOnly={
-                Number(record.cr7de_ticketstatus) === PROCESSING_TICKET_STATUS ||
-                isReadOnly
+                !adminForceEditable &&
+                (Number(record.cr7de_ticketstatus) === PROCESSING_TICKET_STATUS ||
+                  isReadOnly)
               }
             />
           )}

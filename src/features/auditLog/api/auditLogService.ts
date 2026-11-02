@@ -276,14 +276,30 @@ export type LogType =
   | 'status'
   | 'override'
   | 'communication'
+  | 'archival'
   | 'failure'
   | 'other'
+
+// The field Dataverse persists archive/unarchive state to — both the
+// auto-archive sweep and the manual archive toggle write to this field,
+// so a generic 'update' entry that changed only this field is routine
+// archive housekeeping, not a real edit worth surfacing as an Update Log.
+const ARCHIVAL_STATUS_FIELD = 'cr109_archivalstatus'
 
 const FILE_ACTION_PREFIXES = [
   'Generate Invoice',
   'Generate New Owner Ticket',
   'Upload Document',
   'Delete Document',
+]
+
+// Auto-archive sweeps and the manual archive/unarchive toggle are their
+// own category — they're routine housekeeping, not a developer override
+// or status transition worth mixing into those categories.
+const ARCHIVAL_ACTION_PREFIXES = [
+  'Auto-Archived',
+  'Developer Status Override — Archived',
+  'Developer Status Override — Unarchived',
 ]
 
 // Developer Mode's manual status overrides (single-ticket and bulk) are
@@ -308,6 +324,14 @@ const COMMUNICATION_ACTION_PREFIXES = [
 function classifyActionLabel(
   action: string
 ): Exclude<LogType, 'create' | 'update' | 'delete' | 'failure'> {
+  // Checked before OVERRIDE_ACTION_PREFIXES — the manual archive toggle's
+  // labels also start with "Developer Status Override" and would
+  // otherwise be caught by that broader match first.
+  if (
+    ARCHIVAL_ACTION_PREFIXES.some((prefix) => action.startsWith(prefix))
+  ) {
+    return 'archival'
+  }
   if (FILE_ACTION_PREFIXES.some((prefix) => action.startsWith(prefix))) {
     return 'file'
   }
@@ -330,6 +354,19 @@ function classifyActionLabel(
 }
 
 export function getLogType(entry: ChangeLogRecord): LogType {
+  // A plain field-level update whose only changed field is the archival
+  // flag is the same archive/unarchive housekeeping as the labeled action
+  // entries below — reclassify it so it doesn't show up as a generic
+  // Update Log.
+  if (
+    entry.operation === 'update' &&
+    entry.newData &&
+    Object.keys(entry.newData).length === 1 &&
+    ARCHIVAL_STATUS_FIELD in entry.newData
+  ) {
+    return 'archival'
+  }
+
   if (entry.operation !== 'action') {
     return entry.operation
   }
@@ -363,6 +400,14 @@ export interface ChangeLogFilters {
   operation?: ChangeOperation
   /** Finer-grained than `operation` — see `getLogType`. */
   type?: LogType
+  /**
+   * Archival logs (auto-archive sweeps, manual archive/unarchive) are
+   * routine housekeeping and are excluded from every other view by
+   * default — including "all types" and "update" — so they never need
+   * to be seen. Pass true to reveal them explicitly; selecting
+   * `type: 'archival'` already implies this.
+   */
+  includeArchival?: boolean
   limit?: number
 }
 
@@ -463,11 +508,17 @@ export async function getChangeLogs(
     ? records.filter((r) => r.operation === filters.operation)
     : records
 
-  return filters.type
+  const typeFiltered = filters.type
     ? operationFiltered.filter(
         (r) => getLogType(r) === filters.type
       )
     : operationFiltered
+
+  if (filters.type === 'archival' || filters.includeArchival) {
+    return typeFiltered
+  }
+
+  return typeFiltered.filter((r) => getLogType(r) !== 'archival')
 }
 
 /**

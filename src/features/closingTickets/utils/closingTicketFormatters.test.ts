@@ -82,6 +82,17 @@ describe('formatClosingTicketValue', () => {
     )
   })
 
+  it('shows "Service Account" for the new-sales-closure bot account', () => {
+    const botCreated = {
+      ...ticket,
+      ['_createdby_value@OData.Community.Display.V1.FormattedValue']:
+        'AkamBotNewSalesClosure #',
+    } as unknown as typeof ticket
+    expect(
+      formatClosingTicketValue(botCreated, 'createdbyname')
+    ).toBe('Service Account')
+  })
+
   it('returns "-" for createdbyname when the annotation is absent', () => {
     const withoutAnnotation = { ...ticket } as Record<string, unknown>
     delete withoutAnnotation[

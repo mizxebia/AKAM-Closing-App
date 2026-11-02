@@ -115,7 +115,17 @@ export function formatClosingTicketValue(
     const raw = record as unknown as Record<string, unknown>
     const annotated = raw[CREATED_BY_DISPLAY_ANNOTATION]
     if (typeof annotated === 'string' && annotated.trim()) {
-      return annotated.replace(/\s*#\s*$/, '').trim()
+      const cleaned = annotated.replace(/\s*#\s*$/, '').trim()
+      // The new-sales-closure bot account creates tickets on behalf of the
+      // automation, not a person — show it under a neutral label instead
+      // of the raw service account name.
+      if (
+        cleaned.toLowerCase().replace(/\s+/g, '') ===
+        'akambotnewsalesclosure'
+      ) {
+        return 'Service Account'
+      }
+      return cleaned
     }
     return '-'
   }
