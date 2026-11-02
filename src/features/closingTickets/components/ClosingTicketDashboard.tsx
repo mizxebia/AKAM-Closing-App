@@ -5,6 +5,7 @@ import {
   ClipboardCheck,
   FileCheck2,
   CheckCircle2,
+  Timer,
 } from 'lucide-react'
 import { StatCard } from '../../../components/enterprise'
 import type { ClosingTicketRecord } from '../types/closingTicket'
@@ -70,9 +71,33 @@ export function ClosingTicketDashboard({
       Number(record.cr7de_ticketstatus) === READY_FOR_POST_CLOSING_STATUS
   ).length
 
+  // Aging = createdon -> modifiedon for tickets currently AT Completed —
+  // not Sent to AR. A ticket that's already moved on to Sent to AR has a
+  // modifiedon that reflects that later transition, not when it reached
+  // Completed, so including it would count Sent-to-AR wait time as part
+  // of "aging." Restricting to records still sitting at Completed is the
+  // only way to exclude that time with the data available (no dedicated
+  // per-status-transition timestamp exists).
+  const completedWithDates = records.filter(
+    (record) =>
+      Number(record.cr7de_ticketstatus) === COMPLETED_STATUS &&
+      record.createdon &&
+      record.modifiedon
+  )
+  const avgAgingDays =
+    completedWithDates.length > 0
+      ? completedWithDates.reduce((sum, record) => {
+          const created = new Date(record.createdon as string).getTime()
+          const modified = new Date(record.modifiedon as string).getTime()
+          return sum + (modified - created)
+        }, 0) /
+        completedWithDates.length /
+        (1000 * 60 * 60 * 24)
+      : 0
+
   return (
     <section
-      className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-6"
+      className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-7"
       aria-label="Closing ticket summary"
     >
       <StatCard
@@ -128,6 +153,15 @@ export function ClosingTicketDashboard({
         tone="blue"
         trend="Next step"
         accentColor="#2A5C8B"
+      />
+      <StatCard
+        label="Avg. Aging"
+        value={`${avgAgingDays.toFixed(1)}d`}
+        description="Created → Completed"
+        icon={Timer}
+        tone="amber"
+        trend={`${completedWithDates.length} completed`}
+        accentColor="#8B5E3C"
       />
     </section>
   )
