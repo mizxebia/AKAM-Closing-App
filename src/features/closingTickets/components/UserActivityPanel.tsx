@@ -299,11 +299,32 @@ function buildMonthlyTrend(records: ClosingTicketRecord[], monthsBack = 6) {
   }))
 }
 
+// Average days between two dates, never negative — a record with dirty
+// data (modifiedon earlier than createdon) would otherwise drag the whole
+// average below zero instead of just being excluded from the picture.
+function averageDaysBetween(
+  records: ClosingTicketRecord[],
+  fromKey: 'createdon',
+  toKey: 'modifiedon'
+): number {
+  if (records.length === 0) return 0
+  const totalMs = records.reduce((sum, r) => {
+    const from = new Date(r[fromKey] as string).getTime()
+    const to = new Date(r[toKey] as string).getTime()
+    return sum + Math.max(0, to - from)
+  }, 0)
+  return totalMs / records.length / (1000 * 60 * 60 * 24)
+}
+
 function buildPerformanceStats(records: ClosingTicketRecord[]) {
   const total = records.length
-  const completed = records.filter(
-    (r) => Number(r.cr7de_ticketstatus) === COMPLETED_STATUS
-  ).length
+  // "Done" = Completed or Sent to AR — Sent to AR tickets already passed
+  // through Completed, so excluding them would undercount how much work
+  // has actually finished.
+  const completed = records.filter((r) => {
+    const status = Number(r.cr7de_ticketstatus)
+    return status === COMPLETED_STATUS || status === SENT_TO_AR_STATUS
+  }).length
   const failed = records.filter(
     (r) => Number(r.cr7de_ticketstatus) === FAILED_STATUS
   ).length
@@ -311,26 +332,23 @@ function buildPerformanceStats(records: ClosingTicketRecord[]) {
   const completionRate = total > 0 ? (completed / total) * 100 : 0
   const failureRate = total > 0 ? (failed / total) * 100 : 0
 
-  const completedWithDates = records.filter(
-    (r) =>
-      Number(r.cr7de_ticketstatus) === COMPLETED_STATUS &&
+  const completedWithDates = records.filter((r) => {
+    const status = Number(r.cr7de_ticketstatus)
+    return (
+      (status === COMPLETED_STATUS || status === SENT_TO_AR_STATUS) &&
       r.createdon &&
       r.modifiedon
+    )
+  })
+  const avgTurnaroundDays = averageDaysBetween(
+    completedWithDates,
+    'createdon',
+    'modifiedon'
   )
-  const avgTurnaroundDays =
-    completedWithDates.length > 0
-      ? completedWithDates.reduce((sum, r) => {
-          const created = new Date(r.createdon as string).getTime()
-          const modified = new Date(r.modifiedon as string).getTime()
-          return sum + (modified - created)
-        }, 0) /
-        completedWithDates.length /
-        (1000 * 60 * 60 * 24)
-      : 0
 
   // How long, on average, has automation taken to reach wherever a ticket
   // currently stands (its last bot stage) — createdon to modifiedon across
-  // every bot-tracked ticket, not just Completed ones.
+  // every bot-tracked ticket, not just Completed/Sent to AR ones.
   const botTrackedWithDates = records.filter(
     (r) =>
       r.cr109_botstatus !== undefined &&
@@ -338,16 +356,11 @@ function buildPerformanceStats(records: ClosingTicketRecord[]) {
       r.createdon &&
       r.modifiedon
   )
-  const avgAutomationAgingDays =
-    botTrackedWithDates.length > 0
-      ? botTrackedWithDates.reduce((sum, r) => {
-          const created = new Date(r.createdon as string).getTime()
-          const modified = new Date(r.modifiedon as string).getTime()
-          return sum + (modified - created)
-        }, 0) /
-        botTrackedWithDates.length /
-        (1000 * 60 * 60 * 24)
-      : 0
+  const avgAutomationAgingDays = averageDaysBetween(
+    botTrackedWithDates,
+    'createdon',
+    'modifiedon'
+  )
 
   return {
     total,
@@ -1044,12 +1057,12 @@ export function UserActivityPanel({
         <StatTile
           label="Completed"
           value={performance.completed}
-          description={`${performance.completionRate.toFixed(0)}% completion rate`}
+          description={`${performance.completionRate.toFixed(0)}% • incl. Sent to AR`}
         />
         <StatTile
           label="Avg. Turnaround"
           value={`${performance.avgTurnaroundDays.toFixed(1)}d`}
-          description="Created → Completed"
+          description="Created → Completed/Sent to AR"
         />
         <StatTile
           label="Avg. Automation Aging"

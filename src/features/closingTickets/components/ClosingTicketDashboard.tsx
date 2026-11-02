@@ -71,25 +71,25 @@ export function ClosingTicketDashboard({
       Number(record.cr7de_ticketstatus) === READY_FOR_POST_CLOSING_STATUS
   ).length
 
-  // Aging = createdon -> modifiedon for tickets currently AT Completed —
-  // not Sent to AR. A ticket that's already moved on to Sent to AR has a
-  // modifiedon that reflects that later transition, not when it reached
-  // Completed, so including it would count Sent-to-AR wait time as part
-  // of "aging." Restricting to records still sitting at Completed is the
-  // only way to exclude that time with the data available (no dedicated
-  // per-status-transition timestamp exists).
-  const completedWithDates = records.filter(
-    (record) =>
-      Number(record.cr7de_ticketstatus) === COMPLETED_STATUS &&
+  // Aging = createdon -> modifiedon for tickets currently sitting at
+  // Completed or Sent to AR (Sent to AR already passed through Completed,
+  // so excluding it would undercount finished work). Clamped at zero per
+  // record so a record with dirty data (modifiedon earlier than createdon)
+  // can't drag the average negative.
+  const completedWithDates = records.filter((record) => {
+    const status = Number(record.cr7de_ticketstatus)
+    return (
+      (status === COMPLETED_STATUS || status === SENT_TO_AR_STATUS) &&
       record.createdon &&
       record.modifiedon
-  )
+    )
+  })
   const avgAgingDays =
     completedWithDates.length > 0
       ? completedWithDates.reduce((sum, record) => {
           const created = new Date(record.createdon as string).getTime()
           const modified = new Date(record.modifiedon as string).getTime()
-          return sum + (modified - created)
+          return sum + Math.max(0, modified - created)
         }, 0) /
         completedWithDates.length /
         (1000 * 60 * 60 * 24)
@@ -157,10 +157,10 @@ export function ClosingTicketDashboard({
       <StatCard
         label="Avg. Aging"
         value={`${avgAgingDays.toFixed(1)}d`}
-        description="Created → Completed"
+        description="Created → Completed/Sent to AR"
         icon={Timer}
         tone="amber"
-        trend={`${completedWithDates.length} completed`}
+        trend={`${completedWithDates.length} tracked`}
         accentColor="#8B5E3C"
       />
     </section>
