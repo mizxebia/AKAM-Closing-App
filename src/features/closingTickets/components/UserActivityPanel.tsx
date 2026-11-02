@@ -1072,9 +1072,9 @@ export function UserActivityPanel({
           description={`Every status • ${pageRangeLabel}`}
         />
         <StatTile
-          label="Completed"
+          label="Completed + Sent to AR"
           value={performance.completed}
-          description={`${performance.completionRate.toFixed(0)}% • incl. Sent to AR`}
+          description={`${performance.completionRate.toFixed(0)}% of total`}
         />
         <StatTile
           label="Avg. Turnaround"
