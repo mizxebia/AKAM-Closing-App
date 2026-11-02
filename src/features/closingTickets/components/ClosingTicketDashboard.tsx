@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { StatCard } from '../../../components/enterprise'
 import type { ClosingTicketRecord } from '../types/closingTicket'
+import { isEffectivelyArchived } from '../utils/closingTicketArchiving'
 
 const COMPLETED_STATUS = 716070008
 const SENT_TO_AR_STATUS = 396620001
@@ -75,13 +76,16 @@ export function ClosingTicketDashboard({
   // Completed or Sent to AR (Sent to AR already passed through Completed,
   // so excluding it would undercount finished work). Clamped at zero per
   // record so a record with dirty data (modifiedon earlier than createdon)
-  // can't drag the average negative.
+  // can't drag the average negative. Archived tickets are excluded — they're
+  // old, aged-out closings that would otherwise skew this toward how long
+  // forgotten tickets sat around rather than typical turnaround.
   const completedWithDates = records.filter((record) => {
     const status = Number(record.cr7de_ticketstatus)
     return (
       (status === COMPLETED_STATUS || status === SENT_TO_AR_STATUS) &&
       record.createdon &&
-      record.modifiedon
+      record.modifiedon &&
+      !isEffectivelyArchived(record)
     )
   })
   const avgAgingDays =

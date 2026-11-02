@@ -33,6 +33,7 @@ import { getClosingTicketStatusDisplay } from '../utils/closingTicketFormatters'
 import { getFailureReason } from '../utils/closingTicketFailureReasons'
 import { Cr7de_closingticketdetailsescr7de_ticketstatus } from '../../../generated/models/Cr7de_closingticketdetailsesModel'
 import type { ClosingTicketRecord } from '../types/closingTicket'
+import { isEffectivelyArchived } from '../utils/closingTicketArchiving'
 
 // Sent to AR — excluded from the "active workload" views in this panel
 // since those closings have already moved on from the agent's desk.
@@ -338,12 +339,16 @@ function buildPerformanceStats(records: ClosingTicketRecord[]) {
   const completionRate = total > 0 ? (completed / total) * 100 : 0
   const failureRate = total > 0 ? (failed / total) * 100 : 0
 
+  // Archived tickets are excluded — they're old, aged-out closings that
+  // would otherwise skew this toward how long forgotten tickets sat around
+  // rather than typical turnaround.
   const completedWithDates = records.filter((r) => {
     const status = Number(r.cr7de_ticketstatus)
     return (
       (status === COMPLETED_STATUS || status === SENT_TO_AR_STATUS) &&
       r.createdon &&
-      r.modifiedon
+      r.modifiedon &&
+      !isEffectivelyArchived(r)
     )
   })
   const avgTurnaroundDays = averageDaysBetween(
@@ -354,13 +359,15 @@ function buildPerformanceStats(records: ClosingTicketRecord[]) {
 
   // How long, on average, has automation taken to reach wherever a ticket
   // currently stands (its last bot stage) — createdon to modifiedon across
-  // every bot-tracked ticket, not just Completed/Sent to AR ones.
+  // every bot-tracked ticket, not just Completed/Sent to AR ones. Archived
+  // tickets are excluded for the same reason as avgTurnaroundDays above.
   const botTrackedWithDates = records.filter(
     (r) =>
       r.cr109_botstatus !== undefined &&
       String(r.cr109_botstatus).trim() !== '' &&
       r.createdon &&
-      r.modifiedon
+      r.modifiedon &&
+      !isEffectivelyArchived(r)
   )
   const avgAutomationAgingDays = averageDaysBetween(
     botTrackedWithDates,
