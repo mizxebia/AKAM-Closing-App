@@ -22,6 +22,7 @@ import {
   BOT_STATUS_FILTER_OPTIONS,
   PACKAGE_TYPE_FILTER_OPTIONS,
 } from '../utils/closingTicketFilters'
+import { isEffectivelyArchived } from '../utils/closingTicketArchiving'
 import { developerOnlyClosingTicketTabs } from '../constants/closingTicketMetadata'
 import type {
   ClosingTicketFilters,
@@ -112,17 +113,23 @@ export function ClosingTicketFilters({
 
   // Per-tab counts against the full record set (not the other active
   // filters) — "My Tickets" is skipped since matching it needs the current
-  // user's identity, which isn't available here.
+  // user's identity, which isn't available here. The archived-ticket rule
+  // IS applied, though, matching exactly what filterClosingTickets does for
+  // the gallery — otherwise a tab could claim records the gallery is
+  // actually hiding (or vice versa once Show Archived is on).
   const tabCounts = useMemo(() => {
-    const counts: Record<string, number> = { All: records.length }
-    for (const record of records) {
+    const visibleRecords = records.filter(
+      (record) => filters.showArchived || !isEffectivelyArchived(record)
+    )
+    const counts: Record<string, number> = { All: visibleRecords.length }
+    for (const record of visibleRecords) {
       const label = formatClosingTicketStatus(
         record.cr7de_ticketstatus
       )
       counts[label] = (counts[label] ?? 0) + 1
     }
     return counts
-  }, [records])
+  }, [records, filters.showArchived])
 
   return (
     <section
