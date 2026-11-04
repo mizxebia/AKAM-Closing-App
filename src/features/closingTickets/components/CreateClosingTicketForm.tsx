@@ -729,6 +729,9 @@ function ClosingTicketEditorForm({
     () =>
       toChoiceOptions(
         Cr7de_closingticketdetailsescr109_packagetype
+      ).filter(
+        (option) =>
+          Number(option.value) !== COOP_TRANSFER_PACKAGE_TYPE
       ),
     []
   )
