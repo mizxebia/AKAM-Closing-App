@@ -50,6 +50,7 @@ import {
   NSC_Send_Email_To_ARService,
 } from '../../../generated'
 import { EditClosingTicketForm } from './CreateClosingTicketForm'
+import { ProcessCheckpointTracker } from './ProcessCheckpointTracker'
 import { InvoiceDocumentViewer } from './InvoiceDocumentViewer'
 import { SendToATeamTab } from './SendToATeamTab'
 import {
@@ -782,6 +783,17 @@ export function ClosingTicketDetailsPage({
                 View Logs
               </button>
             </div>
+
+            <ProcessCheckpointTracker
+              currentBotStatus={
+                record.cr109_botstatus !== undefined &&
+                String(record.cr109_botstatus).trim() !== ''
+                  ? Number(record.cr109_botstatus)
+                  : undefined
+              }
+            />
+
+            <hr className="my-3 border-[#e2e8f0]" />
 
             <ManualDocumentUpload
               ticketId={ticketId}

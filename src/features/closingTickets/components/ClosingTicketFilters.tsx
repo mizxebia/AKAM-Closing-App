@@ -24,6 +24,7 @@ import {
 } from '../utils/closingTicketFilters'
 import { isEffectivelyArchived } from '../utils/closingTicketArchiving'
 import { developerOnlyClosingTicketTabs } from '../constants/closingTicketMetadata'
+import { PROCESS_CHECKPOINT_STAGES } from '../constants/processCheckpoints'
 import type {
   ClosingTicketFilters,
   ClosingTicketRecord,
@@ -67,6 +68,12 @@ interface ClosingTicketFiltersProps {
   onBotStatusFilterChange: (
     value: ClosingTicketFilters['botStatusFilter']
   ) => void
+  /**
+   * Developer Mode only — a clickable row of process-lifecycle checkpoints
+   * (Draft -> ... -> Sent To AR) alongside the Bot Status dropdown above.
+   * Shares the same botStatusFilter value/setter as that dropdown.
+   */
+  showCheckpointSlicer?: boolean
   /** Developer Mode only — lets a developer find tickets by their Package Type. */
   showPackageTypeFilter?: boolean
   onPackageTypeFilterChange: (
@@ -95,6 +102,7 @@ export function ClosingTicketFilters({
   onChargesFilterChange,
   showBotStatusFilter = false,
   onBotStatusFilterChange,
+  showCheckpointSlicer = false,
   showPackageTypeFilter = false,
   onPackageTypeFilterChange,
   showDeveloperStatusTabs = false,
@@ -127,6 +135,22 @@ export function ClosingTicketFilters({
         record.cr7de_ticketstatus
       )
       counts[label] = (counts[label] ?? 0) + 1
+    }
+    return counts
+  }, [records, filters.showArchived])
+
+  // Same per-checkpoint counting rule as tabCounts above, just keyed by
+  // Bot Status value instead of Ticket Status label.
+  const checkpointCounts = useMemo(() => {
+    const visibleRecords = records.filter(
+      (record) => filters.showArchived || !isEffectivelyArchived(record)
+    )
+    const counts: Record<number, number> = {}
+    for (const record of visibleRecords) {
+      const value = Number(record.cr109_botstatus)
+      if (!Number.isNaN(value)) {
+        counts[value] = (counts[value] ?? 0) + 1
+      }
     }
     return counts
   }, [records, filters.showArchived])
@@ -367,6 +391,67 @@ export function ClosingTicketFilters({
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {showCheckpointSlicer && (
+        <div
+          className="flex flex-nowrap items-center gap-0.5 overflow-x-auto"
+          aria-label="Filter closings by process checkpoint"
+        >
+          <span className="mr-1 shrink-0 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94a3b8]">
+            Checkpoint
+          </span>
+          <button
+            type="button"
+            className={
+              filters.botStatusFilter === ''
+                ? 'inline-flex shrink-0 items-center gap-1 px-1.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.04em] text-[#F5F2EC] transition'
+                : 'inline-flex shrink-0 items-center gap-1 px-1.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.04em] text-[#5F5E5A] transition hover:text-[#1E3A47]'
+            }
+            style={
+              filters.botStatusFilter === ''
+                ? { backgroundColor: '#1E3A47', borderRadius: '6px' }
+                : { background: 'transparent', borderRadius: '6px' }
+            }
+            onClick={() => onBotStatusFilterChange('')}
+          >
+            All
+          </button>
+          {PROCESS_CHECKPOINT_STAGES.map((stage) => {
+            const isActive = filters.botStatusFilter === stage.value
+            const count = checkpointCounts[stage.value]
+            return (
+              <button
+                key={stage.value}
+                type="button"
+                className={
+                  isActive
+                    ? 'inline-flex shrink-0 items-center gap-1 px-1.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.04em] text-[#F5F2EC] transition'
+                    : 'inline-flex shrink-0 items-center gap-1 px-1.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.04em] text-[#5F5E5A] transition hover:text-[#1E3A47]'
+                }
+                style={
+                  isActive
+                    ? { backgroundColor: '#1E3A47', borderRadius: '6px' }
+                    : { background: 'transparent', borderRadius: '6px' }
+                }
+                onClick={() => onBotStatusFilterChange(stage.value)}
+              >
+                {stage.label}
+                {count !== undefined && (
+                  <span
+                    className={
+                      isActive
+                        ? 'rounded-full bg-[rgba(245,242,236,0.2)] px-1 text-[9px] font-semibold'
+                        : 'rounded-full bg-[#F1EFE8] px-1 text-[9px] font-semibold text-[#8a8578]'
+                    }
+                  >
+                    {count}
+                  </span>
+                )}
+              </button>
+            )
+          })}
         </div>
       )}
     </section>

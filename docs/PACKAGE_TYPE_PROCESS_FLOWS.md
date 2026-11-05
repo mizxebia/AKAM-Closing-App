@@ -32,6 +32,13 @@ package-type-specific differences on top of that base flow.
 > JSON definitions under `Workflows/`), not inferred from this app's code
 > alone. Everything else in this doc is based on the app's own behavior and
 > the in-app Help Centre, which may not perfectly match the live flows.
+>
+> The exported solution's desktop (RPA) flows are **not** readable the
+> same way — they're opaque binary packages, not JSON — so anything
+> about a desktop bot's *internal* branching (as opposed to which cloud
+> flow dispatches it) comes from a separate, direct review of that bot's
+> actual logic rather than from the export. The Sponser section below
+> calls this out explicitly where it applies.
 
 ---
 
@@ -136,32 +143,54 @@ Differences from the standard flow:
   since there's no sale/purchase transaction to document for this package
   type.
 
-🔍 **Confirmed: Stage 3 runs, then the ticket stalls — no automation picks
-it up after that today.**
+🔍 **Confirmed — and worse than a simple stall: the real-world Sponser
+case loops indefinitely instead of ever reaching Seller Info Retrieved.**
+This refines the earlier finding below, based on reading the desktop
+bot's (`NSCYardiSellerDetails`) actual internal RPA logic, not just the
+cloud scheduler's dispatch filters.
 
-- **Stage 3 (Seller Info Retrieval) does fire.** `NSC_UAT2_Schedule`'s
-  dispatch filter for this stage is `cr109_botstatus eq 396620006`
-  (Domecile Dump Retrieved) — a Sponser ticket is created directly at that
-  bot status, so it matches and `NSCYardiSellerDetails` runs normally,
-  setting Bot Status to **Seller Info Retrieved (396620000)** on success.
-- **Stage 4 (Purchase Application Form Download) never fires.** Its only
-  dispatch filter, in `NSC_PROD2_Schedule`, is:
-  ```
-  cr109_botstatus eq 396620000 and
-  cr7de_buildingnotondomicile eq false and
-  cr109_domecilepackageurl ne null
-  ```
-  Sponser tickets always have `cr7de_buildingnotondomicile = true` (forced
-  by the app) and never populate `cr109_domecilepackageurl` (Stage 2, which
-  sets that field, is skipped entirely for Sponser) — so this condition can
-  never match a Sponser ticket. No other flow in the exported solution
-  filters on Bot Status = Seller Info Retrieved (396620000) — it's the only
-  one.
-- **Net effect:** a Sponser ticket reaches **Processing / Seller Info
-  Retrieved** and then has no automated path forward. Nothing in the
-  current solution is built to carry it past that point — this isn't a
-  documentation gap, it's an actual gap in the automation itself, as of
-  this solution export.
+**Stage 3 does fire**, on the same `cr109_botstatus eq 396620006`
+(Domecile Dump Retrieved) scheduler match as every other package type —
+a Sponser ticket is created directly at that bot status. The bot's
+extraction steps (reading T-code, names, phone, email, SSN, and the
+seller ledger from Yardi) run identically for every package type; nothing
+there checks `cr109_packagetype`.
+
+**The branch that matters is inside the bot's own "Update Info To
+Database" step**, and it checks two conditions *in this order*:
+
+1. **Is `cr7de_buildingnotondomicile` true?** If so: set Ticket Status to
+   Ready For Post Closing (`716070006`) and the unit number — **Bot
+   Status is left unchanged.** The package-type check below is never
+   reached.
+2. **Else, is Package Type = Sponser (`396620002`)?** If so: set Bot
+   Status to Purchase Form Data Extracted (`396620013`) and Ticket
+   Status to Ready For Post Closing (`716070006`).
+
+Any failure, for any package type, sets Bot Status to Failed Seller Info
+Retrieval (`396620005`) and Ticket Status to Failed (`716070007`).
+
+**Sponser tickets always hit branch 1, not branch 2** — the app forces
+and locks `cr7de_buildingnotondomicile = true` for Sponser (see above),
+and that check is evaluated first. So in practice:
+
+- Bot Status **never advances past "Domecile Dump Retrieved"
+  (`396620006`)** — branch 1 doesn't touch it, and branch 2 (the one that
+  would set `396620013`) is unreachable for a real Sponser ticket.
+- Because Bot Status never leaves `396620006`, it keeps matching the
+  exact same scheduler dispatch filter (`cr109_botstatus eq 396620006`)
+  on every future run of `NSC_PROD2_Schedule` / `NSC_UAT2_Schedule`
+  (every ~2 hours).
+- **Net effect: not a one-time stall, but an indefinite reprocessing
+  loop.** The bot re-extracts the same seller info and re-sets Ticket
+  Status to Ready For Post Closing every cycle, forever — it never
+  progresses, and nothing currently stops it from re-running.
+
+(The earlier version of this section assumed Bot Status reached "Seller
+Info Retrieved" (`396620000`) before stalling there — that was based on
+the cloud dispatch filters alone, without visibility into the desktop
+bot's internal branch order. With that order now confirmed, Bot Status
+never actually reaches `396620000` for a real Sponser ticket at all.)
 
 ---
 
@@ -235,6 +264,7 @@ flows are.
 | 🔍 Invoice generation package-type branch | Exported solution — `Workflows/NSC_Generate_Invoice-*.json` |
 | 🔍 Per-stage cloud flow definitions (Domecile Dump, Purchase Form Upload/Extraction, RPTT Extraction, Send to AR) | Exported solution — `Workflows/NSC_DOMECILE_DUMP-*.json`, `NSC_PurchaseFormUpload-*.json`, `NSC_PurchaseApplication_DataExtraction-*.json`, `NSC_RPTT_DataExtraction-*.json`, `NSC_Send_Email_To_AR-*.json` |
 | 🔍 Stage 11 (Seller Details Update) dispatch + standalone flow | Exported solution — `Workflows/NSC_PROD2_Schedule-*.json` (`Seller_Update_and_Create_New_Owner` branch), `Workflows/NSC_YARDI_Seller_Update_Unattended-9191CE22-C04A-F111-BEC6-7CED8D1A5D5B.json` |
+| Sponser branch order inside `NSCYardiSellerDetails` ("Update Info To Database" step) | Direct review of the desktop bot's own logic — **not** from the exported solution (desktop flows aren't exported as readable JSON) |
 
 > The exported solution isn't tracked in this repo (it's a local admin-portal
 > export, not source code) — the 🔍 findings above were read from a one-time

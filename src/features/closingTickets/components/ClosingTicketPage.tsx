@@ -546,6 +546,7 @@ export function ClosingTicketPage() {
                 onChargesFilterChange={setChargesFilter}
                 showBotStatusFilter={developerMode.enabled}
                 onBotStatusFilterChange={setBotStatusFilter}
+                showCheckpointSlicer={developerMode.enabled}
                 showPackageTypeFilter={developerMode.enabled}
                 onPackageTypeFilterChange={setPackageTypeFilter}
                 showDeveloperStatusTabs={developerMode.enabled}
