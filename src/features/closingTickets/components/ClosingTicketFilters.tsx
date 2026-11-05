@@ -333,7 +333,7 @@ export function ClosingTicketFilters({
               htmlFor="closing-ticket-checkpoint-filter"
             >
               <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94a3b8]">
-                Checkpoint
+                Process Checkpoint
               </span>
               <select
                 id="closing-ticket-checkpoint-filter"
@@ -347,7 +347,7 @@ export function ClosingTicketFilters({
                   )
                 }
               >
-                <option value="">All checkpoints</option>
+                <option value="">All Process Checkpoints</option>
                 {PROCESS_CHECKPOINT_STAGES.map((stage) => (
                   <option key={stage.value} value={stage.value}>
                     {stage.label}
