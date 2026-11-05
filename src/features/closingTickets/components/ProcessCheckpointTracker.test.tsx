@@ -3,39 +3,30 @@ import { render, screen } from '@testing-library/react'
 import { ProcessCheckpointTracker } from './ProcessCheckpointTracker'
 
 describe('ProcessCheckpointTracker', () => {
-  it('renders nothing when there is no Bot Status yet', () => {
-    const { container } = render(
-      <ProcessCheckpointTracker currentBotStatus={undefined} />
+  it('renders every checkpoint as unchecked when none are set', () => {
+    render(<ProcessCheckpointTracker processCheckpoints={undefined} />)
+
+    expect(screen.getByText('Buyer 1 Added')).toBeInTheDocument()
+    expect(screen.getByText('Buyer Ledger Added')).toBeInTheDocument()
+  })
+
+  it('marks only the checkpoints present on the ticket as done', () => {
+    render(
+      <ProcessCheckpointTracker
+        processCheckpoints={[396620000, 396620008]}
+      />
     )
-    expect(container).toBeEmptyDOMElement()
-  })
 
-  it('renders all happy-path checkpoints for an in-progress ticket', () => {
-    render(<ProcessCheckpointTracker currentBotStatus={396620001} />)
+    const buyer1Row = screen.getByText('Buyer 1 Added').closest('div')
+    const buyer2Row = screen.getByText('Buyer 2 Added').closest('div')
+    const sellerLedgerRow = screen
+      .getByText('Seller Ledger Added')
+      .closest('div')
 
-    expect(screen.getByText('Draft')).toBeInTheDocument()
-    expect(screen.getByText('Form Downloaded')).toBeInTheDocument()
-    expect(screen.getByText('Sent To AR')).toBeInTheDocument()
-    expect(screen.queryByText(/Failed at this checkpoint/)).toBeNull()
-  })
-
-  it('places a Failed Bot Status at the checkpoint it failed, not off the end', () => {
-    render(<ProcessCheckpointTracker currentBotStatus={396620005} />)
-
-    expect(
-      screen.getByText(/Failed at this checkpoint/)
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText('Failed Seller Info Retrieval', { exact: false })
-    ).toBeInTheDocument()
-    // Still on the happy-path checkpoint it failed at, not a separate row.
-    expect(screen.getByText('Seller Info Retrieved')).toBeInTheDocument()
-  })
-
-  it('renders nothing for an unmapped Bot Status value', () => {
-    const { container } = render(
-      <ProcessCheckpointTracker currentBotStatus={999999} />
-    )
-    expect(container).toBeEmptyDOMElement()
+    // Done rows use the dark "completed" text color; unset rows use the
+    // muted one — see the isDone branch in ProcessCheckpointTracker.
+    expect(buyer1Row?.className).toContain('text-[#1E3A47]')
+    expect(sellerLedgerRow?.className).toContain('text-[#1E3A47]')
+    expect(buyer2Row?.className).toContain('text-[#94a3b8]')
   })
 })

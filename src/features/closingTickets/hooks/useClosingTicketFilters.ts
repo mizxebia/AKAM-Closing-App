@@ -12,6 +12,7 @@ const defaultFilters: ClosingTicketFilters = {
   chargesFilter: '',
   botStatusFilter: '',
   packageTypeFilter: '',
+  processCheckpointFilter: '',
   closingDateFilter: { from: '', to: '' },
   showArchived: false,
 }
@@ -85,6 +86,15 @@ export function useClosingTicketFilters(
     }))
   }
 
+  const setProcessCheckpointFilter = (
+    processCheckpointFilter: ClosingTicketFilters['processCheckpointFilter']
+  ) => {
+    setFilters((currentFilters) => ({
+      ...currentFilters,
+      processCheckpointFilter,
+    }))
+  }
+
   const setClosingDateFilter = (
     closingDateFilter: Partial<
       ClosingTicketFilters['closingDateFilter']
@@ -119,6 +129,7 @@ export function useClosingTicketFilters(
     setChargesFilter,
     setBotStatusFilter,
     setPackageTypeFilter,
+    setProcessCheckpointFilter,
     setClosingDateFilter,
     setShowArchived,
     clearFilters,

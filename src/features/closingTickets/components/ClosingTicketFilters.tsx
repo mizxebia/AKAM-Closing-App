@@ -21,10 +21,10 @@ import {
   CLOSING_DOCUMENT_FILTER_OPTIONS,
   BOT_STATUS_FILTER_OPTIONS,
   PACKAGE_TYPE_FILTER_OPTIONS,
+  PROCESS_CHECKPOINT_FILTER_OPTIONS,
 } from '../utils/closingTicketFilters'
 import { isEffectivelyArchived } from '../utils/closingTicketArchiving'
 import { developerOnlyClosingTicketTabs } from '../constants/closingTicketMetadata'
-import { PROCESS_CHECKPOINT_STAGES } from '../constants/processCheckpoints'
 import type {
   ClosingTicketFilters,
   ClosingTicketRecord,
@@ -69,12 +69,15 @@ interface ClosingTicketFiltersProps {
     value: ClosingTicketFilters['botStatusFilter']
   ) => void
   /**
-   * Developer Mode only — a dropdown of process-lifecycle checkpoints
-   * (Draft -> ... -> Sent To AR), ordered by stage rather than the raw
-   * Dataverse option-set order, alongside the Bot Status dropdown above.
-   * Shares the same botStatusFilter value/setter as that dropdown.
+   * Developer Mode only — lets a developer find tickets by their Process
+   * Checkpoint (the multi-select "Create New Owner Checkpoint" choice —
+   * Buyer/Occupant Added, Document Uploaded, Ledgers Added, etc). A ticket
+   * matches when its checkpoint array contains the selected value.
    */
   showCheckpointSlicer?: boolean
+  onProcessCheckpointFilterChange: (
+    value: ClosingTicketFilters['processCheckpointFilter']
+  ) => void
   /** Developer Mode only — lets a developer find tickets by their Package Type. */
   showPackageTypeFilter?: boolean
   onPackageTypeFilterChange: (
@@ -104,6 +107,7 @@ export function ClosingTicketFilters({
   showBotStatusFilter = false,
   onBotStatusFilterChange,
   showCheckpointSlicer = false,
+  onProcessCheckpointFilterChange,
   showPackageTypeFilter = false,
   onPackageTypeFilterChange,
   showDeveloperStatusTabs = false,
@@ -140,17 +144,22 @@ export function ClosingTicketFilters({
     return counts
   }, [records, filters.showArchived])
 
-  // Same per-checkpoint counting rule as tabCounts above, just keyed by
-  // Bot Status value instead of Ticket Status label.
+  // Process Checkpoint is multi-select, so a single ticket can count
+  // toward several checkpoints at once — increment every value present in
+  // its array, rather than picking one value per record like tabCounts.
   const checkpointCounts = useMemo(() => {
     const visibleRecords = records.filter(
       (record) => filters.showArchived || !isEffectivelyArchived(record)
     )
     const counts: Record<number, number> = {}
     for (const record of visibleRecords) {
-      const value = Number(record.cr109_botstatus)
-      if (!Number.isNaN(value)) {
-        counts[value] = (counts[value] ?? 0) + 1
+      const values = record.cr109_processcheckpoint
+      if (!Array.isArray(values)) continue
+      for (const rawValue of values) {
+        const value = Number(rawValue)
+        if (!Number.isNaN(value)) {
+          counts[value] = (counts[value] ?? 0) + 1
+        }
       }
     }
     return counts
@@ -338,9 +347,9 @@ export function ClosingTicketFilters({
               <select
                 id="closing-ticket-checkpoint-filter"
                 className="h-8 min-w-[170px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
-                value={filters.botStatusFilter}
+                value={filters.processCheckpointFilter}
                 onChange={(event) =>
-                  onBotStatusFilterChange(
+                  onProcessCheckpointFilterChange(
                     event.target.value === ''
                       ? ''
                       : Number(event.target.value)
@@ -348,11 +357,11 @@ export function ClosingTicketFilters({
                 }
               >
                 <option value="">All Process Checkpoints</option>
-                {PROCESS_CHECKPOINT_STAGES.map((stage) => (
-                  <option key={stage.value} value={stage.value}>
-                    {stage.label}
-                    {checkpointCounts[stage.value] !== undefined
-                      ? ` (${checkpointCounts[stage.value]})`
+                {PROCESS_CHECKPOINT_FILTER_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                    {checkpointCounts[option.value] !== undefined
+                      ? ` (${checkpointCounts[option.value]})`
                       : ''}
                   </option>
                 ))}

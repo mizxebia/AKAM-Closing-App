@@ -1,98 +1,48 @@
-import { CheckCircle2, Circle, XCircle } from 'lucide-react'
-import {
-  FAILED_BOT_STATUS_CHECKPOINT,
-  PROCESS_CHECKPOINT_STAGES,
-  PROCESS_CHECKPOINT_VALUES,
-} from '../constants/processCheckpoints'
-import { getBotStatusLabel } from '../../devTools/utils/statusOptions'
+import { CheckCircle2, Circle } from 'lucide-react'
+import { PROCESS_CHECKPOINT_OPTIONS } from '../constants/processCheckpoints'
 
 interface ProcessCheckpointTrackerProps {
-  currentBotStatus: number | undefined
+  /** Raw `cr109_processcheckpoint` values present on the ticket, if any. */
+  processCheckpoints: number[] | undefined
 }
 
 /**
- * Admin-only, read-only "you are here" view of a single ticket's position
- * in the bot-automation lifecycle. A Failed Bot Status is placed at the
- * checkpoint it failed at (see FAILED_BOT_STATUS_CHECKPOINT) rather than
- * falling off the end of the tracker.
+ * Admin-only, read-only checklist of the real Dataverse "Process
+ * Checkpoint" field — a multi-select, so a ticket can have any number of
+ * these marked at once rather than sitting at one current stage.
  */
 export function ProcessCheckpointTracker({
-  currentBotStatus,
+  processCheckpoints,
 }: ProcessCheckpointTrackerProps) {
-  if (currentBotStatus === undefined) {
-    return null
-  }
-
-  const isFailure = currentBotStatus in FAILED_BOT_STATUS_CHECKPOINT
-  const effectiveValue = isFailure
-    ? FAILED_BOT_STATUS_CHECKPOINT[currentBotStatus]
-    : currentBotStatus
-  const currentIndex = PROCESS_CHECKPOINT_VALUES.indexOf(
-    effectiveValue as (typeof PROCESS_CHECKPOINT_VALUES)[number]
+  const completed = new Set(
+    (processCheckpoints ?? []).map((value) => Number(value))
   )
-
-  if (currentIndex === -1) {
-    return null
-  }
 
   return (
     <section className="form-section">
       <h3>Process Checkpoint</h3>
-      <div className="flex flex-nowrap items-center gap-0 overflow-x-auto pb-1">
-        {PROCESS_CHECKPOINT_STAGES.map((stage, index) => {
-          const isCurrent = index === currentIndex
-          const isPast = index < currentIndex
-          const isCurrentFailure = isCurrent && isFailure
-
-          const Icon = isCurrentFailure
-            ? XCircle
-            : isPast || isCurrent
-              ? CheckCircle2
-              : Circle
-
-          const colorClass = isCurrentFailure
-            ? 'text-[#b91c1c]'
-            : isPast
-              ? 'text-[#1E3A47]'
-              : isCurrent
-                ? 'text-[#C9A96E]'
-                : 'text-[#c7bfae]'
-
+      <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+        {PROCESS_CHECKPOINT_OPTIONS.map((option) => {
+          const isDone = completed.has(option.value)
           return (
-            <div key={stage.value} className="flex shrink-0 items-center">
-              <div
-                className={`flex flex-col items-center gap-1 px-1.5 ${colorClass}`}
-                title={stage.label}
-              >
-                <Icon className="size-4 shrink-0" />
-                <span
-                  className={
-                    isCurrent
-                      ? 'w-[72px] text-center text-[9.5px] font-semibold leading-tight'
-                      : 'w-[72px] text-center text-[9.5px] font-medium leading-tight text-[#8a8578]'
-                  }
-                >
-                  {stage.label}
-                </span>
-              </div>
-              {index < PROCESS_CHECKPOINT_STAGES.length - 1 && (
-                <div
-                  className="h-px w-4 shrink-0"
-                  style={{
-                    backgroundColor: isPast ? '#1E3A47' : '#E2DAD0',
-                  }}
-                />
+            <div
+              key={option.value}
+              className={
+                isDone
+                  ? 'flex items-center gap-1.5 text-xs font-medium text-[#1E3A47]'
+                  : 'flex items-center gap-1.5 text-xs font-medium text-[#94a3b8]'
+              }
+            >
+              {isDone ? (
+                <CheckCircle2 className="size-3.5 shrink-0 text-[#1E3A47]" />
+              ) : (
+                <Circle className="size-3.5 shrink-0 text-[#D5CBB8]" />
               )}
+              {option.label}
             </div>
           )
         })}
       </div>
-      {isFailure && (
-        <p className="text-xs font-medium text-[#b91c1c]">
-          Failed at this checkpoint — current Bot Status:{' '}
-          {getBotStatusLabel(currentBotStatus)}
-        </p>
-      )}
     </section>
   )
 }

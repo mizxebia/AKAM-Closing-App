@@ -785,10 +785,9 @@ export function ClosingTicketDetailsPage({
             </div>
 
             <ProcessCheckpointTracker
-              currentBotStatus={
-                record.cr109_botstatus !== undefined &&
-                String(record.cr109_botstatus).trim() !== ''
-                  ? Number(record.cr109_botstatus)
+              processCheckpoints={
+                Array.isArray(record.cr109_processcheckpoint)
+                  ? record.cr109_processcheckpoint.map(Number)
                   : undefined
               }
             />

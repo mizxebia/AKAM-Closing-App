@@ -195,6 +195,7 @@ export function ClosingTicketPage() {
     setChargesFilter,
     setBotStatusFilter,
     setPackageTypeFilter,
+    setProcessCheckpointFilter,
     setClosingDateFilter,
     setShowArchived,
     clearFilters,
@@ -547,6 +548,9 @@ export function ClosingTicketPage() {
                 showBotStatusFilter={developerMode.enabled}
                 onBotStatusFilterChange={setBotStatusFilter}
                 showCheckpointSlicer={developerMode.enabled}
+                onProcessCheckpointFilterChange={
+                  setProcessCheckpointFilter
+                }
                 showPackageTypeFilter={developerMode.enabled}
                 onPackageTypeFilterChange={setPackageTypeFilter}
                 showDeveloperStatusTabs={developerMode.enabled}

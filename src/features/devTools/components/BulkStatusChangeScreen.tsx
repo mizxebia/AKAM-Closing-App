@@ -47,6 +47,7 @@ export function BulkStatusChangeScreen({
     setChargesFilter,
     setBotStatusFilter,
     setPackageTypeFilter,
+    setProcessCheckpointFilter,
     setClosingDateFilter,
     setShowArchived,
   } = useClosingTicketFilters(records, { userName, userId })
@@ -288,6 +289,7 @@ export function BulkStatusChangeScreen({
         onChargesFilterChange={setChargesFilter}
         showBotStatusFilter
         onBotStatusFilterChange={setBotStatusFilter}
+        onProcessCheckpointFilterChange={setProcessCheckpointFilter}
         showPackageTypeFilter
         onPackageTypeFilterChange={setPackageTypeFilter}
         showDeveloperStatusTabs

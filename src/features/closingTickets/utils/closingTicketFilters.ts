@@ -10,6 +10,7 @@ import { formatGeneratedLabel } from '../../invoices/utils/invoiceFormatters'
 import { BOT_STATUS_OPTIONS } from '../../devTools/utils/statusOptions'
 import { isEffectivelyArchived } from './closingTicketArchiving'
 import { Cr7de_closingticketdetailsescr109_packagetype } from '../../../generated/models/Cr7de_closingticketdetailsesModel'
+import { PROCESS_CHECKPOINT_OPTIONS } from '../constants/processCheckpoints'
 import type {
   ClosingTicketFilters,
   ClosingTicketRecord,
@@ -109,6 +110,27 @@ function matchesPackageTypeFilter(
   }
 
   return Number(record.cr109_packagetype) === packageTypeFilter
+}
+
+/** Options for the developer-mode "Process Checkpoint" filter dropdown. */
+export const PROCESS_CHECKPOINT_FILTER_OPTIONS = PROCESS_CHECKPOINT_OPTIONS
+
+function matchesProcessCheckpointFilter(
+  record: ClosingTicketRecord,
+  processCheckpointFilter: ClosingTicketFilters['processCheckpointFilter']
+) {
+  if (!processCheckpointFilter) {
+    return true
+  }
+
+  const values = record.cr109_processcheckpoint
+  if (!Array.isArray(values)) {
+    return false
+  }
+
+  return values.some(
+    (value) => Number(value) === processCheckpointFilter
+  )
 }
 
 function matchesClosingDateFilter(
@@ -254,6 +276,10 @@ export function filterClosingTickets(
       ) &&
       matchesBotStatusFilter(record, filters.botStatusFilter) &&
       matchesPackageTypeFilter(record, filters.packageTypeFilter) &&
+      matchesProcessCheckpointFilter(
+        record,
+        filters.processCheckpointFilter
+      ) &&
       matchesClosingDateFilter(record, filters.closingDateFilter)
   )
 }
