@@ -69,8 +69,9 @@ interface ClosingTicketFiltersProps {
     value: ClosingTicketFilters['botStatusFilter']
   ) => void
   /**
-   * Developer Mode only — a clickable row of process-lifecycle checkpoints
-   * (Draft -> ... -> Sent To AR) alongside the Bot Status dropdown above.
+   * Developer Mode only — a dropdown of process-lifecycle checkpoints
+   * (Draft -> ... -> Sent To AR), ordered by stage rather than the raw
+   * Dataverse option-set order, alongside the Bot Status dropdown above.
    * Shares the same botStatusFilter value/setter as that dropdown.
    */
   showCheckpointSlicer?: boolean
@@ -240,6 +241,7 @@ export function ClosingTicketFilters({
       {(showDocumentFilter ||
         showChargesFilter ||
         showBotStatusFilter ||
+        showCheckpointSlicer ||
         showPackageTypeFilter ||
         showClosingDateFilter) && (
         <div className="flex flex-wrap items-end gap-2">
@@ -325,6 +327,39 @@ export function ClosingTicketFilters({
             </label>
           )}
 
+          {showCheckpointSlicer && (
+            <label
+              className="flex flex-col gap-0.5 text-xs font-medium text-[#5F5E5A]"
+              htmlFor="closing-ticket-checkpoint-filter"
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94a3b8]">
+                Checkpoint
+              </span>
+              <select
+                id="closing-ticket-checkpoint-filter"
+                className="h-8 min-w-[170px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
+                value={filters.botStatusFilter}
+                onChange={(event) =>
+                  onBotStatusFilterChange(
+                    event.target.value === ''
+                      ? ''
+                      : Number(event.target.value)
+                  )
+                }
+              >
+                <option value="">All checkpoints</option>
+                {PROCESS_CHECKPOINT_STAGES.map((stage) => (
+                  <option key={stage.value} value={stage.value}>
+                    {stage.label}
+                    {checkpointCounts[stage.value] !== undefined
+                      ? ` (${checkpointCounts[stage.value]})`
+                      : ''}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
           {showPackageTypeFilter && (
             <label
               className="flex flex-col gap-0.5 text-xs font-medium text-[#5F5E5A]"
@@ -394,66 +429,6 @@ export function ClosingTicketFilters({
         </div>
       )}
 
-      {showCheckpointSlicer && (
-        <div
-          className="flex flex-nowrap items-center gap-0.5 overflow-x-auto"
-          aria-label="Filter closings by process checkpoint"
-        >
-          <span className="mr-1 shrink-0 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94a3b8]">
-            Checkpoint
-          </span>
-          <button
-            type="button"
-            className={
-              filters.botStatusFilter === ''
-                ? 'inline-flex shrink-0 items-center gap-1 px-1.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.04em] text-[#F5F2EC] transition'
-                : 'inline-flex shrink-0 items-center gap-1 px-1.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.04em] text-[#5F5E5A] transition hover:text-[#1E3A47]'
-            }
-            style={
-              filters.botStatusFilter === ''
-                ? { backgroundColor: '#1E3A47', borderRadius: '6px' }
-                : { background: 'transparent', borderRadius: '6px' }
-            }
-            onClick={() => onBotStatusFilterChange('')}
-          >
-            All
-          </button>
-          {PROCESS_CHECKPOINT_STAGES.map((stage) => {
-            const isActive = filters.botStatusFilter === stage.value
-            const count = checkpointCounts[stage.value]
-            return (
-              <button
-                key={stage.value}
-                type="button"
-                className={
-                  isActive
-                    ? 'inline-flex shrink-0 items-center gap-1 px-1.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.04em] text-[#F5F2EC] transition'
-                    : 'inline-flex shrink-0 items-center gap-1 px-1.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.04em] text-[#5F5E5A] transition hover:text-[#1E3A47]'
-                }
-                style={
-                  isActive
-                    ? { backgroundColor: '#1E3A47', borderRadius: '6px' }
-                    : { background: 'transparent', borderRadius: '6px' }
-                }
-                onClick={() => onBotStatusFilterChange(stage.value)}
-              >
-                {stage.label}
-                {count !== undefined && (
-                  <span
-                    className={
-                      isActive
-                        ? 'rounded-full bg-[rgba(245,242,236,0.2)] px-1 text-[9px] font-semibold'
-                        : 'rounded-full bg-[#F1EFE8] px-1 text-[9px] font-semibold text-[#8a8578]'
-                    }
-                  >
-                    {count}
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </div>
-      )}
     </section>
   )
 }
