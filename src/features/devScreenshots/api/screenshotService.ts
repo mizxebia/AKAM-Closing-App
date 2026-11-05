@@ -19,7 +19,15 @@ export interface TicketScreenshot {
   path: string
 }
 
-async function resolveScreenshotFolderPath(): Promise<string> {
+/**
+ * Exposed so the UI can show admins exactly which OneDrive folder was
+ * searched — if the bot's screenshots are visible in OneDrive but never
+ * show up here, the most common cause is that this app's OneDrive for
+ * Business connection is authorized under a different account than the
+ * one the desktop bot saves screenshots to (that connector always reads
+ * the connected account's own drive, with no cross-account access).
+ */
+export async function resolveScreenshotFolderPath(): Promise<string> {
   const context = await getContext()
   const envSegment =
     ENVIRONMENT_FOLDER_SEGMENTS[context.app.environmentId]
@@ -69,13 +77,15 @@ export async function findTicketScreenshots(
     const status = error && 'status' in error ? error.status : undefined
     const message = error?.message ?? ''
 
-    const details =
-      message ||
-      (status === 404
-        ? 'Folder not found or inaccessible.'
-        : 'The search request failed.')
+    const hint =
+      status === 403
+        ? " This app's OneDrive for Business connection likely isn't authorized under the same account the bot saves screenshots to — check the connection owner in the Power Platform admin center."
+        : status === 404
+          ? " The folder may not exist under this connection's account, or this app's OneDrive connection points to a different account than the bot."
+          : ''
+    const details = message || 'The search request failed.'
     throw new Error(
-      `Unable to search screenshot folder "${folderPath}": ${details}`
+      `Unable to search screenshot folder "${folderPath}": ${details}${hint}`
     )
   }
 

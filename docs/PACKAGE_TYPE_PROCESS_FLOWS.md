@@ -54,7 +54,7 @@ automated 13-stage pipeline:
 | 9 | 🖥️ Desktop | `NSC Fetch YARDI Charges` | Stage 8 success | Validate Closings / YARDI Charges Fetched | Failed / — |
 | 9b | User | "Auto Move Charges" *(optional)* | User clicks button | Bot Status → Yardi Charges Updated | — |
 | 10 | User | "Validate" | User clicks Validate (New Owner Ticket tab) | Transferring Building / Information Validated | — |
-| 11 | 🖥️ Desktop | `NSC Yardi Seller Update` | Bot Status = Information Validated | Transferring Building / Seller Details Updated | Failed / Failed Seller Info Retrieval |
+| 11 🔍 | 🖥️ Desktop | `NSC Yardi Seller Update` | Bot Status = Information Validated | Transferring Building / Seller Details Updated | Failed / Failed Seller Info Retrieval |
 | 12 | 🖥️ Desktop | `NSC Yardi Create New Owner` | Stage 11 success | **Completed** / Owner Record Created | Failed / Failed Create New Owner |
 | 13a | User | Upload Batch And Cheque Document | Send to AR tab | Completed (unchanged) | — |
 | 13b | User | "Send to AR Team" | User clicks Send | **Sent to AR** / email delivered | Unchanged — error shown, retry |
@@ -71,6 +71,23 @@ shared generic endpoint (`invoice_pdf_generation`). There is no further
 per-package-type branching here — Coop Sale, Sponser, and both Transfer
 types will all get the same generic invoice template unless this flow is
 updated.
+
+🔍 **Stage 11 (Seller Details Update) is real and wired up — confirmed
+two ways.** The desktop flow `NSCYardiSellerUpdate`
+(uiFlowId `791392a8-3da0-f011-b41c-000d3a9b514b`) is invoked:
+- Inline inside both scheduler flows (`NSC_PROD2_Schedule` and
+  `NSC_UAT2_Schedule`), under the `Seller_Update_and_Create_New_Owner`
+  branch — it polls `cr109_botstatus eq 396620007` (Information Validated)
+  every run and fires the bot unattended when any rows are pending, then
+  waits 5 minutes before re-polling.
+- Also exposed as its own standalone child flow,
+  `NSC_YARDI_Seller_Update_Unattended`, which wraps the same uiFlowId for a
+  manual/on-demand trigger (`Request` / Button trigger) — useful for
+  re-running a single ticket without waiting for the next scheduler pass.
+
+Both paths call the identical desktop bot and send the same
+success/failure emails to `cr109_NSC_ErrorEmails`; neither path appeared to
+require any further changes.
 
 ### Alternate path — "Building not on Domicile" flag
 
@@ -217,6 +234,7 @@ flows are.
 | 🔍 Real dispatch filters (Stage 3/4 scheduler) | Exported solution — `Workflows/NSC_PROD2_Schedule-*.json`, `Workflows/NSC_UAT2_Schedule-*.json` |
 | 🔍 Invoice generation package-type branch | Exported solution — `Workflows/NSC_Generate_Invoice-*.json` |
 | 🔍 Per-stage cloud flow definitions (Domecile Dump, Purchase Form Upload/Extraction, RPTT Extraction, Send to AR) | Exported solution — `Workflows/NSC_DOMECILE_DUMP-*.json`, `NSC_PurchaseFormUpload-*.json`, `NSC_PurchaseApplication_DataExtraction-*.json`, `NSC_RPTT_DataExtraction-*.json`, `NSC_Send_Email_To_AR-*.json` |
+| 🔍 Stage 11 (Seller Details Update) dispatch + standalone flow | Exported solution — `Workflows/NSC_PROD2_Schedule-*.json` (`Seller_Update_and_Create_New_Owner` branch), `Workflows/NSC_YARDI_Seller_Update_Unattended-9191CE22-C04A-F111-BEC6-7CED8D1A5D5B.json` |
 
 > The exported solution isn't tracked in this repo (it's a local admin-portal
 > export, not source code) — the 🔍 findings above were read from a one-time

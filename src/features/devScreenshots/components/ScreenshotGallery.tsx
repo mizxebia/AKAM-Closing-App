@@ -10,6 +10,7 @@ import {
   findTicketScreenshots,
   formatScreenshotDisplayName,
   getScreenshotDataUrl,
+  resolveScreenshotFolderPath,
   type TicketScreenshot,
 } from '../api/screenshotService'
 
@@ -33,6 +34,9 @@ export function ScreenshotGallery({
   const [openIndex, setOpenIndex] = useState<number | null>(
     null
   )
+  const [searchedFolderPath, setSearchedFolderPath] = useState<
+    string | null
+  >(null)
 
   useEffect(() => {
     let isMounted = true
@@ -42,6 +46,15 @@ export function ScreenshotGallery({
       setError(null)
 
       try {
+        resolveScreenshotFolderPath()
+          .then((path) => {
+            if (isMounted) setSearchedFolderPath(path)
+          })
+          .catch(() => {
+            // Non-critical — the folder path is only shown as a diagnostic
+            // hint, and findTicketScreenshots() below surfaces the real error.
+          })
+
         const found = await findTicketScreenshots(ticketId)
 
         if (!isMounted) return
@@ -116,9 +129,20 @@ export function ScreenshotGallery({
       {error && <StatusBanner type="error" message={error} />}
 
       {!loading && !error && screenshots.length === 0 && (
-        <div className="flex items-center gap-2 rounded-lg border border-dashed border-[#e2e8f0] px-4 py-6 text-sm text-[#64748b]">
-          <ImageOff className="size-4" />
-          No screenshots are present for this ticket.
+        <div className="flex flex-col gap-1 rounded-lg border border-dashed border-[#e2e8f0] px-4 py-6 text-sm text-[#64748b]">
+          <div className="flex items-center gap-2">
+            <ImageOff className="size-4" />
+            No screenshots are present for this ticket.
+          </div>
+          {searchedFolderPath && (
+            <p className="pl-6 text-xs text-[#94a3b8]">
+              Searched {searchedFolderPath} for this ticket ID. If the bot
+              has already saved screenshots there, this app's OneDrive for
+              Business connection is likely authorized under a different
+              account than the bot — check the connection owner in the
+              Power Platform admin center.
+            </p>
+          )}
         </div>
       )}
 
