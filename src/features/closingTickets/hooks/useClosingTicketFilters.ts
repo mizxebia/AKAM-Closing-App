@@ -12,7 +12,7 @@ const defaultFilters: ClosingTicketFilters = {
   chargesFilter: '',
   botStatusFilter: '',
   packageTypeFilter: '',
-  processCheckpointFilter: '',
+  processCheckpointFilter: [],
   closingDateFilter: { from: '', to: '' },
   showArchived: false,
 }

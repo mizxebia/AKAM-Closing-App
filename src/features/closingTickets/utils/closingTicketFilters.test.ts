@@ -104,4 +104,37 @@ describe('filterClosingTickets', () => {
     })
     expect(result.some((r) => r.cr7de_ticketid === 'CT-1003')).toBe(true)
   })
+
+  it('Process Checkpoint filter matches a ticket with ANY of the selected checkpoints (OR, not AND)', () => {
+    const records = [
+      { ...closingTicketFixtures[0], cr109_processcheckpoint: [396620000] }, // Buyer 1 Added
+      { ...closingTicketFixtures[1], cr109_processcheckpoint: [396620008] }, // Seller Ledger Added
+      { ...closingTicketFixtures[2], cr109_processcheckpoint: undefined },
+    ]
+
+    const result = filterClosingTickets(records, {
+      status: 'All',
+      search: '',
+      showArchived: true,
+      processCheckpointFilter: [396620000, 396620008],
+    })
+
+    expect(result).toHaveLength(2)
+    expect(result.map((r) => r.cr7de_ticketid)).toEqual(
+      expect.arrayContaining([
+        closingTicketFixtures[0].cr7de_ticketid,
+        closingTicketFixtures[1].cr7de_ticketid,
+      ])
+    )
+  })
+
+  it('an empty Process Checkpoint filter matches every ticket', () => {
+    const result = filterClosingTickets(closingTicketFixtures, {
+      status: 'All',
+      search: '',
+      showArchived: true,
+      processCheckpointFilter: [],
+    })
+    expect(result).toHaveLength(closingTicketFixtures.length)
+  })
 })

@@ -59,12 +59,13 @@ export type ClosingTicketFilters = {
    */
   packageTypeFilter: '' | number
   /**
-   * Developer-mode-only "Process Checkpoint" filter. Empty string means no
-   * filter; otherwise the numeric `cr109_processcheckpoint` choice value to
-   * match — that field is a multi-select, so a ticket matches when its
-   * value array *contains* the selected checkpoint, not equals it.
+   * Developer-mode-only "Process Checkpoint" filter — lets more than one
+   * checkpoint be picked at once, matching `cr109_processcheckpoint`
+   * itself being a multi-select. An empty array means no filter;
+   * otherwise a ticket matches when its value array contains *any* of
+   * the selected checkpoints (OR, not AND).
    */
-  processCheckpointFilter: '' | number
+  processCheckpointFilter: number[]
   /**
    * Developer-mode-only "Closing Date" range filter. Each bound is an empty
    * string (unset) or a `yyyy-mm-dd` date-input value; a ticket matches when

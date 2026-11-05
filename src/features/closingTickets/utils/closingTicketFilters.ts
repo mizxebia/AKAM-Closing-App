@@ -119,7 +119,7 @@ function matchesProcessCheckpointFilter(
   record: ClosingTicketRecord,
   processCheckpointFilter: ClosingTicketFilters['processCheckpointFilter']
 ) {
-  if (!processCheckpointFilter) {
+  if (!processCheckpointFilter || processCheckpointFilter.length === 0) {
     return true
   }
 
@@ -128,8 +128,9 @@ function matchesProcessCheckpointFilter(
     return false
   }
 
-  return values.some(
-    (value) => Number(value) === processCheckpointFilter
+  const recordValues = values.map(Number)
+  return processCheckpointFilter.some((filterValue) =>
+    recordValues.includes(filterValue)
   )
 }
 

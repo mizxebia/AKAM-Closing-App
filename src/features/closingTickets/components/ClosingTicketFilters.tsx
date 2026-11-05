@@ -1,6 +1,7 @@
 import {
   Building2,
   CheckCircle2,
+  ChevronDown,
   Clock,
   FileCheck,
   FileEdit,
@@ -10,7 +11,7 @@ import {
   UserRound,
   XCircle,
 } from 'lucide-react'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ComponentType } from 'react'
 import { SearchFilter } from '../../../components/filters/SearchFilter'
 import {
@@ -47,6 +48,115 @@ const STATUS_TAB_ICONS: Record<
   Failed: XCircle,
 }
 
+interface CheckpointMultiSelectProps {
+  options: { value: number; label: string }[]
+  value: number[]
+  counts: Record<number, number>
+  onChange: (value: number[]) => void
+}
+
+/**
+ * Checkbox-list dropdown for the Process Checkpoint filter — a plain
+ * local implementation rather than the unused shadcn dropdown-menu/
+ * popover components, since those wrap @radix-ui packages this project
+ * doesn't actually depend on.
+ */
+function CheckpointMultiSelect({
+  options,
+  value,
+  counts,
+  onChange,
+}: CheckpointMultiSelectProps) {
+  const [open, setOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () =>
+      document.removeEventListener('mousedown', handleClickOutside)
+  }, [open])
+
+  const toggleValue = (optionValue: number) => {
+    onChange(
+      value.includes(optionValue)
+        ? value.filter((v) => v !== optionValue)
+        : [...value, optionValue]
+    )
+  }
+
+  const triggerLabel =
+    value.length === 0
+      ? 'All Process Checkpoints'
+      : value.length === 1
+        ? (options.find((option) => option.value === value[0])
+            ?.label ?? 'All Process Checkpoints')
+        : `${value.length} Process Checkpoints`
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        id="closing-ticket-checkpoint-filter"
+        className="flex h-8 min-w-[170px] items-center justify-between gap-1.5 rounded-md border border-[#D5CBB8] bg-white px-2 text-left text-xs text-[#1E3A47]"
+        onClick={() => setOpen((current) => !current)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <span className="truncate">{triggerLabel}</span>
+        <ChevronDown className="size-3.5 shrink-0 text-[#94a3b8]" />
+      </button>
+      {open && (
+        <div
+          role="listbox"
+          aria-multiselectable="true"
+          className="absolute left-0 z-20 mt-1 max-h-72 w-[240px] overflow-y-auto rounded-md border border-[#D5CBB8] bg-white p-1 shadow-lg"
+        >
+          <button
+            type="button"
+            className="flex w-full items-center rounded px-2 py-1.5 text-left text-xs font-semibold text-[#1E3A47] hover:bg-[#F5F2EC]"
+            onClick={() => onChange([])}
+          >
+            All Process Checkpoints
+          </button>
+          <div className="my-1 h-px bg-[#E2DAD0]" />
+          {options.map((option) => {
+            const checked = value.includes(option.value)
+            const count = counts[option.value]
+            return (
+              <label
+                key={option.value}
+                className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-xs text-[#1E3A47] hover:bg-[#F5F2EC]"
+              >
+                <input
+                  type="checkbox"
+                  className="size-3.5 shrink-0 accent-[#1E3A47]"
+                  checked={checked}
+                  onChange={() => toggleValue(option.value)}
+                />
+                <span className="flex-1">{option.label}</span>
+                {count !== undefined && (
+                  <span className="rounded-full bg-[#F1EFE8] px-1 text-[9px] font-semibold text-[#8a8578]">
+                    {count}
+                  </span>
+                )}
+              </label>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 interface ClosingTicketFiltersProps {
   filters: ClosingTicketFilters
   /** Full, unfiltered record set — used only to show a per-tab count badge. */
@@ -71,8 +181,9 @@ interface ClosingTicketFiltersProps {
   /**
    * Developer Mode only — lets a developer find tickets by their Process
    * Checkpoint (the multi-select "Create New Owner Checkpoint" choice —
-   * Buyer/Occupant Added, Document Uploaded, Ledgers Added, etc). A ticket
-   * matches when its checkpoint array contains the selected value.
+   * Buyer/Occupant Added, Document Uploaded, Ledgers Added, etc). More than
+   * one checkpoint can be picked at once; a ticket matches when its
+   * checkpoint array contains *any* of the selected values.
    */
   showCheckpointSlicer?: boolean
   onProcessCheckpointFilterChange: (
@@ -337,36 +448,17 @@ export function ClosingTicketFilters({
           )}
 
           {showCheckpointSlicer && (
-            <label
-              className="flex flex-col gap-0.5 text-xs font-medium text-[#5F5E5A]"
-              htmlFor="closing-ticket-checkpoint-filter"
-            >
+            <div className="flex flex-col gap-0.5 text-xs font-medium text-[#5F5E5A]">
               <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#94a3b8]">
                 Process Checkpoint
               </span>
-              <select
-                id="closing-ticket-checkpoint-filter"
-                className="h-8 min-w-[170px] rounded-md border border-[#D5CBB8] bg-white px-2 text-xs text-[#1E3A47]"
+              <CheckpointMultiSelect
+                options={PROCESS_CHECKPOINT_FILTER_OPTIONS}
                 value={filters.processCheckpointFilter}
-                onChange={(event) =>
-                  onProcessCheckpointFilterChange(
-                    event.target.value === ''
-                      ? ''
-                      : Number(event.target.value)
-                  )
-                }
-              >
-                <option value="">All Process Checkpoints</option>
-                {PROCESS_CHECKPOINT_FILTER_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                    {checkpointCounts[option.value] !== undefined
-                      ? ` (${checkpointCounts[option.value]})`
-                      : ''}
-                  </option>
-                ))}
-              </select>
-            </label>
+                counts={checkpointCounts}
+                onChange={onProcessCheckpointFilterChange}
+              />
+            </div>
           )}
 
           {showPackageTypeFilter && (
