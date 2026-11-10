@@ -7,6 +7,7 @@ import {
   ScrollText,
   ListChecks,
   FilePlus2,
+  CalendarClock,
   Database,
   PieChart,
 } from 'lucide-react'
@@ -56,6 +57,7 @@ import {
   DataverseTablesReference,
   BulkStatusChangeScreen,
   BulkCreateClosingsScreen,
+  BulkChargeDateScreen,
 } from '../../devTools'
 
 function getInitials(name: string | null): string {
@@ -151,6 +153,8 @@ export function ClosingTicketPage() {
   const [bulkStatusScreenOpen, setBulkStatusScreenOpen] =
     useState(false)
   const [bulkCreateScreenOpen, setBulkCreateScreenOpen] =
+    useState(false)
+  const [bulkChargeDateScreenOpen, setBulkChargeDateScreenOpen] =
     useState(false)
   const [userActivityOpen, setUserActivityOpen] = useState(false)
   const developerMode = useDeveloperMode()
@@ -292,6 +296,7 @@ export function ClosingTicketPage() {
     !selectedRecordId &&
     !bulkStatusScreenOpen &&
     !bulkCreateScreenOpen &&
+    !bulkChargeDateScreenOpen &&
     !userActivityOpen
 
   // The dashboard subtree unmounts while a details/bulk screen is open and
@@ -361,6 +366,22 @@ export function ClosingTicketPage() {
         <div className="min-h-screen bg-[#F5F2EC]">
           <BulkCreateClosingsScreen
             onBack={() => setBulkCreateScreenOpen(false)}
+            onApplied={refresh}
+          />
+        </div>
+      </>
+    )
+  }
+
+  if (bulkChargeDateScreenOpen) {
+    return (
+      <>
+        <TopNav userName={userName} onHelp={() => setHelpOpen(true)} />
+        <HelpCentreModal open={helpOpen} onClose={() => setHelpOpen(false)} />
+        <div className="min-h-screen bg-[#F5F2EC]">
+          <BulkChargeDateScreen
+            records={records}
+            onBack={() => setBulkChargeDateScreenOpen(false)}
             onApplied={refresh}
           />
         </div>
@@ -500,6 +521,14 @@ export function ClosingTicketPage() {
                   >
                     <FilePlus2 className="size-4" />
                     Bulk Create Closings
+                  </button>
+                  <button
+                    className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#D5CBB8] bg-white px-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#1E3A47] transition hover:bg-[#F5F2EC]"
+                    type="button"
+                    onClick={() => setBulkChargeDateScreenOpen(true)}
+                  >
+                    <CalendarClock className="size-4" />
+                    Bulk Set Charge Date
                   </button>
                 </div>
               )}
