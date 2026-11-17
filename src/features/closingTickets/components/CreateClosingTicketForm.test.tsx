@@ -63,4 +63,26 @@ describe('EditClosingTicketForm', () => {
     expect(sellerTwoName).toHaveValue('N/A')
     expect(updateClosingTicket).toHaveBeenCalled()
   })
+
+  it('labels the application upload as Transfer Application Document for transfer tickets', () => {
+    const record = {
+      ...closingTicketFixtures[0],
+      cr109_packagetype: 396620003,
+    } as ClosingTicketRecord
+
+    render(
+      <EditClosingTicketForm
+        record={record}
+        onCancel={vi.fn()}
+        onSaved={vi.fn()}
+      />
+    )
+
+    expect(
+      screen.getByText('Transfer Application Document')
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByText('Purchase Application Form')
+    ).not.toBeInTheDocument()
+  })
 })

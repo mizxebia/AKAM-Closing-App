@@ -39,6 +39,7 @@ import { useCurrentUser } from '../hooks/useCurrentUser'
 import { ProcessingDots } from '../../../components/feedback/ProcessingDots'
 import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import { getBuildings } from '../data/buildingListCache'
+import { formatPackageTypeLabel } from '../utils/packageTypeLabels'
 import {
   logAppFailure,
   writeActionLog,
@@ -289,15 +290,6 @@ function isSameCalendarDate(
   )
 }
 
-function formatChoiceLabel(value: string) {
-  return value
-    .replace(/_/g, ' ')
-    .replace(/([a-z])([A-Z])/g, '$1 $2')
-    .replace(/\b\w/g, (character) =>
-      character.toUpperCase()
-    )
-}
-
 function normalizeText(value: string) {
   const trimmedValue = value.trim()
 
@@ -423,6 +415,15 @@ function buildPayload(
   }
 }
 
+function getApplicationFormLabel(
+  packageType: ClosingTicketFormState['cr109_packagetype']
+) {
+  return packageType === TRANSFER_NEW_TCODE_PACKAGE_TYPE ||
+    packageType === COOP_TRANSFER_PACKAGE_TYPE
+    ? 'Transfer Application Document'
+    : 'Purchase Application Form'
+}
+
 function validateForm(
   formState: ClosingTicketFormState,
   pendingFiles?: PendingFiles,
@@ -490,8 +491,9 @@ function validateForm(
       uploadedFileNames?.cr109_purchaseapplicationform
     )
     if (!hasPendingForm && !hasUploadedForm) {
-      errors.cr7de_buildingnotondomicile =
-        'Purchase Application Form is required when building is not on Domecile.'
+      errors.cr7de_buildingnotondomicile = `${getApplicationFormLabel(
+        formState.cr109_packagetype
+      )} is required when building is not on Domecile.`
     }
   }
 
@@ -734,6 +736,10 @@ function ClosingTicketEditorForm({
           Number(option.value) !== COOP_TRANSFER_PACKAGE_TYPE
       ),
     []
+  )
+
+  const applicationFormLabel = getApplicationFormLabel(
+    formState.cr109_packagetype
   )
 
   const ticketStatusLabel = useMemo(() => {
@@ -1215,7 +1221,7 @@ function ClosingTicketEditorForm({
                     value={option.value}
                     disabled={!isEnabled}
                   >
-                    {formatChoiceLabel(option.label)}
+                    {formatPackageTypeLabel(option.label)}
                     {isEnabled ? '' : ' (Upcoming)'}
                   </option>
                 )
@@ -1730,7 +1736,7 @@ function ClosingTicketEditorForm({
                   </svg>
                   <p>
                     This building is not on Domecile. The{' '}
-                    <strong>Purchase Application Form</strong> must be
+                    <strong>{applicationFormLabel}</strong> must be
                     uploaded manually — it is required before saving.
                     Once saved, the ticket will automatically move to{' '}
                     <strong>Processing</strong>.
@@ -1763,7 +1769,7 @@ function ClosingTicketEditorForm({
               COOP_TRANSFER_PACKAGE_TYPE &&
               formState.cr109_packagetype !== SPONSER_PACKAGE_TYPE && (
               <FileUploadField
-                label="Purchase Application Form"
+                label={applicationFormLabel}
                 required={formState.cr7de_buildingnotondomicile}
                 error={errors.cr7de_buildingnotondomicile}
                 currentFileName={
@@ -1932,7 +1938,7 @@ function ClosingTicketEditorForm({
               Cannot Uncheck "Building Not on Domicile"
             </AlertDialogTitle>
             <AlertDialogDescription>
-              A Purchase Application Form has already been uploaded
+              A {applicationFormLabel} has already been uploaded
               manually for this ticket. This flag must stay checked,
               and the ticket will remain in Processing with Bot Status
               FormDownloaded, while that form is attached. Delete the
