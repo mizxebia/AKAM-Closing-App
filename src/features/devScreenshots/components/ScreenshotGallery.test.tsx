@@ -16,6 +16,7 @@ vi.mock('../api/screenshotService', () => ({
   findTicketScreenshots,
   formatScreenshotDisplayName: (name: string) =>
     name.replace(/\.[^/.]+$/, ''),
+  getCachedTicketScreenshots: () => null,
   getScreenshotDataUrl,
   resolveScreenshotFolderPath,
 }))

@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useCurrentUser } from '../../closingTickets/hooks/useCurrentUser'
 import { toast } from '../../../components/feedback/toastStore'
+import { prefetchScreenshotIndex } from '../api/screenshotService'
 
 // Service accounts allowed to see the Developer Mode toggle and the
 // bot-generated screenshot gallery it unlocks.
@@ -52,6 +53,12 @@ export function useDeveloperMode() {
         userEmail.toLowerCase()
       )
   )
+
+  // Warm the screenshot folder listing as soon as Admin Mode is on, so the
+  // Bot Screenshots section is ready by the time a ticket is opened.
+  useEffect(() => {
+    if (isAllowed && enabled) prefetchScreenshotIndex()
+  }, [isAllowed, enabled])
 
   const toggle = () => {
     if (enabled) {

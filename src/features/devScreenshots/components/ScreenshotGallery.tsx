@@ -9,10 +9,13 @@ import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import {
   findTicketScreenshots,
   formatScreenshotDisplayName,
+  getCachedTicketScreenshots,
   getScreenshotDataUrl,
   resolveScreenshotFolderPath,
   type TicketScreenshot,
 } from '../api/screenshotService'
+
+const IMAGE_LOAD_CONCURRENCY = 4
 
 interface ScreenshotWithDataUrl extends TicketScreenshot {
   dataUrl: string | null
@@ -21,6 +24,29 @@ interface ScreenshotWithDataUrl extends TicketScreenshot {
 
 interface ScreenshotGalleryProps {
   ticketId: string
+}
+
+function screenshotKey(screenshot: TicketScreenshot) {
+  return `${screenshot.id}|${screenshot.lastModified ?? ''}`
+}
+
+async function runWithConcurrency<T>(
+  items: T[],
+  limit: number,
+  worker: (item: T) => Promise<void>
+) {
+  let nextIndex = 0
+  const runners = Array.from(
+    { length: Math.min(limit, items.length) },
+    async () => {
+      while (nextIndex < items.length) {
+        const item = items[nextIndex]
+        nextIndex += 1
+        await worker(item)
+      }
+    }
+  )
+  await Promise.all(runners)
 }
 
 export function ScreenshotGallery({
@@ -37,54 +63,49 @@ export function ScreenshotGallery({
   const [searchedFolderPath, setSearchedFolderPath] = useState<
     string | null
   >(null)
+  const [refreshRequest, setRefreshRequest] = useState(0)
 
   useEffect(() => {
     let isMounted = true
+    const forceRefresh = refreshRequest > 0
+    const requestedImages = new Set<string>()
 
-    async function load() {
-      setLoading(true)
-      setError(null)
-
-      try {
-        resolveScreenshotFolderPath()
-          .then((path) => {
-            if (isMounted) setSearchedFolderPath(path)
-          })
-          .catch(() => {
-            // Non-critical — the folder path is only shown as a diagnostic
-            // hint, and findTicketScreenshots() below surfaces the real error.
-          })
-
-        const found = await findTicketScreenshots(ticketId)
-
-        if (!isMounted) return
-        setScreenshots(
-          found.map((item) => ({ ...item, dataUrl: null }))
+    const updateScreenshot = (
+      key: string,
+      patch: Partial<ScreenshotWithDataUrl>
+    ) => {
+      setScreenshots((current) =>
+        current.map((existing) =>
+          screenshotKey(existing) === key
+            ? { ...existing, ...patch }
+            : existing
         )
+      )
+    }
 
-        for (const item of found) {
+    const loadImages = async (items: TicketScreenshot[]) => {
+      const pending = items.filter(
+        (item) => !requestedImages.has(screenshotKey(item))
+      )
+      pending.forEach((item) =>
+        requestedImages.add(screenshotKey(item))
+      )
+
+      await runWithConcurrency(
+        pending,
+        IMAGE_LOAD_CONCURRENCY,
+        async (item) => {
+          const key = screenshotKey(item)
           try {
             const dataUrl = await getScreenshotDataUrl(item)
-            if (!isMounted) return
-            setScreenshots((current) =>
-              current.map((existing) =>
-                existing.id === item.id
-                  ? { ...existing, dataUrl }
-                  : existing
-              )
-            )
+            if (isMounted) updateScreenshot(key, { dataUrl })
           } catch (err) {
+            if (!isMounted) return
             const message =
               err instanceof Error
                 ? err.message
                 : 'Unable to load screenshot.'
-            setScreenshots((current) =>
-              current.map((existing) =>
-                existing.id === item.id
-                  ? { ...existing, loadError: message }
-                  : existing
-              )
-            )
+            updateScreenshot(key, { loadError: message })
             setError((current) =>
               [
                 current,
@@ -95,6 +116,53 @@ export function ScreenshotGallery({
             )
           }
         }
+      )
+    }
+
+    const showList = (items: TicketScreenshot[]) => {
+      setScreenshots((current) => {
+        const previous = new Map(
+          current.map((existing) => [
+            screenshotKey(existing),
+            existing,
+          ])
+        )
+        return items.map(
+          (item) =>
+            previous.get(screenshotKey(item)) ?? {
+              ...item,
+              dataUrl: null,
+            }
+        )
+      })
+      void loadImages(items)
+    }
+
+    async function load() {
+      setLoading(true)
+      setError(null)
+
+      resolveScreenshotFolderPath()
+        .then((path) => {
+          if (isMounted) setSearchedFolderPath(path)
+        })
+        .catch(() => {
+          // Non-critical — the folder path is only shown as a diagnostic
+          // hint, and findTicketScreenshots() below surfaces the real error.
+        })
+
+      // Render the last known listing instantly, then revalidate.
+      const cached = forceRefresh
+        ? null
+        : getCachedTicketScreenshots(ticketId)
+      if (cached) showList(cached)
+      else if (!forceRefresh) setScreenshots([])
+
+      try {
+        const found = await findTicketScreenshots(ticketId, {
+          forceRefresh,
+        })
+        if (isMounted) showList(found)
       } catch (err) {
         if (isMounted) {
           setError(
@@ -115,15 +183,24 @@ export function ScreenshotGallery({
     return () => {
       isMounted = false
     }
-  }, [ticketId])
+  }, [ticketId, refreshRequest])
 
   return (
     <section className="form-section">
       <h3 className="flex items-center gap-2">
         Bot Screenshots
-        {loading && (
-          <RefreshCw className="size-3.5 animate-spin text-[#94a3b8]" />
-        )}
+        <button
+          type="button"
+          className="inline-flex items-center rounded p-1 text-[#94a3b8] transition hover:text-[#1E3A47] disabled:cursor-default"
+          onClick={() => setRefreshRequest((count) => count + 1)}
+          disabled={loading}
+          aria-label="Refresh screenshots"
+          title="Refresh screenshots"
+        >
+          <RefreshCw
+            className={`size-3.5 ${loading ? 'animate-spin' : ''}`}
+          />
+        </button>
       </h3>
 
       {error && <StatusBanner type="error" message={error} />}
