@@ -3,7 +3,7 @@ import {
   X, BookOpen, FileText, Loader2, ClipboardCheck,
   Upload, SearchCheck, BadgeCheck, CheckCircle2,
   Clock, AlertTriangle, Info, ChevronDown, ChevronUp,
-  Zap, ArrowRight, ReceiptText, UserPlus, Mail, Download,
+  Zap, ArrowRight, ReceiptText, UserPlus, Mail, Download, Building2,
 } from 'lucide-react'
 import { cn } from '../../../lib/utils'
 
@@ -11,7 +11,7 @@ import { cn } from '../../../lib/utils'
 
 type BadgeVariant = 'user' | 'desktop' | 'cloud'
 type OutcomeVariant = 'success' | 'failure'
-type HelpTab = 'quick' | 'process' | 'payments' | 'yardi' | 'newowner' | 'sendtoar'
+type HelpTab = 'quick' | 'process' | 'packages' | 'payments' | 'yardi' | 'newowner' | 'sendtoar'
 
 interface StatusEntry { label: string; value: string }
 interface StepCardProps {
@@ -78,7 +78,7 @@ const STATUS_CARDS: StatusCard[] = [
       'If a charge is marked Partially Paid, its Move flag is automatically disabled — only fully outstanding charges can be moved.',
       'Go to the New Owner Ticket tab and review all the details carefully.',
       'If not done yet, click "Generate New Owner Ticket" — the PDF must be present before Validate appears.',
-      'Confirm all three documents are present: Purchase Application Form, RPTT / ACRIS Document, and New Owner Ticket PDF.',
+      'Confirm all required documents are present: Purchase Application Form (called Transfer Application Document for Transfer New T-Code), RPTT / ACRIS Document, and New Owner Ticket PDF. Sponsor tickets have no Purchase Application Form, so only the RPTT and New Owner Ticket PDF are needed.',
       'Click "Validate" — this cannot be undone. The ticket will lock permanently.',
     ],
   },
@@ -234,15 +234,17 @@ interface BehaviourCard { icon: string; title: string; body: string }
 
 const BEHAVIOURS: BehaviourCard[] = [
   { icon: '🏢', title: 'Building not on Domecile — manual upload path',
-    body: 'When the "Building not on Domecile" flag is checked, automated Domecile dump and purchase form download stages are skipped. You must upload the Purchase Application Form manually in the Closing Details tab before saving. On save, the ticket jumps straight to Processing with Bot Status FormDownloaded and continues from Stage 6 (data extraction) onward.' },
+    body: 'When the "Building not on Domecile" flag is checked, automated Domecile dump and purchase form download stages are skipped. You must upload the Purchase Application Form manually in the Closing Details tab before saving. On save, the ticket jumps straight to Processing with Bot Status FormDownloaded and continues from Stage 6 (data extraction) onward. Exception: for Sponsor tickets the flag is always on and locked, and no form is uploaded — see the Sponsor & Transfer tab.' },
+  { icon: '🏛', title: 'Sponsor and Transfer New T-Code package types',
+    body: 'Sponsor and Transfer New T-Code tickets follow a different path from Condo Sale and Co-op Sale. Sponsor tickets skip Domecile retrieval and have no Purchase Application Form; Transfer New T-Code tickets use a "Transfer Application Document" and treat the buyer as new to Yardi. Open the Sponsor & Transfer tab for the exact Ticket Status and Bot Status changes at every step.' },
   { icon: '🔤', title: 'Seller T-Code is required and must start with T',
     body: 'When creating a new closing ticket, Seller T-Code is a required field. The value must begin with the letter T (case-insensitive — both T and t are accepted). If the field is left blank or starts with any other character, a validation error will appear. The error clears as soon as a valid value is entered.' },
   { icon: '⚡', title: 'Auto Move Charges — let the app do the matching',
     body: 'When the ticket is in Validate Closings status, an "Auto Move Charges" button appears in the Yardi Charges tab. It automatically compares your invoice payments against unpaid YARDI charges — matching by charge type and exact amount — and ticks Move for charges that have already been paid by the buyer. Only Payable To: Building invoices are used for matching. You can run it multiple times. Partial charges are never moved.' },
   { icon: '🔂', title: 'Partially Paid charges cannot be moved',
     body: 'If an unpaid charge is marked as Partially Paid, its Move toggle is automatically disabled. Partial charges can never be transferred to the new owner. Untick Partially Paid and click Save All if you need to enable Move for that charge.' },
-  { icon: '📄', title: 'Three documents required before Validate',
-    body: 'The Validate button only appears when all three documents are present: Purchase Application Form, RPTT / ACRIS Document, and New Owner Ticket PDF. Bot Status must also be YARDIChargesFetched or YardiChargesUpdated. If the ticket is in Validate Closings but a document is still missing, a warning banner in the New Owner Ticket tab names exactly which one(s).' },
+  { icon: '📄', title: 'Required documents before Validate',
+    body: 'The Validate button only appears when every required document is present. For Condo Sale, Co-op Sale and Transfer New T-Code that is three documents: Purchase Application Form (shown as "Transfer Application Document" for Transfer New T-Code), RPTT / ACRIS Document, and New Owner Ticket PDF. Sponsor (and Co-op Transfer) tickets have no Purchase Application Form, so only the RPTT and New Owner Ticket PDF are needed. Bot Status must also be YARDIChargesFetched or YardiChargesUpdated. If the ticket is in Validate Closings but a document is still missing, a warning banner in the New Owner Ticket tab names exactly which one(s).' },
   { icon: '❓', title: 'A "TBD" scheduled charge amount blocks Validate',
     body: 'If any Scheduled Charge in the Yardi Charges tab still has its Amount set to "TBD", the Validate button is hidden and a warning banner appears in both the Yardi Charges tab and the New Owner Ticket tab. Update the charge with its actual confirmed amount and click Save All to clear the block.' },
   { icon: '🔒', title: 'Validation is permanent — ticket locks forever',
@@ -590,6 +592,11 @@ function FlowchartContent() {
           The <strong className="text-slate-700">Seller T-Code</strong> is also required when creating the ticket and must start with the letter <strong className="text-slate-700">T</strong>.
         </p>
       </div>
+      <Arrow />
+
+      <NoteBox icon="🏛" title="Sponsor &amp; Transfer package types">
+        This flowchart is the standard path used by <strong>Condo Sale</strong> and <strong>Co-op Sale</strong>. <strong>Sponsor</strong> and <strong>Transfer New T-Code</strong> tickets differ at creation and in the documents they need — see the <strong>Sponsor &amp; Transfer</strong> tab for their own status-by-status flow.
+      </NoteBox>
       <Arrow />
 
       <PhaseHeader number="Phase 2" title="Seller Information Collection" />
@@ -1042,6 +1049,9 @@ function NewOwnerTicketContent() {
           <p className="text-[12px] text-slate-500 mt-1 leading-relaxed">
             The automation populates the New Owner Ticket using two source documents. Each document is the authoritative source for a specific set of fields — they are never mixed.
           </p>
+          <p className="text-[11.5px] text-amber-800 mt-2 leading-relaxed rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+            <strong>Sponsor tickets have no Purchase Application Form.</strong> The fields it normally supplies (contact details, occupancy, financials) are not auto-filled — enter them manually. For <strong>Transfer New T-Code</strong> tickets the same document is called the <strong>Transfer Application Document</strong>.
+          </p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
@@ -1379,6 +1389,160 @@ function SendToARContent() {
   )
 }
 
+// ─── Sponsor & Transfer Tab ───────────────────────────────────────────────────
+
+function SponsorTransferContent() {
+  return (
+    <div className="flex flex-col items-center gap-0 max-w-3xl mx-auto">
+      <div className="w-full rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-3 mb-6">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#C9A96E]">Package Types</p>
+        <h3 className="text-[15px] font-bold text-slate-800">Sponsor and Transfer New T-Code</h3>
+        <p className="text-[12px] text-slate-500 leading-relaxed">
+          Condo Sale and Co-op Sale use the full automated flow shown in the Process Overview tab. Sponsor and Transfer New T-Code
+          tickets use the same pipeline from the RPTT step onward, but start differently and need different documents. Pick the
+          package type when you create the ticket — the sections below show the Ticket Status and Bot Status at every step.
+        </p>
+        <div className="overflow-hidden rounded-xl border border-slate-200">
+          <table className="w-full text-[12px] border-collapse bg-white">
+            <thead>
+              <tr className="bg-[#EDE8E0] text-left text-[10px] font-bold uppercase tracking-wide text-slate-600">
+                <th className="px-3 py-2">&nbsp;</th>
+                <th className="px-3 py-2">Sponsor</th>
+                <th className="px-3 py-2">Transfer New T-Code</th>
+              </tr>
+            </thead>
+            <tbody className="text-slate-600">
+              {[
+                ['Starts at', 'Bot Status Domecile Dump Retrieved (Domecile retrieval skipped)', 'Draft — normal Domecile retrieval'],
+                ['Building not on Domecile', 'Always on and locked', 'Optional, as for any package'],
+                ['Application document', 'None — not shown, not required', 'Transfer Application Document (same slot as the Purchase Application Form)'],
+                ['Buyer exists in Yardi', 'Unchanged', 'Always off and locked — buyer is new to Yardi'],
+                ['Documents needed to Validate', 'RPTT + New Owner Ticket PDF', 'Transfer Application Document + RPTT + New Owner Ticket PDF'],
+                ['Invoice template', 'Generic (same as Co-op Sale)', 'Generic (same as Co-op Sale)'],
+              ].map(([label, sponsor, transfer]) => (
+                <tr key={label} className="border-t border-slate-100 align-top">
+                  <td className="px-3 py-2 font-semibold text-slate-700 whitespace-nowrap">{label}</td>
+                  <td className="px-3 py-2">{sponsor}</td>
+                  <td className="px-3 py-2">{transfer}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ── Sponsor ── */}
+      <PhaseHeader number="Sponsor" title="Status flow for Sponsor tickets" />
+      <Arrow />
+      <StepCard variant="user" stage="Stage 1" title="Create Closing Ticket"
+        subtitle="Package Type = Sponsor. Building not on Domecile is locked on; no Purchase Application Form is requested."
+        statuses={[{ label: 'Ticket Status', value: 'Draft' }, { label: 'Bot Status', value: 'Domecile Dump Retrieved' }]} />
+      <Arrow short />
+      <NoteBox icon="⏭" title="Stage 2 skipped">
+        Sponsor buildings are not on Domecile, so the Domecile dump (<strong>NSC_DOMECILE_DUMP</strong>) never runs — the ticket is created already at Bot Status <strong>Domecile Dump Retrieved</strong> and goes straight to seller information retrieval.
+      </NoteBox>
+      <Arrow />
+      <StepCard variant="desktop" stage="Stage 3" title="Retrieve Seller Information"
+        subtitle="Desktop Flow: NSC Yardi Seller Details"
+        statuses={[{ label: 'Trigger', value: 'Bot Status = Domecile Dump Retrieved' }]} />
+      <Arrow short />
+      <DecisionRow
+        success={[{ label: 'Ticket Status', value: 'Ready For Post Closing' }, { label: 'Bot Status', value: 'Domecile Dump Retrieved (unchanged)' }]}
+        failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: 'Failed Seller Info Retrieval' }]} />
+      <Arrow short />
+      <NoteBox icon="📌" title="Bot Status does not advance after Stage 3">
+        Because the building is flagged <em>not on Domecile</em>, the bot moves the ticket to <strong>Ready For Post Closing</strong> but leaves Bot Status at <strong>Domecile Dump Retrieved</strong>. This is expected for Sponsor tickets. Stages 4–6 (purchase form download, upload and data extraction) do not apply — there is no Purchase Application Form.
+      </NoteBox>
+      <Arrow />
+      <PhaseHeader number="Next" title="Same as the standard flow" />
+      <Arrow />
+      <StepCard variant="user" stage="Stage 7" title="Upload RPTT, then Move to Post Closing"
+        subtitle="Closing Details tab — RPTT upload is only enabled in Ready For Post Closing"
+        statuses={[{ label: 'On upload', value: 'Ready For Post Closing / RPTT Uploaded' }, { label: 'On Move', value: 'Post Closing / RPTT Uploaded' }]} />
+      <Arrow />
+      <StepCard variant="cloud" stage="Stages 8–9" title="Extract RPTT, then fetch YARDI charges"
+        subtitle="NSC_RPTT_DataExtraction → NSC Fetch YARDI Charges"
+        statuses={[{ label: 'After 8', value: 'Validate Closings / RPTT Extracted' }, { label: 'After 9', value: 'Validate Closings / YARDI Charges Fetched' }]} />
+      <Arrow />
+      <StepCard variant="user" stage="Stage 10" title="Review and Validate"
+        subtitle="Needs only the RPTT and the New Owner Ticket PDF — there is no Purchase Application Form to wait for"
+        statuses={[{ label: 'Ticket Status', value: 'Transferring Building' }, { label: 'Bot Status', value: 'Information Validated' }]} />
+      <Arrow />
+      <StepCard variant="desktop" stage="Stages 11–12" title="Update seller, create new owner"
+        subtitle="NSC Yardi Seller Update → NSC Yardi Create New Owner"
+        statuses={[{ label: 'After 11', value: 'Transferring Building / Seller Details Updated' }, { label: 'After 12', value: 'Completed / Owner Record Created' }]} />
+
+      {/* ── Transfer New T-Code ── */}
+      <div className="w-full mt-8" />
+      <PhaseHeader number="Transfer" title="Status flow for Transfer New T-Code tickets" />
+      <Arrow />
+      <StepCard variant="user" stage="Stage 1" title="Create Closing Ticket"
+        subtitle="Package Type = Transfer New T-Code. Buyer exists in Yardi is locked off — the buyer is new to Yardi."
+        statuses={[{ label: 'Ticket Status', value: 'Draft' }, { label: 'Bot Status', value: 'Draft' }]} />
+      <Arrow short />
+      <NoteBox icon="🏢" title="Building not on Domecile (optional)">
+        If you tick it, upload the <strong>Transfer Application Document</strong> before saving. The ticket then goes straight to <strong>Processing / Form Downloaded</strong> and resumes at Stage 6, exactly like other package types.
+      </NoteBox>
+      <Arrow />
+      <StepCard variant="cloud" stage="Stage 2" title="Retrieve Domecile Information"
+        subtitle="Cloud Flow: NSC_DOMECILE_DUMP"
+        statuses={[{ label: 'Trigger', value: 'Bot Status = Draft' }]} />
+      <Arrow short />
+      <DecisionRow
+        success={[{ label: 'Ticket Status', value: 'Processing' }, { label: 'Bot Status', value: 'Domecile Dump Retrieved' }]}
+        failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: 'Failed Domecile Dump Retrieval' }]} />
+      <Arrow />
+      <StepCard variant="desktop" stage="Stage 3" title="Retrieve Seller Information"
+        subtitle="Desktop Flow: NSC Yardi Seller Details"
+        statuses={[{ label: 'Trigger', value: 'Follows Stage 2 success' }]} />
+      <Arrow short />
+      <DecisionRow
+        success={[{ label: 'Ticket Status', value: 'Processing' }, { label: 'Bot Status', value: 'Seller Info Retrieved' }]}
+        failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: 'Failed Seller Info Retrieval' }]} />
+      <Arrow />
+      <StepCard variant="desktop" stage="Stage 4" title="Download Transfer Application Document"
+        subtitle="Desktop Flow: NSC Purchase Application Form Download"
+        statuses={[{ label: 'Trigger', value: 'Follows Stage 3 success' }]} />
+      <Arrow short />
+      <DecisionRow
+        success={[{ label: 'Ticket Status', value: 'Processing' }, { label: 'Bot Status', value: 'Form Downloaded' }]}
+        failure={[{ label: 'Ticket Status', value: 'Processing' }, { label: 'Bot Status', value: 'Failed Form Download' }]} />
+      <Arrow />
+      <StepCard variant="cloud" stage="Stages 5–6" title="Upload and extract the document"
+        subtitle="NSC_PurchaseFormUpload → NSC_PurchaseApplication_DataExtraction"
+        statuses={[{ label: 'After 5', value: 'Processing / Purchase Form Upload Onedrive' }, { label: 'After 6', value: 'Ready For Post Closing / Purchase Form Data Extracted' }]} />
+      <Arrow />
+      <PhaseHeader number="Next" title="Same as the standard flow" />
+      <Arrow />
+      <StepCard variant="user" stage="Stage 7" title="Upload RPTT, then Move to Post Closing"
+        subtitle="Closing Details tab — RPTT upload is only enabled in Ready For Post Closing"
+        statuses={[{ label: 'On upload', value: 'Ready For Post Closing / RPTT Uploaded' }, { label: 'On Move', value: 'Post Closing / RPTT Uploaded' }]} />
+      <Arrow />
+      <StepCard variant="cloud" stage="Stages 8–9" title="Extract RPTT, then fetch YARDI charges"
+        subtitle="NSC_RPTT_DataExtraction → NSC Fetch YARDI Charges"
+        statuses={[{ label: 'After 8', value: 'Validate Closings / RPTT Extracted' }, { label: 'After 9', value: 'Validate Closings / YARDI Charges Fetched' }]} />
+      <Arrow />
+      <StepCard variant="user" stage="Stage 10" title="Review and Validate"
+        subtitle="Needs the Transfer Application Document, RPTT and New Owner Ticket PDF"
+        statuses={[{ label: 'Ticket Status', value: 'Transferring Building' }, { label: 'Bot Status', value: 'Information Validated' }]} />
+      <Arrow />
+      <StepCard variant="desktop" stage="Stages 11–12" title="Update seller, create new owner"
+        subtitle="NSC Yardi Seller Update → NSC Yardi Create New Owner"
+        statuses={[{ label: 'After 11', value: 'Transferring Building / Seller Details Updated' }, { label: 'After 12', value: 'Completed / Owner Record Created' }]} />
+      <Arrow short />
+      <NoteBox icon="🔁" title="Failures">
+        Any failure in these steps sets Ticket Status to <strong>Failed</strong> (except a failed form download, which stays in Processing and is retried). A banner on the ticket names the failed step — contact the Xebia team to reset it.
+      </NoteBox>
+
+      <div className="w-full mt-8">
+        <NoteBox icon="📤" title="After Completed — all package types">
+          Send to AR works the same for every package type: <strong>Completed → Sent to AR</strong>. Sponsor and Transfer New T-Code invoices use the generic invoice template.
+        </NoteBox>
+      </div>
+    </div>
+  )
+}
+
 // ─── Public modal ─────────────────────────────────────────────────────────────
 
 interface HelpCentreModalProps { open: boolean; onClose: () => void }
@@ -1386,6 +1550,7 @@ interface HelpCentreModalProps { open: boolean; onClose: () => void }
 const tabLabels: Record<HelpTab, string> = {
   quick: 'Quick Reference',
   process: 'Process Overview',
+  packages: 'Sponsor & Transfer',
   payments: 'Payments',
   yardi: 'Yardi Charges',
   newowner: 'New Owner Ticket',
@@ -1409,6 +1574,7 @@ export function HelpCentreModal({ open, onClose }: HelpCentreModalProps) {
   const tabs: { key: HelpTab; icon: React.ReactNode; label: string; sub: string }[] = [
     { key: 'quick',    icon: <ClipboardCheck size={13} />, label: 'Quick Reference',  sub: 'What do I do?' },
     { key: 'process',  icon: <Zap size={13} />,            label: 'Process Overview', sub: 'Full automation flow' },
+    { key: 'packages', icon: <Building2 size={13} />,      label: 'Sponsor & Transfer', sub: 'Status flow by package' },
     { key: 'payments', icon: <ReceiptText size={13} />,    label: 'Payments',         sub: 'Invoice & ledger guide' },
     { key: 'yardi',    icon: <BadgeCheck size={13} />,     label: 'Yardi Charges',    sub: 'Charges, Move & Partial' },
     { key: 'newowner', icon: <UserPlus size={13} />,       label: 'New Owner Ticket', sub: 'Buyers, Sellers & Occupancy' },
@@ -1537,7 +1703,7 @@ export function HelpCentreModal({ open, onClose }: HelpCentreModalProps) {
             {tabs.map(({ key, icon, label, sub }) => (
               <button key={key} type="button" onClick={() => setActiveTab(key)}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-2.5 rounded-t-xl transition-all duration-200',
+                  'flex items-center gap-1.5 px-2.5 py-2.5 rounded-t-xl transition-all duration-200',
                   activeTab === key ? 'text-[#1E3A47]' : 'text-slate-400 hover:text-slate-200'
                 )}
                 style={activeTab === key ? {
@@ -1561,6 +1727,7 @@ export function HelpCentreModal({ open, onClose }: HelpCentreModalProps) {
         <div className="flex-1 overflow-y-auto p-6" ref={contentRef}>
           {activeTab === 'quick'    && <QuickReferenceContent />}
           {activeTab === 'process'  && <><Legend /><FlowchartContent /></>}
+          {activeTab === 'packages' && <><Legend /><SponsorTransferContent /></>}
           {activeTab === 'payments' && <PaymentsContent />}
           {activeTab === 'yardi'    && <YardiChargesContent />}
           {activeTab === 'newowner' && <NewOwnerTicketContent />}

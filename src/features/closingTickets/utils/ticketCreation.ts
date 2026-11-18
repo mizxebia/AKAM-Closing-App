@@ -3,14 +3,6 @@
 // at 396620004 — that's the value Coop Transfer logic now targets.
 export const COOP_TRANSFER_PACKAGE_TYPE = 396620004
 
-/** The only package types currently selectable when creating a ticket — the
- * rest (Sponser, Tranfer New T Code, Coop Tranfer) are shown but disabled
- * as "Upcoming" until those workflows are built out. */
-export const ENABLED_PACKAGE_TYPES = new Set([
-  396620000, // condo_sale
-  396620001, // coop_sale
-])
-
 export const SPONSER_PACKAGE_TYPE = 396620002
 
 /** A buyer created fresh under a new T-code — unlike Coop Transfer, they

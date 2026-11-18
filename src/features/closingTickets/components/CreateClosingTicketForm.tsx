@@ -47,7 +47,6 @@ import {
 import {
   COOP_TRANSFER_PACKAGE_TYPE,
   DOMECILE_DUMP_RETRIEVED_BOT_STATUS_VALUE,
-  ENABLED_PACKAGE_TYPES,
   generateTicketId,
   SPONSER_PACKAGE_TYPE,
   TRANSFER_NEW_TCODE_PACKAGE_TYPE,
@@ -76,9 +75,6 @@ interface CreateClosingTicketFormProps {
   /** Called when the user chooses to view the existing ticket from the
    * duplicate-ticket confirmation dialog, with its closing ticket details id. */
   onViewExistingTicket?: (recordId: string) => void
-  /** Developer/Admin Mode unlocks every package type in the dropdown,
-   * not just Condo Sale/Coop Sale. */
-  developerModeEnabled?: boolean
 }
 
 interface EditClosingTicketFormProps {
@@ -542,7 +538,6 @@ export function CreateClosingTicketForm({
   onCancel,
   onCreated,
   onViewExistingTicket,
-  developerModeEnabled,
 }: CreateClosingTicketFormProps) {
   return (
     <ClosingTicketEditorForm
@@ -552,7 +547,6 @@ export function CreateClosingTicketForm({
       savingLabel="Saving..."
       onCancel={onCancel}
       onViewExistingTicket={onViewExistingTicket}
-      developerModeEnabled={developerModeEnabled}
       onSubmit={async (formState, pendingFiles) => {
         // When the building is not on Domecile, the ticket skips the automated
         // Domecile/Seller retrieval stages and goes straight to Processing with
@@ -651,7 +645,6 @@ function ClosingTicketEditorForm({
   onSuccess,
   onSubmitAndClose,
   onViewExistingTicket,
-  developerModeEnabled = false,
   readOnly = false,
   isCompleted = false,
   lockedMessage = 'Completed Successfully — this ticket is locked.',
@@ -673,7 +666,6 @@ function ClosingTicketEditorForm({
   onSuccess: () => Promise<void>
   onSubmitAndClose?: () => Promise<void>
   onViewExistingTicket?: (recordId: string) => void
-  developerModeEnabled?: boolean
   readOnly?: boolean
   isCompleted?: boolean
   lockedMessage?: string
@@ -1211,21 +1203,11 @@ function ClosingTicketEditorForm({
               }}
             >
               <option value="">Select package</option>
-              {packageTypeOptions.map((option) => {
-                const isEnabled =
-                  developerModeEnabled ||
-                  ENABLED_PACKAGE_TYPES.has(Number(option.value))
-                return (
-                  <option
-                    key={option.value}
-                    value={option.value}
-                    disabled={!isEnabled}
-                  >
-                    {formatPackageTypeLabel(option.label)}
-                    {isEnabled ? '' : ' (Upcoming)'}
-                  </option>
-                )
-              })}
+              {packageTypeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {formatPackageTypeLabel(option.label)}
+                </option>
+              ))}
             </select>
           </FormField>
 

@@ -10,9 +10,9 @@ package-type-specific differences on top of that base flow.
 |---|---|---|
 | `396620000` | Condo Sale | ✅ Enabled |
 | `396620001` | Coop Sale | ✅ Enabled |
-| `396620002` | Sponser | 🚧 Upcoming — Developer Mode only |
-| `396620003` | Tranfer New T Code | 🚧 Upcoming — Developer Mode only |
-| `396620004` | Coop Tranfer | 🚧 Upcoming — Developer Mode only |
+| `396620002` | Sponser | ✅ Enabled |
+| `396620003` | Tranfer New T Code | ✅ Enabled |
+| `396620004` | Coop Tranfer | 🚧 Not selectable — removed from the Package Type dropdown |
 
 > **Dataverse history note:** `396620002` was originally "coop_transfer" and
 > was renamed to "Sponser"; a new, distinct "Coop Tranfer" option was added at
@@ -20,12 +20,11 @@ package-type-specific differences on top of that base flow.
 > documentation or data referencing `396620002` as Coop Transfer predates
 > this remap.
 
-> **Availability gating:** In the ticket creation form's Package Type
-> dropdown, only Condo Sale and Coop Sale are selectable by default — the
-> other three show as "(Upcoming)" and are disabled, since their automation
-> isn't built out yet. They become selectable only when Developer Mode is
-> enabled. (`src/features/closingTickets/utils/ticketCreation.ts` —
-> `ENABLED_PACKAGE_TYPES`)
+> **Availability:** Condo Sale, Coop Sale, Sponser and Tranfer New T Code are
+> all selectable in the ticket creation form's Package Type dropdown for every
+> user (no Developer Mode required). Coop Tranfer is filtered out of the
+> dropdown entirely. The in-app Help Centre's **Sponsor & Transfer** tab
+> mirrors the status flows documented below.
 
 > 🔍 **Verified against the real solution.** Findings marked 🔍 below were
 > confirmed by reading the actual exported Dataverse solution (cloud flow
@@ -128,7 +127,7 @@ fetch) once a new document is uploaded.
 
 ## Sponser (`396620002`)
 
-🚧 Not yet enabled for general use — selectable only in Developer Mode.
+✅ Selectable by all users.
 
 Differences from the standard flow:
 
@@ -196,13 +195,15 @@ never actually reaches `396620000` for a real Sponser ticket at all.)
 
 ## Tranfer New T Code (`396620003`)
 
-🚧 Not yet enabled for general use — selectable only in Developer Mode.
+✅ Selectable by all users.
 
 Differences from the standard flow:
 
 - **"Buyer exists in Yardi" is forced `false`** and locked — this buyer is
   new to Yardi by definition, so there's nothing to confirm.
 - Buyer T-Code field stays hidden (shown only for Coop Tranfer).
+- The Purchase Application Form is labelled **"Transfer Application
+  Document"** in the app (same `cr109_purchaseapplicationform` column).
 
 🔍 **Confirmed: no flow in the exported solution branches on this package
 type at all.** Unlike Sponser, Tranfer New T Code tickets aren't excluded
@@ -217,7 +218,7 @@ differences noted above don't change anything at the automation layer.
 
 ## Coop Tranfer (`396620004`)
 
-🚧 Not yet enabled for general use — selectable only in Developer Mode.
+🚧 Not selectable — removed from the Package Type dropdown.
 
 Differences from the standard flow:
 

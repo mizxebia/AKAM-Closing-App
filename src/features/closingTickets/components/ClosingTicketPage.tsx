@@ -643,7 +643,6 @@ export function ClosingTicketPage() {
                   setCreateFormOpen(false)
                   setSelectedRecordId(recordId)
                 }}
-                developerModeEnabled={developerMode.enabled}
               />
             </div>
           </SheetContent>
