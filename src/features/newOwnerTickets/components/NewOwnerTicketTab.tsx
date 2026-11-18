@@ -860,40 +860,53 @@ export function NewOwnerTicketTab({
     []
   )
 
-  const saveRecord = useCallback(async () => {
+  // Validates and saves the form (blank fields become 'N/A' via toPayload),
+  // then reloads form state from the saved record. Returns null when
+  // validation fails; throws if the save itself fails.
+  const persistFormState = useCallback(async () => {
     const nextValidationErrors = validateForm(formState)
     setValidationErrors(nextValidationErrors)
 
     if (Object.keys(nextValidationErrors).length > 0) {
-      setError('Resolve the highlighted fields before saving.')
-      return
+      return null
     }
 
+    const payload = toPayload(formState, Boolean(record))
+    const savedRecord = await saveNewOwnerTicket(
+      record?.cr7de_newownerticketdetailsid ?? null,
+      payload,
+      record ?? undefined
+    )
+
+    // Write stitched fields back to the closing ticket
+    await updateClosingTicket(
+      closingTicket.cr7de_closingticketdetailsid,
+      buildClosingPayloadFromNewOwnerTicket(payload)
+    )
+    await onSaved()
+
+    // savedRecord is now always non-null (service re-fetches on 204).
+    // Use it as the source of truth so form state reflects what is
+    // actually in Dataverse and the record ID is preserved for future saves.
+    if (savedRecord) {
+      setRecord(savedRecord)
+      setFormState(getInitialFormState(closingTicket, savedRecord))
+    }
+
+    return savedRecord ?? null
+  }, [closingTicket, formState, onSaved, record])
+
+  const saveRecord = useCallback(async () => {
     setSaving(true)
     setError(null)
     setMessage(null)
 
     try {
-      const payload = toPayload(formState, Boolean(record))
-      const savedRecord = await saveNewOwnerTicket(
-        record?.cr7de_newownerticketdetailsid ?? null,
-        payload,
-        record ?? undefined
-      )
+      const savedRecord = await persistFormState()
 
-      // Write stitched fields back to the closing ticket
-      await updateClosingTicket(
-        closingTicket.cr7de_closingticketdetailsid,
-        buildClosingPayloadFromNewOwnerTicket(payload)
-      )
-      await onSaved()
-
-      // savedRecord is now always non-null (service re-fetches on 204).
-      // Use it as the source of truth so form state reflects what is
-      // actually in Dataverse and the record ID is preserved for future saves.
-      if (savedRecord) {
-        setRecord(savedRecord)
-        setFormState(getInitialFormState(closingTicket, savedRecord))
+      if (!savedRecord) {
+        setError('Resolve the highlighted fields before saving.')
+        return
       }
 
       setMessage('New owner ticket saved successfully.')
@@ -912,7 +925,7 @@ export function NewOwnerTicketTab({
     } finally {
       setSaving(false)
     }
-  }, [closingTicket, formState, onSaved, record])
+  }, [closingTicket, persistFormState])
 
   const hasUnconfirmedScheduledCharges =
     getUnconfirmedScheduledCharges(scheduledCharges).length > 0
@@ -944,6 +957,15 @@ export function NewOwnerTicketTab({
     setMessage(null)
 
     try {
+      // Persist the form first so blank fields (e.g. Additional Occupants)
+      // are stored as 'N/A' before the ticket locks and the PDF regenerates.
+      const savedRecord = await persistFormState()
+
+      if (!savedRecord) {
+        setError('Resolve the highlighted fields before validating.')
+        return
+      }
+
       await updateClosingTicket(recordId, {
         cr7de_ticketstatus: TRANSFERRING_BUILDING_STATUS,
         cr109_botstatus: INFORMATION_VALIDATED_BOT_STATUS,
@@ -958,25 +980,23 @@ export function NewOwnerTicketTab({
         tableName: 'cr7de_newownerticketdetailses',
         action: 'Validate Closing',
         details: {
-          validatedData: record
-            ? {
-                ticketId: record.cr7de_ticketid,
-                primaryOwnerName: record.cr7de_newprimaryownername,
-                primaryOwnerTCode: record.cr109_primaryownertcode,
-                secondaryOwnerName:
-                  record.cr7de_newsecondaryownername,
-                purchaser1Occupancy:
-                  record.cr109_purchaser1occupancy,
-                purchaser2Occupancy:
-                  record.cr109_purchaser2occupancy,
-                sellerName: record.cr7de_sellername,
-                sellerTCode: record.cr7de_sellertcode,
-                purchasePrice: record.cr109_purchaseprice,
-                amountFinanced: record.cr109_amountfinanced,
-                shares: record.cr109_shares,
-                closingDate: record.cr7de_closingdate,
-              }
-            : null,
+          validatedData: {
+            ticketId: savedRecord.cr7de_ticketid,
+            primaryOwnerName: savedRecord.cr7de_newprimaryownername,
+            primaryOwnerTCode: savedRecord.cr109_primaryownertcode,
+            secondaryOwnerName:
+              savedRecord.cr7de_newsecondaryownername,
+            purchaser1Occupancy:
+              savedRecord.cr109_purchaser1occupancy,
+            purchaser2Occupancy:
+              savedRecord.cr109_purchaser2occupancy,
+            sellerName: savedRecord.cr7de_sellername,
+            sellerTCode: savedRecord.cr7de_sellertcode,
+            purchasePrice: savedRecord.cr109_purchaseprice,
+            amountFinanced: savedRecord.cr109_amountfinanced,
+            shares: savedRecord.cr109_shares,
+            closingDate: savedRecord.cr7de_closingdate,
+          },
         },
       })
 
@@ -1007,7 +1027,7 @@ export function NewOwnerTicketTab({
     closingTicket.cr7de_ticketid,
     onSaved,
     onGenerateTicket,
-    record,
+    persistFormState,
   ])
 
   // Clicking Validate opens the Scheduled Charges Start Date dialog first —
