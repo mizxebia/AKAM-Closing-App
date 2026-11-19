@@ -93,6 +93,8 @@ const PACKAGE_TYPE_LABELS: Record<string, string> = {
   coop_sale: 'Co-op Sale',
   Sponser: 'Sponsor',
   'Tranfer New T Code': 'Transfer New T-Code',
+  'Transfer New T Code': 'Transfer New T-Code',
+  TransferNewTCode: 'Transfer New T-Code',
   'Coop Tranfer': 'Co-op Transfer',
 }
 

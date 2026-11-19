@@ -14,9 +14,9 @@ import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import { Cr7de_closingticketdetailsescr109_packagetype } from '../../../generated/models/Cr7de_closingticketdetailsesModel'
 import {
   generateTicketId,
-  COOP_TRANSFER_PACKAGE_TYPE,
   DOMECILE_DUMP_RETRIEVED_BOT_STATUS_VALUE,
   SPONSER_PACKAGE_TYPE,
+  TRANSFER_NEW_TCODE_PACKAGE_TYPE,
 } from '../../closingTickets/utils/ticketCreation'
 import { createClosingTicket } from '../../closingTickets/api/closingTicketsService'
 import type { ClosingTicketCreateInput } from '../../closingTickets/types/closingTicket'
@@ -75,7 +75,6 @@ interface BulkRow {
   nycCode: string
   packageType: number | ''
   sellerTCode: string
-  buyerTCode: string
   locationOfClosing: string
   buildingLookup: 'idle' | 'checking' | 'found' | 'notfound'
   buildingLabel?: string
@@ -88,8 +87,7 @@ type RowErrors = Partial<
     | 'unitNumber'
     | 'nycCode'
     | 'packageType'
-    | 'sellerTCode'
-    | 'buyerTCode',
+    | 'sellerTCode',
     string
   >
 >
@@ -107,7 +105,6 @@ function createEmptyRow(): BulkRow {
     nycCode: '',
     packageType: '',
     sellerTCode: '',
-    buyerTCode: '',
     locationOfClosing: DEFAULT_LOCATION,
     buildingLookup: 'idle',
     status: 'pending',
@@ -133,19 +130,13 @@ function validateRow(row: BulkRow): RowErrors {
   ) {
     errors.sellerTCode = "Must start with 'T'"
   }
-  if (
-    row.packageType === COOP_TRANSFER_PACKAGE_TYPE &&
-    !row.buyerTCode.trim()
-  ) {
-    errors.buyerTCode = 'Required for Coop Transfer'
-  }
 
   return errors
 }
 
 // Splits pasted spreadsheet/CSV data (tab or comma separated) into rows.
 // Expected column order: Unit Number, NYC Code, Package Type, Seller
-// T-Code, Buyer T-Code (optional), Location of Closing (optional).
+// T-Code, Location of Closing (optional).
 function parsePastedText(text: string): BulkRow[] {
   return text
     .split(/\r?\n/)
@@ -160,7 +151,6 @@ function parsePastedText(text: string): BulkRow[] {
         nycCode = '',
         packageTypeRaw = '',
         sellerTCode = '',
-        buyerTCode = '',
         locationOfClosing = '',
       ] = cells
 
@@ -170,7 +160,6 @@ function parsePastedText(text: string): BulkRow[] {
         nycCode,
         packageType: resolvePackageType(packageTypeRaw),
         sellerTCode,
-        buyerTCode,
         locationOfClosing: locationOfClosing || DEFAULT_LOCATION,
       }
     })
@@ -316,9 +305,12 @@ export function BulkCreateClosingsScreen({
       const rowTicketId = generateTicketId()
 
       try {
-        const isCoopTransfer =
-          row.packageType === COOP_TRANSFER_PACKAGE_TYPE
         const isSponser = row.packageType === SPONSER_PACKAGE_TYPE
+        // Sponser and Transfer New T-Code skip Domecile retrieval, matching
+        // the regular create form.
+        const skipsDomecileDump =
+          isSponser ||
+          row.packageType === TRANSFER_NEW_TCODE_PACKAGE_TYPE
         const payload: ClosingTicketCreateInput = {
           cr7de_ticketid: rowTicketId,
           cr7de_ticketstatus: 716070000,
@@ -328,14 +320,11 @@ export function BulkCreateClosingsScreen({
             | ClosingTicketCreateInput['cr109_packagetype']
             | undefined,
           cr7de_sellertcode: row.sellerTCode.trim(),
-          cr7de_buyertcode: isCoopTransfer
-            ? row.buyerTCode.trim()
-            : undefined,
-          cr7de_buyerexistsinyardi: isCoopTransfer,
+          cr7de_buyerexistsinyardi: false,
           cr109_locationofclosing:
             row.locationOfClosing.trim() || DEFAULT_LOCATION,
           cr109_legalname: row.buildingLabel,
-          cr109_botstatus: isSponser
+          cr109_botstatus: skipsDomecileDump
             ? (DOMECILE_DUMP_RETRIEVED_BOT_STATUS_VALUE as ClosingTicketCreateInput['cr109_botstatus'])
             : undefined,
         }
@@ -446,7 +435,7 @@ export function BulkCreateClosingsScreen({
         <ShieldAlert className="size-3.5 shrink-0" />
         Creates standard Draft tickets in one batch (same rules
         as the regular form — Seller T-Code must start with
-        "T", Buyer T-Code is required for Coop Transfer).
+        "T").
         Tickets that need a manual Purchase Application Form
         upload should still be created individually. Each
         creation is recorded in the app logs.
@@ -506,14 +495,14 @@ export function BulkCreateClosingsScreen({
           <p className="text-xs font-medium text-[#475569]">
             Paste rows from a spreadsheet — one ticket per line,
             columns in order: Unit Number, NYC Code, Package
-            Type, Seller T-Code, Buyer T-Code, Location of
-            Closing (last two optional).
+            Type, Seller T-Code, Location of Closing (Location
+            is optional).
           </p>
           <textarea
             className="h-28 w-full rounded-md border border-[#e2e8f0] px-2 py-1.5 font-mono text-xs"
             placeholder={
               '9E\tNYC10010\tCondo Sale\tT12345\n' +
-              '4B\tNYC10022\tCoop Transfer\tT54321\tT99999'
+              '4B\tNYC10022\tSponsor\tT54321'
             }
             value={pasteText}
             onChange={(e) => setPasteText(e.target.value)}
@@ -551,7 +540,6 @@ export function BulkCreateClosingsScreen({
                 'Building',
                 'Package Type',
                 'Seller T-Code',
-                'Buyer T-Code',
                 'Location of Closing',
                 'Status',
                 '',
@@ -569,8 +557,6 @@ export function BulkCreateClosingsScreen({
           <tbody>
             {rows.map((row) => {
               const rowErrors = errorsByRow[row.id] ?? {}
-              const showBuyerTCode =
-                row.packageType === COOP_TRANSFER_PACKAGE_TYPE
 
               return (
                 <tr
@@ -660,20 +646,6 @@ export function BulkCreateClosingsScreen({
                         updateRow(row.id, 'sellerTCode', e.target.value)
                       }
                       placeholder="T12345"
-                    />
-                  </td>
-                  <td className="border-b border-[#EDE8E0] px-2 py-1.5">
-                    <input
-                      className={`h-8 w-24 rounded-md border px-2 text-xs ${rowErrors.buyerTCode ? 'border-red-400' : 'border-[#e2e8f0]'} ${showBuyerTCode ? '' : 'opacity-40'}`}
-                      value={row.buyerTCode}
-                      disabled={
-                        !showBuyerTCode ||
-                        (row.status !== 'pending' && row.status !== 'error')
-                      }
-                      onChange={(e) =>
-                        updateRow(row.id, 'buyerTCode', e.target.value)
-                      }
-                      placeholder={showBuyerTCode ? 'T54321' : '—'}
                     />
                   </td>
                   <td className="border-b border-[#EDE8E0] px-2 py-1.5">

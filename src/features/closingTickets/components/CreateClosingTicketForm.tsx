@@ -37,7 +37,6 @@ import type {
 } from '../types/closingTicket'
 import { useCurrentUser } from '../hooks/useCurrentUser'
 import { ProcessingDots } from '../../../components/feedback/ProcessingDots'
-import { StatusBanner } from '../../../components/feedback/StatusBanner'
 import { getBuildings } from '../data/buildingListCache'
 import { formatPackageTypeLabel } from '../utils/packageTypeLabels'
 import {
@@ -45,7 +44,6 @@ import {
   writeActionLog,
 } from '../../auditLog/api/auditLogService'
 import {
-  COOP_TRANSFER_PACKAGE_TYPE,
   DOMECILE_DUMP_RETRIEVED_BOT_STATUS_VALUE,
   generateTicketId,
   SPONSER_PACKAGE_TYPE,
@@ -101,6 +99,7 @@ const emptyFormState: ClosingTicketFormState = {
   cr109_sendtoar: true,
   cr109_shares: '',
   cr109_transactiontypedeal: '',
+  cr109_transferdocumentoptional: false,
   cr7de_buildingaddress: '',
   cr7de_buildingname: '',
   cr7de_buildingnotondomicile: false,
@@ -162,6 +161,8 @@ function getRecordFormState(
     cr109_shares: record.cr109_shares ?? '',
     cr109_transactiontypedeal:
       record.cr109_transactiontypedeal ?? '',
+    cr109_transferdocumentoptional:
+      record.cr109_transferdocumentoptional ?? false,
     cr7de_buildingaddress:
       record.cr7de_buildingaddress ?? '',
     cr7de_buildingname: record.cr7de_buildingname ?? '',
@@ -360,6 +361,11 @@ function buildPayload(
     cr109_transactiontypedeal:
       formState.cr109_transactiontypedeal ||
       undefined,
+    // Only meaningful for Transfer New T-Code; always saved as false elsewhere.
+    cr109_transferdocumentoptional:
+      formState.cr109_packagetype ===
+        TRANSFER_NEW_TCODE_PACKAGE_TYPE &&
+      formState.cr109_transferdocumentoptional,
     cr7de_buildingaddress: normalizeText(
       formState.cr7de_buildingaddress
     ),
@@ -367,7 +373,12 @@ function buildPayload(
       formState.cr7de_buildingname
     ),
     cr7de_buildingnotondomicile:
-      formState.cr7de_buildingnotondomicile,
+      formState.cr7de_buildingnotondomicile &&
+      !(
+        formState.cr109_packagetype ===
+          TRANSFER_NEW_TCODE_PACKAGE_TYPE &&
+        formState.cr109_transferdocumentoptional
+      ),
     cr7de_buyerexistsinyardi:
       formState.cr7de_buyerexistsinyardi,
     cr7de_buyername: normalizePartyName(
@@ -414,8 +425,7 @@ function buildPayload(
 function getApplicationFormLabel(
   packageType: ClosingTicketFormState['cr109_packagetype']
 ) {
-  return packageType === TRANSFER_NEW_TCODE_PACKAGE_TYPE ||
-    packageType === COOP_TRANSFER_PACKAGE_TYPE
+  return packageType === TRANSFER_NEW_TCODE_PACKAGE_TYPE
     ? 'Transfer Application Document'
     : 'Purchase Application Form'
 }
@@ -456,14 +466,6 @@ function validateForm(
   }
 
   if (
-    formState.cr109_packagetype === COOP_TRANSFER_PACKAGE_TYPE &&
-    !formState.cr7de_buyertcode.trim()
-  ) {
-    errors.cr7de_buyertcode =
-      'Buyer T-Code is required for Coop Transfer.'
-  }
-
-  if (
     formState.cr7de_closingagentemail.trim() &&
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
       formState.cr7de_closingagentemail
@@ -474,12 +476,17 @@ function validateForm(
   }
 
   // When building is not on Domecile, a purchase application form is
-  // required — except for Coop Transfer and Sponser, where it's not
-  // applicable (no sale/purchase transaction to document).
+  // required — except for Sponser, where it's not applicable (no
+  // sale/purchase transaction to document), and Transfer
+  // New T-Code tickets flagged as Transfer Document Optional.
   if (
     formState.cr7de_buildingnotondomicile &&
-    formState.cr109_packagetype !== COOP_TRANSFER_PACKAGE_TYPE &&
-    formState.cr109_packagetype !== SPONSER_PACKAGE_TYPE
+    formState.cr109_packagetype !== SPONSER_PACKAGE_TYPE &&
+    !(
+      formState.cr109_packagetype ===
+        TRANSFER_NEW_TCODE_PACKAGE_TYPE &&
+      formState.cr109_transferdocumentoptional
+    )
   ) {
     const hasPendingForm =
       pendingFiles?.cr109_purchaseapplicationform instanceof File
@@ -556,15 +563,28 @@ export function CreateClosingTicketForm({
         // stage, so it's created straight at bot status "Domecile Dump Retrieved".
         const isSponser =
           Number(formState.cr109_packagetype) === SPONSER_PACKAGE_TYPE
+        // Transfer New T-Code tickets are created as Draft at bot status
+        // "Domecile Dump Retrieved" so the seller-info scheduler picks them
+        // up (cr109_botstatus eq 396620006). The exception is the manual
+        // form path: a form was uploaded for a building not on Domecile, so
+        // it goes through Processing / FormDownloaded for data extraction.
+        const isTransferNewTCode =
+          Number(formState.cr109_packagetype) ===
+          TRANSFER_NEW_TCODE_PACKAGE_TYPE
+        const usesManualFormPath =
+          isNotOnDomecile &&
+          (!isTransferNewTCode ||
+            pendingFiles.cr109_purchaseapplicationform instanceof File)
         const payload = buildPayload({
           ...formState,
-          ...(isNotOnDomecile
+          ...(usesManualFormPath
             ? {
                 cr7de_ticketstatus: PROCESSING_TICKET_STATUS_VALUE as ClosingTicketFormState['cr7de_ticketstatus'],
                 cr109_botstatus: FORM_DOWNLOADED_BOT_STATUS_VALUE as ClosingTicketFormState['cr109_botstatus'],
               }
-            : isSponser
+            : isSponser || isTransferNewTCode
               ? {
+                  cr7de_ticketstatus: DRAFT_TICKET_STATUS_VALUE as ClosingTicketFormState['cr7de_ticketstatus'],
                   cr109_botstatus: DOMECILE_DUMP_RETRIEVED_BOT_STATUS_VALUE as ClosingTicketFormState['cr109_botstatus'],
                 }
               : {}),
@@ -683,14 +703,10 @@ function ClosingTicketEditorForm({
   const [saving, setSaving] = useState(false)
   const [buildingLookupOpen, setBuildingLookupOpen] =
     useState(false)
-  const [yardiFlagConfirmOpen, setYardiFlagConfirmOpen] =
-    useState(false)
   const [domicileUncheckWarningOpen, setDomicileUncheckWarningOpen] =
     useState(false)
   const [duplicateMatch, setDuplicateMatch] =
     useState<DuplicateClosingTicketMatch | null>(null)
-  const [packageTypeChangedAt, setPackageTypeChangedAt] =
-    useState<number | null>(null)
   const submitIntentRef = useRef<'save' | 'submit'>(
     'save'
   )
@@ -723,9 +739,6 @@ function ClosingTicketEditorForm({
     () =>
       toChoiceOptions(
         Cr7de_closingticketdetailsescr109_packagetype
-      ).filter(
-        (option) =>
-          Number(option.value) !== COOP_TRANSFER_PACKAGE_TYPE
       ),
     []
   )
@@ -1078,14 +1091,6 @@ function ClosingTicketEditorForm({
           {saveError}
         </div>
       )}
-      {packageTypeChangedAt !== null && (
-        <StatusBanner
-          key={packageTypeChangedAt}
-          type="success"
-          message="Package Type has been changed to Coop Transfer."
-          autoDismissMs={4000}
-        />
-      )}
 
       <fieldset disabled={readOnly} style={{ border: 'none', padding: 0, margin: 0 }}>
       <div className="create-closing-form-scroll">
@@ -1187,14 +1192,14 @@ function ClosingTicketEditorForm({
                       event.target.value
                     )) as ClosingTicketFormState['cr109_packagetype']
                 updateField('cr109_packagetype', nextValue)
-                // Coop Transfer buyers are already set up in Yardi, so flag it automatically.
-                // Any other package type hides the Buyer T-Code field, so clear the flag too.
-                if (nextValue === COOP_TRANSFER_PACKAGE_TYPE) {
-                  updateField('cr7de_buyerexistsinyardi', true)
-                } else {
-                  updateField('cr7de_buyerexistsinyardi', false)
-                  updateField('cr7de_buyertcode', '')
+                // Transfer Document Optional only applies to Transfer New T-Code.
+                if (nextValue !== TRANSFER_NEW_TCODE_PACKAGE_TYPE) {
+                  updateField('cr109_transferdocumentoptional', false)
                 }
+                // "Buyer exists in Yardi" is no longer user-facing — it is
+                // always saved as false, and Buyer T-Code is not collected.
+                updateField('cr7de_buyerexistsinyardi', false)
+                updateField('cr7de_buyertcode', '')
                 // Sponser closings aren't on Domecile and have no
                 // purchase application form to upload for them.
                 if (nextValue === SPONSER_PACKAGE_TYPE) {
@@ -1229,27 +1234,6 @@ function ClosingTicketEditorForm({
               />
             </FormField>
           )}
-
-          {isCreateMode &&
-            formState.cr109_packagetype ===
-              COOP_TRANSFER_PACKAGE_TYPE && (
-              <FormField
-                label="Buyer T-Code"
-                required
-                error={errors.cr7de_buyertcode}
-              >
-                <input
-                  value={formState.cr7de_buyertcode}
-                  onChange={(event) =>
-                    updateField(
-                      'cr7de_buyertcode',
-                      event.target.value
-                    )
-                  }
-                  placeholder="e.g. T12345"
-                />
-              </FormField>
-            )}
 
           {!isCreateMode && (
             <FormField label="Building Name">
@@ -1416,10 +1400,6 @@ function ClosingTicketEditorForm({
 
             <FormField
               label="Buyer T-Code"
-              required={
-                formState.cr109_packagetype ===
-                COOP_TRANSFER_PACKAGE_TYPE
-              }
               error={errors.cr7de_buyertcode}
             >
               <input
@@ -1492,21 +1472,6 @@ function ClosingTicketEditorForm({
                 }
               />
             </FormField>
-
-            {formState.cr109_packagetype === COOP_TRANSFER_PACKAGE_TYPE && (
-              <FormField label="Buyer Unit Number">
-                <input
-                  value={formState.cr109_buyerunitnumber}
-                  onChange={(event) =>
-                    updateField(
-                      'cr109_buyerunitnumber',
-                      event.target.value
-                    )
-                  }
-                  placeholder="e.g. 4A"
-                />
-              </FormField>
-            )}
             </div>
           </section>
         )}
@@ -1637,53 +1602,51 @@ function ClosingTicketEditorForm({
         <section className="form-section">
           <h3>Flags</h3>
           <div className="form-grid">
-          <CheckboxField
-            label="Building not on domicile"
-            checked={
-              formState.cr7de_buildingnotondomicile
-            }
-            disabled={
-              formState.cr109_packagetype === SPONSER_PACKAGE_TYPE
-            }
-            title="Building not on domicile cannot be changed while Package Type is Sponser."
-            onChange={(checked) => {
-              if (!checked && hasPurchaseApplicationForm) {
-                setDomicileUncheckWarningOpen(true)
-                return
+          {!(
+            formState.cr109_packagetype ===
+              TRANSFER_NEW_TCODE_PACKAGE_TYPE &&
+            formState.cr109_transferdocumentoptional
+          ) && (
+            <CheckboxField
+              label="Building not on domicile"
+              checked={
+                formState.cr7de_buildingnotondomicile
               }
-              updateField(
-                'cr7de_buildingnotondomicile',
-                checked
-              )
-            }}
-          />
-          <CheckboxField
-            label="Buyer exists in Yardi"
-            checked={formState.cr7de_buyerexistsinyardi}
-            disabled={
-              formState.cr109_packagetype ===
-                COOP_TRANSFER_PACKAGE_TYPE ||
-              formState.cr109_packagetype ===
-                TRANSFER_NEW_TCODE_PACKAGE_TYPE
-            }
-            title={
-              formState.cr109_packagetype ===
-              TRANSFER_NEW_TCODE_PACKAGE_TYPE
-                ? 'Buyer exists in Yardi cannot be checked while Package Type is Tranfer New T Code — the buyer is new to Yardi by definition.'
-                : 'Buyer exists in Yardi cannot be unchecked while Package Type is Coop Transfer.'
-            }
-            onChange={(checked) => {
-              if (
-                checked &&
-                formState.cr109_packagetype !==
-                  COOP_TRANSFER_PACKAGE_TYPE
-              ) {
-                setYardiFlagConfirmOpen(true)
-                return
+              disabled={
+                formState.cr109_packagetype === SPONSER_PACKAGE_TYPE
               }
-              updateField('cr7de_buyerexistsinyardi', checked)
-            }}
-          />
+              title="Building not on domicile cannot be changed while Package Type is Sponser."
+              onChange={(checked) => {
+                if (!checked && hasPurchaseApplicationForm) {
+                  setDomicileUncheckWarningOpen(true)
+                  return
+                }
+                updateField(
+                  'cr7de_buildingnotondomicile',
+                  checked
+                )
+              }}
+            />
+          )}
+          {formState.cr109_packagetype ===
+            TRANSFER_NEW_TCODE_PACKAGE_TYPE && (
+            <CheckboxField
+              label="Transfer document optional"
+              checked={formState.cr109_transferdocumentoptional}
+              title="When checked, the Transfer Application Document is not required to validate this closing."
+              onChange={(checked) => {
+                updateField(
+                  'cr109_transferdocumentoptional',
+                  checked
+                )
+                // With an optional transfer document the Domecile flag
+                // isn't used at all — reset it (the toggle is hidden).
+                if (checked) {
+                  updateField('cr7de_buildingnotondomicile', false)
+                }
+              }}
+            />
+          )}
           <CheckboxField
             label="Send to AR"
             checked={formState.cr109_sendtoar}
@@ -1699,8 +1662,6 @@ function ClosingTicketEditorForm({
           <section className="form-section">
             <h3>Documents</h3>
             {formState.cr7de_buildingnotondomicile &&
-              formState.cr109_packagetype !==
-                COOP_TRANSFER_PACKAGE_TYPE &&
               formState.cr109_packagetype !==
                 SPONSER_PACKAGE_TYPE && (
                 <div className="documents-info-banner">
@@ -1718,10 +1679,20 @@ function ClosingTicketEditorForm({
                   </svg>
                   <p>
                     This building is not on Domecile. The{' '}
-                    <strong>{applicationFormLabel}</strong> must be
-                    uploaded manually — it is required before saving.
-                    Once saved, the ticket will automatically move to{' '}
-                    <strong>Processing</strong>.
+                    <strong>{applicationFormLabel}</strong>{' '}
+                    {formState.cr109_transferdocumentoptional ? (
+                      <>
+                        is optional for this ticket — upload it only if
+                        you have it.
+                      </>
+                    ) : (
+                      <>
+                        must be uploaded manually — it is required
+                        before saving. Once saved, the ticket will
+                        automatically move to{' '}
+                        <strong>Processing</strong>.
+                      </>
+                    )}
                   </p>
                 </div>
               )}
@@ -1747,12 +1718,18 @@ function ClosingTicketEditorForm({
               </div>
             )}
             <div className="form-grid">
-            {formState.cr109_packagetype !==
-              COOP_TRANSFER_PACKAGE_TYPE &&
-              formState.cr109_packagetype !== SPONSER_PACKAGE_TYPE && (
+            {formState.cr109_packagetype !== SPONSER_PACKAGE_TYPE &&
+              !(
+                formState.cr109_packagetype ===
+                  TRANSFER_NEW_TCODE_PACKAGE_TYPE &&
+                formState.cr109_transferdocumentoptional
+              ) && (
               <FileUploadField
                 label={applicationFormLabel}
-                required={formState.cr7de_buildingnotondomicile}
+                required={
+                  formState.cr7de_buildingnotondomicile &&
+                  !formState.cr109_transferdocumentoptional
+                }
                 error={errors.cr7de_buildingnotondomicile}
                 currentFileName={
                   pendingFiles.cr109_purchaseapplicationform
@@ -1767,7 +1744,14 @@ function ClosingTicketEditorForm({
                   // A manually uploaded form means the building is being
                   // treated as not on Domicile — keep the flag and the
                   // Processing/FormDownloaded statuses in sync with that.
-                  if (file) {
+                  if (
+                    file &&
+                    !(
+                      formState.cr109_packagetype ===
+                        TRANSFER_NEW_TCODE_PACKAGE_TYPE &&
+                      formState.cr109_transferdocumentoptional
+                    )
+                  ) {
                     setFormState((currentState) => ({
                       ...currentState,
                       cr7de_buildingnotondomicile: true,
@@ -1871,44 +1855,6 @@ function ClosingTicketEditorForm({
           updateField('cr109_legalname', legalName)
         }}
       />
-
-      <AlertDialog
-        open={yardiFlagConfirmOpen}
-        onOpenChange={setYardiFlagConfirmOpen}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              Change Package Type to Coop Transfer?
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              "Buyer exists in Yardi" only applies to Coop
-              Transfer closings. Checking this flag will change
-              the Package Type to Coop Transfer. Do you want to
-              go ahead with the change?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white text-[#1E3A47] border border-[#1E3A47] hover:bg-[#1E3A47]/5">
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-[#1E3A47] text-[#F5F2EC] hover:bg-[#152d38]"
-              onClick={() => {
-                updateField(
-                  'cr109_packagetype',
-                  COOP_TRANSFER_PACKAGE_TYPE
-                )
-                updateField('cr7de_buyerexistsinyardi', true)
-                setPackageTypeChangedAt(Date.now())
-              }}
-            >
-              Change Package Type
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       <AlertDialog
         open={domicileUncheckWarningOpen}

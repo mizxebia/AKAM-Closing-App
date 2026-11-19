@@ -1413,11 +1413,10 @@ function SponsorTransferContent() {
             </thead>
             <tbody className="text-slate-600">
               {[
-                ['Starts at', 'Bot Status Domecile Dump Retrieved (Domecile retrieval skipped)', 'Draft — normal Domecile retrieval'],
+                ['Starts at', 'Processing / Form Downloaded (Domecile retrieval skipped; no form to download)', 'Draft / Domecile Dump Retrieved (Domecile retrieval skipped)'],
                 ['Building not on Domecile', 'Always on and locked', 'Optional, as for any package'],
-                ['Application document', 'None — not shown, not required', 'Transfer Application Document (same slot as the Purchase Application Form)'],
-                ['Buyer exists in Yardi', 'Unchanged', 'Always off and locked — buyer is new to Yardi'],
-                ['Documents needed to Validate', 'RPTT + New Owner Ticket PDF', 'Transfer Application Document + RPTT + New Owner Ticket PDF'],
+                ['Application document', 'None — not shown, not required', 'Transfer Application Document (same slot as the Purchase Application Form); can be made optional'],
+                ['Documents needed to Validate', 'RPTT + New Owner Ticket PDF', 'Transfer Application Document (unless marked optional) + RPTT + New Owner Ticket PDF'],
                 ['Invoice template', 'Generic (same as Co-op Sale)', 'Generic (same as Co-op Sale)'],
               ].map(([label, sponsor, transfer]) => (
                 <tr key={label} className="border-t border-slate-100 align-top">
@@ -1436,22 +1435,22 @@ function SponsorTransferContent() {
       <Arrow />
       <StepCard variant="user" stage="Stage 1" title="Create Closing Ticket"
         subtitle="Package Type = Sponsor. Building not on Domecile is locked on; no Purchase Application Form is requested."
-        statuses={[{ label: 'Ticket Status', value: 'Draft' }, { label: 'Bot Status', value: 'Domecile Dump Retrieved' }]} />
+        statuses={[{ label: 'Ticket Status', value: 'Processing' }, { label: 'Bot Status', value: 'Form Downloaded' }]} />
       <Arrow short />
-      <NoteBox icon="⏭" title="Stage 2 skipped">
-        Sponsor buildings are not on Domecile, so the Domecile dump (<strong>NSC_DOMECILE_DUMP</strong>) never runs — the ticket is created already at Bot Status <strong>Domecile Dump Retrieved</strong> and goes straight to seller information retrieval.
+      <NoteBox icon="⏭" title="Stages 2, 4, 5 and 6 skipped">
+        Sponsor buildings are not on Domecile and have no purchase form, so the Domecile dump, form download, upload and data extraction never run. The ticket is created already in <strong>Processing</strong> and is picked up directly for seller information retrieval (Sponsor tickets in Processing are matched by the Stage 3 scheduler).
       </NoteBox>
       <Arrow />
       <StepCard variant="desktop" stage="Stage 3" title="Retrieve Seller Information"
         subtitle="Desktop Flow: NSC Yardi Seller Details"
-        statuses={[{ label: 'Trigger', value: 'Bot Status = Domecile Dump Retrieved' }]} />
+        statuses={[{ label: 'Trigger', value: 'Package Type = Sponsor + Processing' }]} />
       <Arrow short />
       <DecisionRow
-        success={[{ label: 'Ticket Status', value: 'Ready For Post Closing' }, { label: 'Bot Status', value: 'Domecile Dump Retrieved (unchanged)' }]}
+        success={[{ label: 'Ticket Status', value: 'Ready For Post Closing' }, { label: 'Bot Status', value: 'Form Downloaded (unchanged)' }]}
         failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: 'Failed Seller Info Retrieval' }]} />
       <Arrow short />
       <NoteBox icon="📌" title="Bot Status does not advance after Stage 3">
-        Because the building is flagged <em>not on Domecile</em>, the bot moves the ticket to <strong>Ready For Post Closing</strong> but leaves Bot Status at <strong>Domecile Dump Retrieved</strong>. This is expected for Sponsor tickets. Stages 4–6 (purchase form download, upload and data extraction) do not apply — there is no Purchase Application Form.
+        Because the building is flagged <em>not on Domecile</em>, the bot sets <strong>Ready For Post Closing</strong> and the unit number but leaves Bot Status unchanged. This is expected for Sponsor tickets.
       </NoteBox>
       <Arrow />
       <PhaseHeader number="Next" title="Same as the standard flow" />
@@ -1477,28 +1476,24 @@ function SponsorTransferContent() {
       <PhaseHeader number="Transfer" title="Status flow for Transfer New T-Code tickets" />
       <Arrow />
       <StepCard variant="user" stage="Stage 1" title="Create Closing Ticket"
-        subtitle="Package Type = Transfer New T-Code. Buyer exists in Yardi is locked off — the buyer is new to Yardi."
-        statuses={[{ label: 'Ticket Status', value: 'Draft' }, { label: 'Bot Status', value: 'Draft' }]} />
+        subtitle="Package Type = Transfer New T-Code."
+        statuses={[{ label: 'Ticket Status', value: 'Draft' }, { label: 'Bot Status', value: 'Domecile Dump Retrieved' }]} />
       <Arrow short />
-      <NoteBox icon="🏢" title="Building not on Domecile (optional)">
-        If you tick it, upload the <strong>Transfer Application Document</strong> before saving. The ticket then goes straight to <strong>Processing / Form Downloaded</strong> and resumes at Stage 6, exactly like other package types.
+      <NoteBox icon="⏭" title="Stage 2 skipped — Transfer document optional">
+        The ticket is created already at Bot Status <strong>Domecile Dump Retrieved</strong>, so the Domecile dump never runs and seller information retrieval starts next. Tick <strong>Transfer document optional</strong> when the Transfer Application Document is not needed — it is then not required to Validate, and the <em>Building not on Domecile</em> flag is hidden and not used. (Without that option, ticking <em>Building not on Domecile</em> and uploading the document sends the ticket to <strong>Processing / Form Downloaded</strong> instead and it resumes at Stage 6.)
       </NoteBox>
-      <Arrow />
-      <StepCard variant="cloud" stage="Stage 2" title="Retrieve Domecile Information"
-        subtitle="Cloud Flow: NSC_DOMECILE_DUMP"
-        statuses={[{ label: 'Trigger', value: 'Bot Status = Draft' }]} />
-      <Arrow short />
-      <DecisionRow
-        success={[{ label: 'Ticket Status', value: 'Processing' }, { label: 'Bot Status', value: 'Domecile Dump Retrieved' }]}
-        failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: 'Failed Domecile Dump Retrieval' }]} />
       <Arrow />
       <StepCard variant="desktop" stage="Stage 3" title="Retrieve Seller Information"
         subtitle="Desktop Flow: NSC Yardi Seller Details"
-        statuses={[{ label: 'Trigger', value: 'Follows Stage 2 success' }]} />
+        statuses={[{ label: 'Trigger', value: 'Bot Status = Domecile Dump Retrieved' }]} />
       <Arrow short />
       <DecisionRow
         success={[{ label: 'Ticket Status', value: 'Processing' }, { label: 'Bot Status', value: 'Seller Info Retrieved' }]}
         failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: 'Failed Seller Info Retrieval' }]} />
+      <Arrow short />
+      <NoteBox icon="📌" title="If Building not on Domecile is ticked">
+        The bot instead sets <strong>Ready For Post Closing</strong> and leaves Bot Status unchanged — the same as Sponsor.
+      </NoteBox>
       <Arrow />
       <StepCard variant="desktop" stage="Stage 4" title="Download Transfer Application Document"
         subtitle="Desktop Flow: NSC Purchase Application Form Download"

@@ -1,13 +1,9 @@
-// Dataverse re-mapped this choice set: 396620002 ("coop_transfer") was
-// renamed to "Sponser" and a new, distinct "Coop Tranfer" option was added
-// at 396620004 — that's the value Coop Transfer logic now targets.
-export const COOP_TRANSFER_PACKAGE_TYPE = 396620004
-
+// 396620002 was originally "coop_transfer" and is now "Sponser"; the separate
+// "Coop Tranfer" option (396620004) has since been removed from Dataverse.
 export const SPONSER_PACKAGE_TYPE = 396620002
 
-/** A buyer created fresh under a new T-code — unlike Coop Transfer, they
- * don't already exist in Yardi, so there's no Buyer T-Code to collect and
- * "Buyer exists in Yardi" is always false for this package type. */
+/** A buyer created fresh under a new T-code — they don't already exist in
+ * Yardi, so "Buyer exists in Yardi" is always false for this package type. */
 export const TRANSFER_NEW_TCODE_PACKAGE_TYPE = 396620003
 
 /** cr109_botstatus value for "Domecile Dump Retrieved". A Sponser-package

@@ -22,7 +22,6 @@ import {
 } from '../../auditLog/api/auditLogService'
 import type { ClosingTicketRecord } from '../../closingTickets/types/closingTicket'
 import {
-  COOP_TRANSFER_PACKAGE_TYPE,
   SPONSER_PACKAGE_TYPE,
   TRANSFER_NEW_TCODE_PACKAGE_TYPE,
 } from '../../closingTickets/utils/ticketCreation'
@@ -718,17 +717,30 @@ export function NewOwnerTicketTab({
   readOnly = false,
   isCompleted = false,
 }: NewOwnerTicketTabProps) {
-  // Coop Transfer and Sponser closings have no sale/purchase transaction to
-  // document, so the Purchase Application Form never exists for them — it's
-  // dropped from the document list entirely rather than just made optional.
+  // Sponser closings have no sale/purchase transaction to document, so the
+  // Purchase Application Form never exists for them — it's dropped from the
+  // document list entirely rather than just made optional.
   const packageType = Number(closingTicket.cr109_packagetype)
   const skipsPurchaseApplicationForm =
-    packageType === COOP_TRANSFER_PACKAGE_TYPE ||
     packageType === SPONSER_PACKAGE_TYPE
   const isTransferNewTCode =
     packageType === TRANSFER_NEW_TCODE_PACKAGE_TYPE
+  const transferDocumentOptional =
+    isTransferNewTCode &&
+    Boolean(closingTicket.cr109_transferdocumentoptional)
+  const hasTransferDocument = Boolean(
+    closingTicket.cr109_purchaseapplicationform ||
+      closingTicket.cr109_purchaseapplicationform_name
+  )
   const applicableDocuments = useMemo(() => {
     if (skipsPurchaseApplicationForm) {
+      return NEW_OWNER_DOCUMENTS.filter(
+        (doc) => doc.key !== 'purchaseApplicationForm'
+      )
+    }
+    // An optional Transfer Application Document is dropped from the list
+    // (so it is never "missing") unless one was actually uploaded.
+    if (transferDocumentOptional && !hasTransferDocument) {
       return NEW_OWNER_DOCUMENTS.filter(
         (doc) => doc.key !== 'purchaseApplicationForm'
       )
@@ -743,7 +755,12 @@ export function NewOwnerTicketTab({
       )
     }
     return NEW_OWNER_DOCUMENTS
-  }, [skipsPurchaseApplicationForm, isTransferNewTCode])
+  }, [
+    skipsPurchaseApplicationForm,
+    isTransferNewTCode,
+    transferDocumentOptional,
+    hasTransferDocument,
+  ])
 
   const [record, setRecord] =
     useState<NewOwnerTicketRecord | null>(null)

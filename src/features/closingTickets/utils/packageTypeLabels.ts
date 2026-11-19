@@ -5,6 +5,7 @@ const PACKAGE_TYPE_LABELS: Record<string, string> = {
   Sponsor: 'Sponsor',
   'Tranfer New T Code': 'Transfer New T-Code',
   'Transfer New T Code': 'Transfer New T-Code',
+  TransferNewTCode: 'Transfer New T-Code',
   'Coop Tranfer': 'Co-op Transfer',
   'Coop Transfer': 'Co-op Transfer',
 }

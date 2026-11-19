@@ -10,21 +10,19 @@ package-type-specific differences on top of that base flow.
 |---|---|---|
 | `396620000` | Condo Sale | ✅ Enabled |
 | `396620001` | Coop Sale | ✅ Enabled |
-| `396620002` | Sponser | ✅ Enabled |
-| `396620003` | Tranfer New T Code | ✅ Enabled |
-| `396620004` | Coop Tranfer | 🚧 Not selectable — removed from the Package Type dropdown |
+| `396620002` | Sponsor | ✅ Enabled |
+| `396620003` | Transfer New T Code | ✅ Enabled |
+| `396620004` | Coop Tranfer | ❌ Removed from Dataverse |
 
 > **Dataverse history note:** `396620002` was originally "coop_transfer" and
-> was renamed to "Sponser"; a new, distinct "Coop Tranfer" option was added at
-> `396620004` to take over the original Coop Transfer meaning. Any older
-> documentation or data referencing `396620002` as Coop Transfer predates
-> this remap.
+> was renamed to "Sponser" (now spelled "Sponsor"); a separate "Coop Tranfer"
+> option at `396620004` has since been deleted. Any older documentation or
+> data referencing `396620002` as Coop Transfer predates this remap.
 
-> **Availability:** Condo Sale, Coop Sale, Sponser and Tranfer New T Code are
+> **Availability:** Condo Sale, Coop Sale, Sponsor and Transfer New T Code are
 > all selectable in the ticket creation form's Package Type dropdown for every
-> user (no Developer Mode required). Coop Tranfer is filtered out of the
-> dropdown entirely. The in-app Help Centre's **Sponsor & Transfer** tab
-> mirrors the status flows documented below.
+> user (no Developer Mode required). The in-app Help Centre's **Sponsor &
+> Transfer** tab mirrors the status flows documented below.
 
 > 🔍 **Verified against the real solution.** Findings marked 🔍 below were
 > confirmed by reading the actual exported Dataverse solution (cloud flow
@@ -131,11 +129,13 @@ fetch) once a new document is uploaded.
 
 Differences from the standard flow:
 
-- **Skips Stage 2 (Domicile retrieval) automatically.** On create, the
-  ticket is written directly at Bot Status **"Domecile Dump Retrieved"**,
-  jumping straight into Stage 3 (Seller Information Retrieval). *(Source:
-  `ticketCreation.ts` — `DOMECILE_DUMP_RETRIEVED_BOT_STATUS_VALUE`; wired up
-  in `CreateClosingTicketForm.tsx`'s submit handler.)*
+- **Skips Stage 2 (Domicile retrieval) automatically.** Because "Building
+  not on Domicile" is forced `true` (below), the create form writes the
+  ticket at **Processing / Form Downloaded** (the manual-form path), and the
+  scheduler's Sponser clause (`cr109_packagetype eq 396620002 and
+  cr7de_ticketstatus eq 716070005`) picks it up for Stage 3. *(The Bulk
+  Create tool instead writes Sponser tickets at Bot Status "Domecile Dump
+  Retrieved", which the first scheduler clause matches.)*
 - **"Building not on Domicile" is forced `true`** and locked — cannot be
   unchecked while Package Type is Sponser.
 - **No Purchase Application Form** — the field is hidden and not required,
@@ -199,11 +199,61 @@ never actually reaches `396620000` for a real Sponser ticket at all.)
 
 Differences from the standard flow:
 
-- **"Buyer exists in Yardi" is forced `false`** and locked — this buyer is
-  new to Yardi by definition, so there's nothing to confirm.
+- **"Buyer exists in Yardi" has no toggle in the app.** It is saved as
+  `false` for this package type (this buyer is new to Yardi by definition).
 - Buyer T-Code field stays hidden (shown only for Coop Tranfer).
 - The Purchase Application Form is labelled **"Transfer Application
   Document"** in the app (same `cr109_purchaseapplicationform` column).
+- **"Transfer document optional"** (`cr109_transferdocumentoptional`,
+  Yes/No) is shown only for this package type. When set, the Transfer
+  Application Document is not required to Validate (the New Owner Ticket
+  tab drops it from the required list unless one was uploaded), and the
+  **"Building not on Domicile" flag is hidden and saved as `false`** — it
+  is not used for these tickets.
+- **Created at Draft / Domecile Dump Retrieved** (`396620006`) so Stage 3
+  (seller info) is dispatched by the scheduler's first clause. Exception:
+  with "Building not on Domicile" ticked *and* a document uploaded, it
+  takes the manual-form path (Processing / Form Downloaded) instead.
+
+### Stage 3 bot behaviour — "Update Info To Database" (reference)
+
+From a direct review of the `NSCYardiSellerDetails` desktop flow (not the
+exported solution). After extracting seller info it writes, in this order:
+
+| Condition | Ticket Status | Bot Status |
+|---|---|---|
+| `cr7de_buildingnotondomicile = true` | Ready For Post Closing (`716070006`) | **unchanged** |
+| else, Package Type ≠ Sponser (`396620002`) | Processing (`716070005`) | Seller Info Retrieved (`396620000`) |
+| else (Sponser, flag false) | Ready For Post Closing (`716070006`) | Purchase Form Data Extracted (`396620013`) |
+
+It also sets the unit number and the NYC code (when the extracted building
+code differs), and creates/updates the New Owner Ticket row. The bot does
+**not** read `cr109_transferdocumentoptional` yet, so a Transfer New T-Code
+ticket without "Building not on Domecile" lands at Seller Info Retrieved and
+Stage 4 (form download) will still be dispatched.
+
+### Seller-info scheduler filter (recommended)
+
+Current: `(cr109_botstatus eq 396620006) or (cr7de_buildingnotondomicile eq
+true and cr109_botstatus eq 396620013 and cr7de_ticketstatus eq 716070005)
+or (cr109_packagetype eq 396620002 and cr7de_ticketstatus eq 716070005)`.
+
+The first clause has no ticket-status guard. Any ticket created at
+`396620006` with "Building not on Domicile" true takes the bot's first
+branch above, which leaves Bot Status at `396620006` — so it is
+re-dispatched every run. Recommended: restrict clause 1 to Draft or
+Processing tickets, which the bot always moves out of:
+
+```
+(cr109_botstatus eq 396620006 and (cr7de_ticketstatus eq 716070000 or cr7de_ticketstatus eq 716070005)) or
+(cr7de_buildingnotondomicile eq true and cr109_botstatus eq 396620013 and cr7de_ticketstatus eq 716070005) or
+(cr109_packagetype eq 396620002 and cr7de_ticketstatus eq 716070005)
+```
+
+To make optional-document Transfer tickets skip Stages 4–6, change the
+bot's `Package_Type <> 396620002` check to also treat
+`cr109_transferdocumentoptional = true` like Sponser (Purchase Form Data
+Extracted + Ready For Post Closing).
 
 🔍 **Confirmed: no flow in the exported solution branches on this package
 type at all.** Unlike Sponser, Tranfer New T Code tickets aren't excluded
@@ -216,39 +266,12 @@ differences noted above don't change anything at the automation layer.
 
 ---
 
-## Coop Tranfer (`396620004`)
+## Coop Tranfer (`396620004`) — removed
 
-🚧 Not selectable — removed from the Package Type dropdown.
-
-Differences from the standard flow:
-
-- **"Buyer exists in Yardi" is forced `true`** and locked — Coop Transfer
-  buyers already exist in Yardi by definition. Checking this flag manually
-  on any other package type prompts a confirmation dialog that switches
-  Package Type to Coop Tranfer.
-- **Buyer T-Code becomes a required field**, and **Buyer Unit Number**
-  appears — both hidden/not required on every other package type.
-- **No Purchase Application Form** — same as Sponser, hidden and not
-  required.
-
-🔍 **Confirmed: no flow in the exported solution branches on this package
-type either**, and unlike Sponser, nothing in the app forces
-`cr7de_buildingnotondomicile` to `true` for Coop Tranfer — that checkbox
-stays editable and defaults to `false`. So, per the dispatch filters, a
-Coop Tranfer ticket would actually **pass through** Stage 2 (Domecile Dump)
-and Stage 4 (Purchase Application Form Download) the same as Condo/Coop
-Sale — it would not stall the way Sponser does.
-
-This surfaces a different inconsistency worth flagging: the app **hides**
-the Purchase Application Form upload field for Coop Tranfer (same as
-Sponser — see base flow above), implying no PAF is needed, but nothing in
-the backend automation actually knows that. Stage 4's desktop flow would
-still attempt to download a purchase application form for a Coop Tranfer
-ticket by default, since the dispatch filter doesn't exclude it. Whether
-that step then fails, no-ops, or succeeds against bad/missing data isn't
-knowable from the flow definitions alone — that's inside the desktop
-flow's own RPA logic, which isn't exported as readable text the way cloud
-flows are.
+The "Coop Tranfer" option no longer exists in the Dataverse Package Type
+choice set (refreshed schema), so all Coop Transfer handling (Buyer T-Code,
+Buyer Unit Number, the "Buyer exists in Yardi" toggle) has been removed from
+the app. "Buyer exists in Yardi" is always saved as `false`.
 
 ---
 

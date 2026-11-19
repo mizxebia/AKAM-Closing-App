@@ -303,19 +303,16 @@
           "enum": [
             "condo_sale",
             "coop_sale",
-            "Sponser",
-            "Tranfer New T Code",
-            "Coop Tranfer"
+            "Sponsor",
+            "Transfer New T Code"
           ],
           "x-ms-enum-values": [
             396620000,
             396620001,
             396620002,
-            396620003,
-            396620004
+            396620003
           ],
           "Color": [
-            null,
             null,
             null,
             null,
@@ -522,6 +519,37 @@
           "x-ms-dataverse-attribute": "cr109_transactiontypedealname",
           "x-ms-dataverse-type": "VirtualType",
           "x-ms-schema-name": "cr109_transactiontypedealName",
+          "x-ms-read-only": true
+        },
+        "cr109_transferdocumentoptional": {
+          "type": "string",
+          "title": "Transfer Document Optional",
+          "x-ms-dataverse-attribute": "cr109_transferdocumentoptional",
+          "x-ms-dataverse-type": "BooleanType",
+          "x-ms-schema-name": "cr109_TransferDocumentOptional",
+          "enum": [
+            "No",
+            "Yes"
+          ],
+          "x-ms-enum-values": [
+            0,
+            1
+          ],
+          "Color": [
+            null,
+            null
+          ],
+          "x-ms-optionsetmetadataid": "7bcd721a-3be4-f111-84ea-00224829546e",
+          "x-ms-isGlobal": false,
+          "x-ms-optionsetdisplayname": "Transfer Document Optional",
+          "x-ms-optionSetType": "Boolean"
+        },
+        "cr109_transferdocumentoptionalname": {
+          "type": "string",
+          "title": "cr109_transferdocumentoptionalname",
+          "x-ms-dataverse-attribute": "cr109_transferdocumentoptionalname",
+          "x-ms-dataverse-type": "VirtualType",
+          "x-ms-schema-name": "cr109_transferdocumentoptionalName",
           "x-ms-read-only": true
         },
         "cr7de_buildingaddress": {

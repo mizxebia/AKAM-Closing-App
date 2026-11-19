@@ -141,6 +141,7 @@ export type ClosingTicketCreateInput = Partial<
     | 'cr109_sendtoar'
     | 'cr109_shares'
     | 'cr109_transactiontypedeal'
+    | 'cr109_transferdocumentoptional'
     | 'cr7de_buildingaddress'
     | 'cr7de_buildingname'
     | 'cr7de_buildingnotondomicile'
@@ -184,6 +185,7 @@ export type ClosingTicketFormState = {
   cr109_transactiontypedeal:
     | ''
     | Cr7de_closingticketdetailsescr109_transactiontypedeal
+  cr109_transferdocumentoptional: boolean
   cr7de_buildingaddress: string
   cr7de_buildingname: string
   cr7de_buildingnotondomicile: boolean

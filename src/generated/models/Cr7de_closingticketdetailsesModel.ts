@@ -33,9 +33,8 @@ export type Cr7de_closingticketdetailsescr109_botstatus = keyof typeof Cr7de_clo
 export const Cr7de_closingticketdetailsescr109_packagetype = {
   396620000: 'condo_sale',
   396620001: 'coop_sale',
-  396620002: 'Sponser',
-  396620003: 'Tranfer New T Code',
-  396620004: 'Coop Tranfer'
+  396620002: 'Sponsor',
+  396620003: 'Transfer New T Code'
 } as const;
 export type Cr7de_closingticketdetailsescr109_packagetype = keyof typeof Cr7de_closingticketdetailsescr109_packagetype;
 export const Cr7de_closingticketdetailsescr109_processcheckpoint = {
@@ -102,6 +101,7 @@ export interface Cr7de_closingticketdetailsesBase {
   cr109_sendtoar: boolean;
   cr109_shares?: string;
   cr109_transactiontypedeal?: Cr7de_closingticketdetailsescr109_transactiontypedeal;
+  cr109_transferdocumentoptional?: boolean;
   cr7de_buildingaddress?: string;
   cr7de_buildingname?: string;
   cr7de_buildingnotondomicile?: boolean;
@@ -149,6 +149,7 @@ export interface Cr7de_closingticketdetailses extends Cr7de_closingticketdetails
   cr109_rpttdocument_name?: string;
   cr109_sendtoarname?: string;
   cr109_transactiontypedealname?: string;
+  cr109_transferdocumentoptionalname?: string;
   cr7de_buildingnotondomicilename?: string;
   cr7de_buyerexistsinyardiname?: string;
   cr7de_ticketstatusname?: string;
