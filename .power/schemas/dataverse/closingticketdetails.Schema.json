@@ -277,6 +277,23 @@
           "x-ms-schema-name": "cr109_LocationofClosing",
           "maxLength": 100
         },
+        "cr109_mergedclosingpackage": {
+          "type": "string",
+          "title": "Merged Closing Package",
+          "x-ms-dataverse-attribute": "cr109_mergedclosingpackage",
+          "x-ms-dataverse-type": "FileType",
+          "x-ms-schema-name": "cr109_MergedClosingPackage",
+          "x-ms-read-only": true
+        },
+        "cr109_mergedclosingpackage_name": {
+          "type": "string",
+          "title": "cr109_mergedclosingpackage_name",
+          "x-ms-dataverse-attribute": "cr109_mergedclosingpackage_name",
+          "x-ms-dataverse-type": "StringType",
+          "x-ms-schema-name": "cr109_MergedClosingPackage_Name",
+          "x-ms-read-only": true,
+          "maxLength": 200
+        },
         "cr109_newownerticketpdf": {
           "type": "string",
           "title": "New Owner Ticket PDF",

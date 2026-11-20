@@ -409,17 +409,25 @@ export function ClosingTicketDetailsPage({
         throw new Error('New Owner Ticket flow returned Failed.')
       }
 
-      // Step 2 — regenerate Invoice PDF before sending.
-      const invoiceResult = await NSC_Generate_InvoiceService.Run({
-        text: currentTicketId,
-      })
-      if (!invoiceResult.success) {
-        throw new Error(
-          invoiceResult.error?.message || 'Invoice generation failed.'
-        )
-      }
-      if (invoiceResult.data?.status?.trim().toLowerCase() === 'failed') {
-        throw new Error('Invoice generation flow returned Failed.')
+      // Step 2 — regenerate Invoice PDF before sending. Skipped when the
+      // ticket has no invoice detail records (and they loaded fine) —
+      // there is nothing to generate an invoice from.
+      const hasNoInvoiceData =
+        !invoicesLoading &&
+        !invoicesError &&
+        invoiceRecords.length === 0
+      if (!hasNoInvoiceData) {
+        const invoiceResult = await NSC_Generate_InvoiceService.Run({
+          text: currentTicketId,
+        })
+        if (!invoiceResult.success) {
+          throw new Error(
+            invoiceResult.error?.message || 'Invoice generation failed.'
+          )
+        }
+        if (invoiceResult.data?.status?.trim().toLowerCase() === 'failed') {
+          throw new Error('Invoice generation flow returned Failed.')
+        }
       }
 
       // Step 3 — trigger the Send to AR email flow.
@@ -439,7 +447,13 @@ export function ClosingTicketDetailsPage({
     } catch (err) {
       throw err
     }
-  }, [record?.cr7de_ticketid, refreshClosingRecord])
+  }, [
+    record?.cr7de_ticketid,
+    refreshClosingRecord,
+    invoicesLoading,
+    invoicesError,
+    invoiceRecords.length,
+  ])
 
   const renderPageActions = () => {
     const domecileUrl = record?.cr109_domecilepackageurl

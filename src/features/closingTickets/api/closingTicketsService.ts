@@ -19,6 +19,7 @@ export type ClosingTicketUploadColumnName =
   | 'cr109_closingticketdetailspdf'
   | 'cr109_newownerticketpdf'
   | 'cr109_batchdocument'
+  | 'cr109_mergedclosingpackage'
 
 /** Human-readable labels for upload columns, used in App Logs entries. */
 export const UPLOAD_COLUMN_LABELS: Record<
@@ -30,6 +31,7 @@ export const UPLOAD_COLUMN_LABELS: Record<
   cr109_closingticketdetailspdf: 'Invoice PDF',
   cr109_newownerticketpdf: 'New Owner Ticket PDF',
   cr109_batchdocument: 'Batch And Cheque Document',
+  cr109_mergedclosingpackage: 'Merged Closing Package',
 }
 
 const TABLE_NAME = 'cr7de_closingticketdetailses'

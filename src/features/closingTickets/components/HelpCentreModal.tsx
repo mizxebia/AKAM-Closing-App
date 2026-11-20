@@ -253,6 +253,8 @@ const BEHAVIOURS: BehaviourCard[] = [
     body: 'The RPTT Document upload control is only enabled when Ticket Status is Ready For Post Closing. In every other status the field is disabled and shows a banner explaining why — this prevents the document from being replaced once it is already being processed or validated.' },
   { icon: '↩', title: 'Deleting the RPTT rolls the ticket back',
     body: 'If the RPTT was uploaded incorrectly, delete it while the ticket is in Post Closing or Validate Closings — the ticket automatically rolls back to Ready For Post Closing. From there, upload the correct document and click Save, then click "Move to Post Closing" again. RPTT extraction and the YARDI charges fetch both run again from scratch on the new document, and once charges are refetched you will need to validate the closing again.' },
+  { icon: '🔁', title: 'Need the YARDI charges fetched again?',
+    body: 'Revert the ticket so Stage 9 runs again: set Ticket Status to Post Closing and Bot Status to RPTT Extracted. The YARDI charges fetch is then picked up on the next run and the ticket returns to Validate Closings / YARDI Charges Fetched. This reset is done from the backend — contact the Xebia team.' },
   { icon: '🎫', title: 'Generate New Owner Ticket before Validate',
     body: 'Click "Generate New Owner Ticket" in the New Owner Ticket tab first. The PDF must be generated before the Validate button appears. When you click Validate, the New Owner Ticket PDF is automatically regenerated with the latest data. Buyer and Seller SSN/EIN fields only accept 9 digits. Occupancy fields are locked to "Present" or "Absent". Empty Additional Occupant fields are saved as N/A.' },
   { icon: '📍', title: 'Absent buyers need their own mailing address',
@@ -262,7 +264,7 @@ const BEHAVIOURS: BehaviourCard[] = [
   { icon: '💬', title: 'Ticket showing as Failed?',
     body: 'A banner at the top of the ticket will describe what went wrong. Review the details, make any necessary corrections, and reach out to the Xebia team — they will investigate and reset the status from the backend.' },
   { icon: '📤', title: 'Send to AR Team tab — final step after Completed',
-    body: 'Once a ticket reaches Completed status, the Send to AR Team tab becomes available. Upload the Batch And Cheque Document, review the pre-filled email, and click "Send to AR Team". The app regenerates the New Owner Ticket PDF and Invoice PDF automatically, then triggers the email flow to the AR team. The ticket moves to Sent to AR and becomes read-only.' },
+    body: 'Once a ticket reaches Completed status, the Send to AR Team tab becomes available. Upload the Batch And Cheque Document, review the pre-filled email, and click "Send to AR Team". The app regenerates the New Owner Ticket PDF and Invoice PDF automatically (the Invoice PDF is skipped when the ticket has no invoice detail records), then triggers the email flow to the AR team. The ticket moves to Sent to AR and becomes read-only.' },
   { icon: '🔁', title: 'Resending to AR — always possible',
     body: 'If the email needs to be resent (e.g. updated attachment or corrected email body), open the Send to AR Team tab on any Sent to AR ticket. Update the subject or body if needed, then click "Send Again to AR". Both PDFs are regenerated and the email is resent.' },
   { icon: '📎', title: 'Three attachments are always included in the AR email',
@@ -682,6 +684,10 @@ function FlowchartContent() {
       <DecisionRow
         success={[{ label: 'Ticket Status', value: 'Validate Closings' }, { label: 'Bot Status', value: 'YARDI Charges Fetched' }]}
         failure={[{ label: 'Ticket Status', value: 'Failed' }, { label: 'Bot Status', value: '—' }]} />
+      <Arrow short />
+      <NoteBox icon="↩" title="Re-running the YARDI charges fetch">
+        To fetch the YARDI charges again (for example after a failed fetch), the status must be reverted so Stage 9 is picked up again: set <strong>Ticket Status</strong> to <strong>Post Closing</strong> and <strong>Bot Status</strong> to <strong>RPTT Extracted</strong>. The fetch then runs again on the next scheduled run and, on success, the ticket returns to <strong>Validate Closings / YARDI Charges Fetched</strong>. This status reset is done from the backend by the Xebia team.
+      </NoteBox>
       <Arrow />
       <StepCard variant="user" stage="Stage 9b" title="Auto Move Charges (Optional)"
         subtitle='User clicks "Auto Move Charges" in the Yardi Charges tab to auto-match invoice payments to unpaid charges'

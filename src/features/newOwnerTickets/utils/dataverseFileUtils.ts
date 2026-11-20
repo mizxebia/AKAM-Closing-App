@@ -13,7 +13,9 @@ export type GeneratedClosingDocumentKey =
   | 'newOwnerTicketPdf'
   | 'closingTicketDetailsPdf'
 
-export type ArTeamDocumentKey = 'batchDocument'
+export type ArTeamDocumentKey =
+  | 'batchDocument'
+  | 'mergedClosingPackage'
 
 export type ClosingTicketDocumentKey =
   | NewOwnerDocumentKey
@@ -30,6 +32,7 @@ export interface NewOwnerDocumentDefinition {
     | 'cr109_purchaseapplicationform_name'
     | 'cr109_rpttdocument_name'
     | 'cr109_batchdocument_name'
+    | 'cr109_mergedclosingpackage_name'
 }
 
 export interface DataverseFilePreview {
@@ -129,6 +132,12 @@ export const AR_TEAM_DOCUMENTS:
       label: 'New Owner Ticket',
       columnName: 'cr109_newownerticketpdf',
       fileNameColumn: 'cr109_newownerticketpdf_name',
+    },
+    {
+      key: 'mergedClosingPackage',
+      label: 'Merged Closing Package',
+      columnName: 'cr109_mergedclosingpackage',
+      fileNameColumn: 'cr109_mergedclosingpackage_name',
     },
   ]
 
