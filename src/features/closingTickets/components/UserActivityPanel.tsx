@@ -307,11 +307,13 @@ function buildMonthlyTrend(records: ClosingTicketRecord[], monthsBack = 6) {
 }
 
 // Average days between two dates, never negative — a record with dirty
-// data (modifiedon earlier than createdon) would otherwise drag the whole
-// average below zero instead of just being excluded from the picture.
+// data (modifiedon earlier than the closing date) would otherwise drag the
+// whole average below zero instead of just being excluded from the picture.
+// Measured from the closing date because tickets are created about a week
+// before closing, which would inflate how long updates appear to take.
 function averageDaysBetween(
   records: ClosingTicketRecord[],
-  fromKey: 'createdon',
+  fromKey: 'cr7de_closingdate',
   toKey: 'modifiedon'
 ): number {
   if (records.length === 0) return 0
@@ -346,32 +348,32 @@ function buildPerformanceStats(records: ClosingTicketRecord[]) {
     const status = Number(r.cr7de_ticketstatus)
     return (
       (status === COMPLETED_STATUS || status === SENT_TO_AR_STATUS) &&
-      r.createdon &&
+      r.cr7de_closingdate &&
       r.modifiedon &&
       !isEffectivelyArchived(r)
     )
   })
   const avgTurnaroundDays = averageDaysBetween(
     completedWithDates,
-    'createdon',
+    'cr7de_closingdate',
     'modifiedon'
   )
 
   // How long, on average, has automation taken to reach wherever a ticket
-  // currently stands (its last bot stage) — createdon to modifiedon across
+  // currently stands (its last bot stage) — closing date to modifiedon across
   // every bot-tracked ticket, not just Completed/Sent to AR ones. Archived
   // tickets are excluded for the same reason as avgTurnaroundDays above.
   const botTrackedWithDates = records.filter(
     (r) =>
       r.cr109_botstatus !== undefined &&
       String(r.cr109_botstatus).trim() !== '' &&
-      r.createdon &&
+      r.cr7de_closingdate &&
       r.modifiedon &&
       !isEffectivelyArchived(r)
   )
   const avgAutomationAgingDays = averageDaysBetween(
     botTrackedWithDates,
-    'createdon',
+    'cr7de_closingdate',
     'modifiedon'
   )
 
@@ -1086,12 +1088,12 @@ export function UserActivityPanel({
         <StatTile
           label="Avg. Turnaround"
           value={`${performance.avgTurnaroundDays.toFixed(1)}d`}
-          description="Created → Completed/Sent to AR"
+          description="Closing date → Completed/Sent to AR"
         />
         <StatTile
           label="Avg. Automation Aging"
           value={`${performance.avgAutomationAgingDays.toFixed(1)}d`}
-          description={`Created → last stage • ${performance.botTrackedCount} tracked`}
+          description={`Closing date → last stage • ${performance.botTrackedCount} tracked`}
         />
         <StatTile
           label="Failure Rate"

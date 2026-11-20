@@ -72,18 +72,20 @@ export function ClosingTicketDashboard({
       Number(record.cr7de_ticketstatus) === READY_FOR_POST_CLOSING_STATUS
   ).length
 
-  // Aging = createdon -> modifiedon for tickets currently sitting at
+  // Aging = closing date -> modifiedon for tickets currently sitting at
   // Completed or Sent to AR (Sent to AR already passed through Completed,
-  // so excluding it would undercount finished work). Clamped at zero per
-  // record so a record with dirty data (modifiedon earlier than createdon)
-  // can't drag the average negative. Archived tickets are excluded — they're
-  // old, aged-out closings that would otherwise skew this toward how long
-  // forgotten tickets sat around rather than typical turnaround.
+  // so excluding it would undercount finished work). Measured from the
+  // closing date rather than createdon because tickets are created about a
+  // week before the closing, which would inflate the time updates take.
+  // Clamped at zero per record so dirty data (modifiedon earlier than the
+  // closing date) can't drag the average negative. Archived tickets are
+  // excluded — they're old, aged-out closings that would otherwise skew
+  // this toward how long forgotten tickets sat around.
   const completedWithDates = records.filter((record) => {
     const status = Number(record.cr7de_ticketstatus)
     return (
       (status === COMPLETED_STATUS || status === SENT_TO_AR_STATUS) &&
-      record.createdon &&
+      record.cr7de_closingdate &&
       record.modifiedon &&
       !isEffectivelyArchived(record)
     )
@@ -91,9 +93,9 @@ export function ClosingTicketDashboard({
   const avgAgingDays =
     completedWithDates.length > 0
       ? completedWithDates.reduce((sum, record) => {
-          const created = new Date(record.createdon as string).getTime()
+          const closing = new Date(record.cr7de_closingdate as string).getTime()
           const modified = new Date(record.modifiedon as string).getTime()
-          return sum + Math.max(0, modified - created)
+          return sum + Math.max(0, modified - closing)
         }, 0) /
         completedWithDates.length /
         (1000 * 60 * 60 * 24)
@@ -161,7 +163,7 @@ export function ClosingTicketDashboard({
       <StatCard
         label="Avg. Aging"
         value={`${avgAgingDays.toFixed(1)}d`}
-        description="Created → Completed/Sent to AR"
+        description="Closing date → Completed/Sent to AR"
         icon={Timer}
         tone="amber"
         trend={`${completedWithDates.length} tracked`}
