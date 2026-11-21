@@ -336,7 +336,12 @@ export function normalizeText(value: string) {
   return trimmedValue === '' ? undefined : trimmedValue
 }
 
-// No Buyer 2/3 on the ticket means there's no one to mail an address to.
+// No named buyer on the ticket means there's no one to mail an address to,
+// so the address fields may be N/A.
+function hasBuyer1Name(name: string) {
+  return !isBlankOrNA(name)
+}
+
 function hasBuyer2Name(name: string) {
   return !isBlankOrNA(name)
 }
@@ -348,6 +353,15 @@ function hasBuyer3Name(name: string) {
 function isBlankOrNA(value: string) {
   const trimmed = value.trim()
   return trimmed === '' || trimmed.toUpperCase() === 'N/A'
+}
+
+// Non-blank placeholders people type instead of an address: only dashes /
+// punctuation, or N/A-style words.
+function isPlaceholderAddressValue(value: string) {
+  const trimmed = value.trim()
+  if (trimmed === '') return false
+  if (/^[\s\-–—_./\\,]+$/.test(trimmed)) return true
+  return /^(n\s*\/?\s*a|none|null|unknown|tbd)$/i.test(trimmed)
 }
 
 function isValidSsnEin(value: string) {
@@ -372,7 +386,8 @@ export function toPayload(
   includeStateFields: boolean
 ): NewOwnerTicketInput {
   const buyer1AddressRequired =
-    formState.cr109_purchaser1occupancy === 'Absent'
+    formState.cr109_purchaser1occupancy === 'Absent' &&
+    hasBuyer1Name(formState.cr7de_newprimaryownername)
   const buyer2AddressRequired =
     formState.cr109_purchaser2occupancy === 'Absent' &&
     hasBuyer2Name(formState.cr7de_newsecondaryownername)
@@ -643,66 +658,58 @@ export function validateForm(
     errors.cr109_seller3ssn = SSN_EIN_ERROR
   }
 
-  if (formState.cr109_purchaser1occupancy === 'Absent') {
-    if (!formState.cr109_buyer1address.trim()) {
-      errors.cr109_buyer1address =
-        'Required when Buyer 1 Occupancy is Absent.'
-    }
-    if (!formState.cr109_buyer1city.trim()) {
-      errors.cr109_buyer1city =
-        'Required when Buyer 1 Occupancy is Absent.'
-    }
-    if (!formState.cr109_buyer1state.trim()) {
-      errors.cr109_buyer1state =
-        'Required when Buyer 1 Occupancy is Absent.'
-    }
-    if (!formState.cr109_buyer1zip.trim()) {
-      errors.cr109_buyer1zip =
-        'Required when Buyer 1 Occupancy is Absent.'
-    }
-  }
+  const absentBuyers = [
+    {
+      n: 1,
+      absent:
+        formState.cr109_purchaser1occupancy === 'Absent' &&
+        hasBuyer1Name(formState.cr7de_newprimaryownername),
+      values: {
+        address: formState.cr109_buyer1address,
+        city: formState.cr109_buyer1city,
+        state: formState.cr109_buyer1state,
+        zip: formState.cr109_buyer1zip,
+      },
+    },
+    {
+      n: 2,
+      absent:
+        formState.cr109_purchaser2occupancy === 'Absent' &&
+        hasBuyer2Name(formState.cr7de_newsecondaryownername),
+      values: {
+        address: formState.cr109_buyer2address,
+        city: formState.cr109_buyer2city,
+        state: formState.cr109_buyer2state,
+        zip: formState.cr109_buyer2zip,
+      },
+    },
+    {
+      n: 3,
+      absent:
+        formState.cr109_buyer3occupancy === 'Absent' &&
+        hasBuyer3Name(formState.cr109_buyer3),
+      values: {
+        address: formState.cr109_buyer3address,
+        city: formState.cr109_buyer3city,
+        state: formState.cr109_buyer3state,
+        zip: formState.cr109_buyer3zip,
+      },
+    },
+  ] as const
 
-  if (
-    formState.cr109_purchaser2occupancy === 'Absent' &&
-    hasBuyer2Name(formState.cr7de_newsecondaryownername)
-  ) {
-    if (isBlankOrNA(formState.cr109_buyer2address)) {
-      errors.cr109_buyer2address =
-        'Required when Buyer 2 Occupancy is Absent.'
-    }
-    if (isBlankOrNA(formState.cr109_buyer2city)) {
-      errors.cr109_buyer2city =
-        'Required when Buyer 2 Occupancy is Absent.'
-    }
-    if (isBlankOrNA(formState.cr109_buyer2state)) {
-      errors.cr109_buyer2state =
-        'Required when Buyer 2 Occupancy is Absent.'
-    }
-    if (isBlankOrNA(formState.cr109_buyer2zip)) {
-      errors.cr109_buyer2zip =
-        'Required when Buyer 2 Occupancy is Absent.'
-    }
-  }
-
-  if (
-    formState.cr109_buyer3occupancy === 'Absent' &&
-    hasBuyer3Name(formState.cr109_buyer3)
-  ) {
-    if (isBlankOrNA(formState.cr109_buyer3address)) {
-      errors.cr109_buyer3address =
-        'Required when Buyer 3 Occupancy is Absent.'
-    }
-    if (isBlankOrNA(formState.cr109_buyer3city)) {
-      errors.cr109_buyer3city =
-        'Required when Buyer 3 Occupancy is Absent.'
-    }
-    if (isBlankOrNA(formState.cr109_buyer3state)) {
-      errors.cr109_buyer3state =
-        'Required when Buyer 3 Occupancy is Absent.'
-    }
-    if (isBlankOrNA(formState.cr109_buyer3zip)) {
-      errors.cr109_buyer3zip =
-        'Required when Buyer 3 Occupancy is Absent.'
+  // An absent buyer needs a real mailing address — blank is "required",
+  // while placeholders like "-" or "N/A" are rejected as not valid.
+  for (const buyer of absentBuyers) {
+    if (!buyer.absent) continue
+    for (const part of ['address', 'city', 'state', 'zip'] as const) {
+      const value = buyer.values[part]
+      const field =
+        `cr109_buyer${buyer.n}${part}` as EditableNewOwnerTicketField
+      if (value.trim() === '') {
+        errors[field] = `Required when Buyer ${buyer.n} Occupancy is Absent.`
+      } else if (isPlaceholderAddressValue(value)) {
+        errors[field] = 'Please enter a valid address.'
+      }
     }
   }
 
